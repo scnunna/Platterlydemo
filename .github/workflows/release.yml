@@ -1,0 +1,44 @@
+# Every push to main that changes the app or the web pages: run the tests, build a signed APK,
+# publish it as a GitHub Release. Obtainium watches these Releases and installs updates.
+# (api.json address updates from the store laptop are ignored here; they only redeploy Pages.)
+name: build-and-release
+on:
+  push:
+    branches: [main]
+    paths: ['android/**', 'web/**', 'supabase/**', '.github/workflows/release.yml', '!web/panago/api.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      PL_BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: "17" }
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Decode signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.PL_KEYSTORE_B64 }}
+        run: |
+          printf '%s' "$KEYSTORE_B64" | tr -d '\r\n ' | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "PL_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+      - name: Unit tests, then the signed release APK
+        working-directory: android
+        env:
+          PL_KEYSTORE_PASSWORD: ${{ secrets.PL_KEYSTORE_PASSWORD }}
+          PL_KEY_ALIAS: platterly
+          PL_KEY_PASSWORD: ${{ secrets.PL_KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:testDebugUnitTest :app:assembleRelease --console=plain
+          cp app/build/outputs/apk/release/app-release.apk "../Platterly-0.1.${PL_BUILD_NUMBER}.apk"
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Platterly 0.1.${{ github.run_number }}
+          body: ${{ github.event.head_commit.message }}
+          files: Platterly-0.1.${{ github.run_number }}.apk

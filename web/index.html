@@ -1,0 +1,921 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Platterly</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0E4D4A">
+<meta name="description" content="Catering for your team at menu price. Order from local franchise kitchens with one honest total.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+
+<style>
+/* Layout: app shell. Top bar with the Platterly mark, a role-aware nav (side rail on wide screens, bottom bar on phones), and a content column of cards and tables. Client brands (Panago purple) appear only inside their own store pages. */
+:root {
+  --bg: #F3F5F2;
+  --surface: #FFFFFF;
+  --surface-2: #E9EEEB;
+  --ink: #13201F;
+  --muted: #56645F;
+  --line: #D3DBD6;
+  --teal: #0E4D4A;
+  --teal-ink: #FFFFFF;
+  --saffron: #E89A2C;
+  --saffron-ink: #2B1A02;
+  --good: #23784A;
+  --warn: #A86A06;
+  --bad: #B3261E;
+  --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1615; --surface: #162120; --surface-2: #1E2C2A; --ink: #E6EEEB; --muted: #9AACA6; --line: #2C3D3A;
+  --teal: #5FC2B8; --teal-ink: #0B2321; --saffron: #F2B65A; --saffron-ink: #2B1A02; --good: #6FCB92; --warn: #E3B35A; --bad: #F28B82; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0E1615; --surface: #162120; --surface-2: #1E2C2A; --ink: #E6EEEB; --muted: #9AACA6; --line: #2C3D3A;
+  --teal: #5FC2B8; --teal-ink: #0B2321; --saffron: #F2B65A; --saffron-ink: #2B1A02; --good: #6FCB92; --warn: #E3B35A; --bad: #F28B82; color-scheme: dark; }
+
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.12; text-wrap: balance; letter-spacing: -0.015em; }
+h1 { font-size: 28px; font-weight: 800; }
+h2 { font-size: 21px; font-weight: 700; }
+h3 { font-size: 16.5px; font-weight: 700; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--teal); }
+:focus-visible { outline: 2px solid var(--saffron); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.tiny { font-size: 12px; }
+
+/* shell */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1180px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.mark { display: flex; align-items: center; gap: 9px; text-decoration: none; color: var(--ink); }
+.mark svg { width: 30px; height: 30px; flex: none; }
+.mark b { font-family: var(--display); font-weight: 800; font-size: 21px; letter-spacing: -0.03em; }
+.role-pill { font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+.top .spacer { flex: 1; }
+.who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.who span { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--teal); color: var(--teal-ink); display: grid; place-items: center; font-weight: 800; font-size: 13px; flex: none; }
+.shell { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 22px; padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.nav { display: grid; gap: 4px; align-content: start; position: sticky; top: calc(70px + env(safe-area-inset-top, 0px)); }
+.nav button { display: flex; align-items: center; gap: 10px; border: 0; background: transparent; padding: 10px 12px; border-radius: 10px; font-weight: 600; color: var(--muted); text-align: left; }
+.nav button svg { width: 19px; height: 19px; flex: none; }
+.nav button[aria-current="page"] { background: var(--surface); color: var(--ink); box-shadow: inset 3px 0 0 var(--saffron); }
+.nav button .badge { margin-left: auto; }
+main { min-width: 0; display: grid; gap: 18px; align-content: start; }
+.demo-bar { background: var(--saffron); color: var(--saffron-ink); font-size: 13px; font-weight: 600; }
+.demo-bar .top-in { padding-block: 6px; flex-wrap: wrap; }
+.demo-bar button { border: 1px solid rgba(43,26,2,0.35); background: transparent; border-radius: 8px; padding: 3px 9px; font-weight: 700; font-size: 12.5px; }
+
+/* pieces */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; min-width: 0; }
+.card.flat { border: 0; background: var(--surface-2); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.stack { display: grid; gap: 10px; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+.grid.k { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 7px; justify-content: center; }
+.btn:hover { border-color: var(--teal); }
+.btn.primary { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); }
+.btn.accent { background: var(--saffron); color: var(--saffron-ink); border-color: var(--saffron); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--teal); padding-inline: 6px; }
+.btn.block { width: 100%; }
+.btn[disabled] { opacity: 0.5; cursor: default; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); white-space: nowrap; }
+.badge.good { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.badge.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+.badge.bad { background: color-mix(in srgb, var(--bad) 15%, transparent); color: var(--bad); }
+.badge.teal { background: color-mix(in srgb, var(--teal) 15%, transparent); color: var(--teal); }
+.badge.saffron { background: var(--saffron); color: var(--saffron-ink); }
+.field { display: grid; gap: 5px; min-width: 0; }
+.field label { font-size: 13px; font-weight: 700; }
+.field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 12px; }
+.field textarea { min-height: 70px; resize: vertical; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; }
+.check input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--teal); }
+.err { color: var(--bad); font-size: 13px; font-weight: 600; min-height: 1em; }
+.kpi { display: grid; gap: 2px; }
+.kpi b { font-family: var(--display); font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.kpi span { color: var(--muted); font-size: 13px; }
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700; background: var(--surface-2); }
+tr:last-child td { border-bottom: 0; }
+td input.price { width: 84px; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; background: var(--surface); }
+.toggle { position: relative; width: 40px; height: 23px; border-radius: 99px; border: 0; background: var(--line); flex: none; }
+.toggle::after { content: ""; position: absolute; top: 3px; left: 3px; width: 17px; height: 17px; border-radius: 50%; background: var(--surface); transition: transform 160ms; }
+.toggle[aria-pressed="true"] { background: var(--teal); }
+.toggle[aria-pressed="true"]::after { transform: translateX(17px); }
+.thumb { width: 52px; height: 40px; border-radius: 8px; object-fit: cover; background: var(--surface-2); flex: none; }
+.empty { display: grid; gap: 8px; justify-items: start; padding: 22px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
+
+/* login */
+.login { min-height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.login-art { position: relative; background: var(--teal); color: var(--teal-ink); padding: 40px; display: grid; align-content: space-between; gap: 30px; overflow: hidden; }
+.login-art h1 { font-size: clamp(30px, 4vw, 48px); max-width: 14ch; }
+.login-art p { max-width: 42ch; opacity: 0.9; }
+.login-art .plate { position: absolute; right: -80px; bottom: -80px; width: 340px; height: 340px; opacity: 0.18; }
+.login-art .facts { display: grid; gap: 8px; font-size: 14px; position: relative; }
+.login-art .facts div { display: flex; gap: 10px; align-items: center; }
+.login-art .facts i { width: 8px; height: 8px; border-radius: 50%; background: var(--saffron); flex: none; }
+.login-form { display: grid; align-content: center; justify-items: center; padding-block: 32px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.login-form > div { width: 100%; max-width: 380px; display: grid; gap: 16px; }
+.demo-accounts { display: grid; gap: 8px; }
+.demo-accounts button { display: flex; gap: 12px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 11px 12px; }
+.demo-accounts button:hover { border-color: var(--teal); }
+.demo-accounts b { display: block; font-size: 14.5px; }
+.demo-accounts small { color: var(--muted); font-size: 12.5px; }
+.divider { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+
+/* customer */
+.hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0; border-radius: 18px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+.hero .copy { padding: 22px; display: grid; gap: 14px; align-content: start; }
+.hero .pic { background: var(--surface-2) center / cover no-repeat; min-height: 220px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.stepper button { border: 0; background: var(--surface-2); width: 40px; height: 42px; font-size: 20px; font-weight: 800; }
+.stepper output { min-width: 70px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 20px; }
+.brand-head { border-radius: 16px; padding: 16px 18px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; background: var(--brand, var(--teal)); color: #fff; }
+.brand-head img { height: 30px; width: auto; }
+.brand-head .row { gap: 6px; }
+.brand-head select { border: 0; border-radius: 9px; padding: 7px 10px; background: rgba(255,255,255,0.15); color: #fff; font-weight: 700; }
+.brand-head select option { color: #13201F; }
+.pkg { display: grid; gap: 0; overflow: hidden; padding: 0; position: relative; }
+.pkg .pic { aspect-ratio: 16 / 9; max-width: 100%; background: var(--surface-2) center / cover no-repeat; }
+.pkg .body { padding: 14px; display: grid; gap: 8px; }
+.pkg .price { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: -0.02em; }
+.pkg.featured { border: 2px solid var(--saffron); }
+.pkg .flag { position: absolute; top: 10px; left: 10px; }
+.item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 10px; align-items: start; }
+.item img, .item .noimg { width: 88px; height: 72px; border-radius: 10px; object-fit: cover; background: var(--surface-2); }
+.item .noimg { display: grid; place-items: center; font-size: 11px; color: var(--muted); text-align: center; padding: 6px; }
+.item h3 { font-size: 15px; }
+.item p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.sizes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.sizes button { border: 1px solid var(--line); background: var(--surface); border-radius: 9px; padding: 5px 9px; font-size: 13px; font-weight: 700; }
+.sizes button:hover { border-color: var(--teal); background: color-mix(in srgb, var(--teal) 8%, transparent); }
+.sizes button small { color: var(--muted); font-weight: 600; margin-left: 4px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-weight: 700; font-size: 13px; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+.cartbar { position: sticky; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 15; display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--ink); color: var(--surface); border-radius: 14px; padding: 12px 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.cartbar .btn { background: var(--saffron); color: var(--saffron-ink); border-color: var(--saffron); }
+.lines { display: grid; gap: 8px; }
+.line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; font-size: 14px; }
+.qty { display: inline-flex; align-items: center; gap: 6px; }
+.qty button { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 800; }
+.totals { display: grid; gap: 5px; font-size: 14px; }
+.totals div { display: flex; justify-content: space-between; gap: 10px; }
+.totals .grand { font-family: var(--display); font-weight: 800; font-size: 20px; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+.track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.track div { display: grid; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.track div i { height: 6px; border-radius: 6px; background: var(--line); }
+.track div.on { color: var(--ink); }
+.track div.on i { background: var(--teal); }
+.punch { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.punch span { aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 2px dashed var(--line); display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--muted); }
+.punch span.on { background: var(--saffron); border: 2px solid var(--saffron); color: var(--saffron-ink); }
+.coupon { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 2px dashed var(--line); border-radius: 12px; padding: 10px 12px; }
+.coupon code { font-family: var(--mono); font-weight: 800; font-size: 17px; letter-spacing: 0.06em; }
+
+/* client admin */
+.board { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.col { background: var(--surface-2); border-radius: var(--radius); padding: 10px; display: grid; gap: 10px; align-content: start; min-width: 220px; }
+.col > h3 { font-size: 14px; display: flex; justify-content: space-between; padding: 2px 4px; }
+.ocard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 7px; font-size: 13.5px; }
+.ocard .id { font-family: var(--mono); font-weight: 700; font-size: 12.5px; }
+.ocard .pack { display: grid; gap: 4px; padding: 8px; border-radius: 9px; background: var(--surface-2); }
+.steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.steps-list li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.steps-list .dot { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; background: var(--surface-2); color: var(--muted); }
+.steps-list li.done .dot { background: var(--good); color: #fff; }
+.steps-list li.now { border-color: var(--saffron); box-shadow: 0 0 0 1px var(--saffron); }
+.steps-list li.now .dot { background: var(--saffron); color: var(--saffron-ink); }
+.bar { height: 8px; border-radius: 8px; background: var(--surface-2); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--teal); border-radius: 8px; }
+.toast { position: fixed; left: 50%; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--surface); padding: 10px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; z-index: 50; box-shadow: 0 8px 24px rgba(0,0,0,0.25); max-width: calc(100% - 32px); }
+.sheet-bg { position: fixed; inset: 0; background: rgba(10,20,19,0.45); z-index: 40; display: grid; justify-items: end; }
+.sheet { width: min(460px, 100%); height: 100%; background: var(--bg); overflow-y: auto; padding: 18px; padding-top: calc(18px + env(safe-area-inset-top, 0px)); padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); padding-right: max(18px, env(safe-area-inset-right, 0px)); display: grid; gap: 14px; align-content: start; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); padding-bottom: calc(86px + env(safe-area-inset-bottom, 0px)); }
+  .nav { position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 30; display: flex; justify-content: space-around; gap: 0; background: var(--surface); border-top: 1px solid var(--line); padding: 6px max(6px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px)); overflow-x: auto; }
+  .nav button { flex-direction: column; gap: 3px; font-size: 11px; padding: 6px 8px; min-width: 62px; }
+  .nav button[aria-current="page"] { box-shadow: inset 0 3px 0 var(--saffron); background: transparent; }
+  .nav button .badge { display: none; }
+  .login { grid-template-columns: minmax(0, 1fr); }
+  .login-art { padding: 26px 20px; }
+  .login-art .facts { display: none; }
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .hero .pic { min-height: 170px; order: -1; }
+  .who span { display: none; }
+  .cartbar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (max-width: 520px) { .role-pill { display: none; } .top .btn { padding: 7px 10px; font-size: 13px; } .demo-bar span { font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+</style>
+<div id="app" aria-live="polite"></div>
+<noscript>Platterly needs JavaScript to run.</noscript>
+
+<script>
+/* Platterly configuration.
+   Leave supabaseUrl empty to run in demo mode (data stays in the browser).
+   To go live: create a free Supabase project, run supabase/schema.sql in its SQL editor,
+   then paste the project URL and the anon (public) key below. The anon key is safe to ship:
+   row-level security in schema.sql decides what each signed-in user can read and write. */
+window.PLATTERLY_CONFIG = {
+  supabaseUrl: '',
+  supabaseAnonKey: ''
+};
+
+/* Platterly seed data.
+   Panago menu and prices: Panago Q4 2026 Ontario counter menu (pricing as of October 2026, subject to change), supplied by the franchisee.
+   Deals: panago.com location page for 133 Bremner Blvd, October 2026.
+   Everything marked sample: true is example data for the demo. */
+window.PLATTERLY_SEED = (function () {
+  const SIZES = ['S', 'M', 'L', 'XL'];
+  const SLICES = { S: 6, M: 8, L: 10, XL: 12 };
+  const P = (id, name, desc, prices, tags, extra) => Object.assign({ id, name, desc, cat: 'pizza', sizes: Object.fromEntries(SIZES.map((s, i) => [s, prices[i]])), tags: tags || [] }, extra || {});
+  const I = (id, name, desc, cat, price, unit, tags, extra) => Object.assign({ id, name, desc, cat, price, unit, tags: tags || [] }, extra || {});
+
+  const panagoMenu = [
+    // Meat pizzas
+    P('beef-taco', 'Beef Taco', 'Salsa, ground beef, red onions, diced tomatoes, sour cream drizzle, shredded lettuce, mozzarella and cheddar', [16, 20, 25.25, 30.5], [], { group: 'Meat pizzas' }),
+    P('chicken-taco', 'Chicken Taco', 'Salsa, grilled chicken, red onions, diced tomatoes, sour cream drizzle, shredded lettuce, mozzarella and cheddar', [16, 20, 25.25, 30.5], [], { group: 'Meat pizzas' }),
+    P('brooklyn-pepperoni', 'Brooklyn Pepperoni', 'Organic tomato sauce, mozzarella, layers of pepperoni and Cupperoni', [13.5, 16, 20, 23.75], [], { group: 'Meat pizzas' }),
+    P('deluxe', 'Deluxe (Pepperoni)', 'Organic tomato sauce, extra pepperoni, sliced fresh mushrooms, green peppers and mozzarella', [14.75, 18.5, 22.75, 26], ['deal'], { group: 'Meat pizzas', deal: 'Large $19.95 with code DLXPEP26' }),
+    P('new-york-deli', 'New York Deli', 'Organic tomato sauce, pepperoni, Genoa salami, bacon, Canadian ham, spicy Italian sausage, mozzarella and cheddar', [16.25, 20.5, 25, 29.5], [], { group: 'Meat pizzas' }),
+    P('chicken-club', 'Chicken Club', 'Jalapeño white sauce, grilled chicken, Canadian ham, bacon, tomatoes and mozzarella', [17.5, 22.25, 26.75, 31.25], [], { group: 'Meat pizzas' }),
+    P('bbq-bacon-chicken', 'BBQ Bacon Chicken', 'Grilled chicken, bacon, caramelized onions, green peppers, mozzarella and cheddar, smoky BBQ drizzle', [16.25, 20.5, 25.5, 30.25], [], { group: 'Meat pizzas', photo: 'bbq' }),
+    P('true-canadian', 'True Canadian', 'Organic tomato sauce, extra pepperoni, bacon, sliced fresh mushrooms, mozzarella and cheddar', [14.25, 18, 23.25, 27.5], [], { group: 'Meat pizzas' }),
+    P('hawaiian', 'Hawaiian', 'Organic tomato sauce, extra Canadian ham, extra pineapple and mozzarella', [14.5, 18.5, 23, 27], ['deal'], { group: 'Meat pizzas', deal: 'Large $19.95 with code HAWAIIAN26' }),
+    P('tropical-hawaiian', 'Tropical Hawaiian', 'Sweet and smoky tropical sauce, bacon, Canadian ham, pineapple, mozzarella and cheddar', [14.5, 18.5, 23.25, 27.5], [], { group: 'Meat pizzas' }),
+    P('tuscan-pesto-chicken', 'Tuscan Pesto Chicken', 'Grilled chicken, caramelized onions, green peppers, bruschetta tomatoes, shredded parmesan, mozzarella, pesto drizzle', [17.75, 22.75, 28, 33.75], [], { group: 'Meat pizzas' }),
+    P('steak-mushroom-melt', 'Steak Mushroom Melt', 'Cheezy cheddar sauce, steak, bacon, sliced fresh mushrooms, mozzarella and cheddar', [18, 23, 27.75, 33.5], [], { group: 'Meat pizzas' }),
+    P('philly-steak', 'Philly Steak', 'Jalapeño white sauce, steak, caramelized onions, green peppers, sliced fresh mushrooms and mozzarella', [17.25, 21.25, 26.25, 31], [], { group: 'Meat pizzas' }),
+    P('butter-chicken', 'Butter Chicken', 'Jalapeño white sauce, tandoori spice, mozzarella and cheddar, tandoori chicken, tomatoes and caramelized onions', [17, 21, 25.5, 30.5], [], { group: 'Meat pizzas' }),
+    P('panago-classic', 'Panago Classic', 'Organic tomato sauce, pepperoni, Canadian ham, red onions, sliced fresh mushrooms, black olives, green peppers and mozzarella', [15.5, 19.75, 24.25, 28], [], { group: 'Meat pizzas' }),
+    P('chipotle-chicken', 'Chipotle Chicken', 'Chipotle cilantro sauce, grilled chicken, fire-roasted corn, red onions, green peppers, mozzarella and cheddar', [15.75, 19.5, 24.25, 29], [], { group: 'Meat pizzas' }),
+    P('tropical-chicken', 'Tropical Chicken', 'Sweet and smoky tropical sauce, grilled chicken, pineapple, green peppers, caramelized onions, mozzarella and cheddar', [16, 19.5, 24.5, 29.5], ['deal'], { group: 'Meat pizzas', deal: 'Large $19.95 with code TROPCHKN26' }),
+    P('hot-honey-brooklyn', 'Hot Honey Brooklyn Pepperoni', 'Organic tomato sauce, mozzarella and cheddar, layers of pepperoni and Cupperoni, hot honey drizzle', [15.25, 18.5, 22.5, 26.5], [], { group: 'Meat pizzas' }),
+    P('cupperoni-overload', 'Cupperoni Overload', 'Organic tomato sauce, mozzarella, crust-to-crust Cupperoni', [13.25, 15.75, 19.75, 23.5], [], { group: 'Meat pizzas' }),
+    P('sweet-cupperoni-heat', 'Sweet Cupperoni Heat', 'Spicy marinara sauce, mozzarella and cheddar, extra pineapple and Cupperoni', [15, 18.5, 23.25, 27], [], { group: 'Meat pizzas' }),
+    P('spicy-capicollo', 'Spicy Capicollo', 'Organic tomato sauce, spicy Italian sausage, capicollo, pepperoni, pepperoncini, mozzarella and cheddar', [15.5, 19.75, 24.25, 28.75], [], { group: 'Meat pizzas' }),
+    // Veggie pizzas
+    P('butter-paneer', 'Butter Paneer', 'Jalapeño white sauce, tandoori spice, paneer, caramelized onions, tomatoes, mozzarella and cheddar', [15, 19, 23, 27], ['veg', 'new'], { group: 'Veggie pizzas' }),
+    P('spicy-paneer', 'Spicy Paneer', 'Chipotle cilantro sauce, tandoori spice, paneer, green peppers, caramelized onions, fire-roasted corn, jalapeños, mozzarella and cheddar', [15, 19, 23, 27], ['veg', 'new', 'deal'], { group: 'Veggie pizzas', deal: 'Large $19.95 with code SPANEER26' }),
+    P('veggie-paneer', 'Veggie Paneer', 'Garlic spread, tandoori spice, paneer, caramelized onions, pineapple, sliced fresh mushrooms, red onions, mozzarella and cheddar', [15, 19, 23, 27], ['veg', 'new'], { group: 'Veggie pizzas' }),
+    P('cheese', 'Cheese', 'Organic tomato sauce and loads of mozzarella', [12, 15, 17.75, 21.5], ['veg'], { group: 'Veggie pizzas' }),
+    P('garden-veggie', 'Garden Veggie', 'Organic tomato sauce, black olives, sliced fresh mushrooms, pineapple, green peppers, bruschetta tomatoes, red onions and mozzarella', [15.25, 18.75, 23.25, 28.25], ['veg'], { group: 'Veggie pizzas' }),
+    P('mediterranean-veggie', 'Mediterranean Veggie', 'Organic tomato sauce, red onions, green peppers, bruschetta tomatoes, kalamata olives, feta, mozzarella and pesto drizzle', [16.25, 20.5, 25.75, 30.5], ['veg'], { group: 'Veggie pizzas' }),
+    P('pesto-garden-medley', 'Pesto Garden Medley', 'Caramelized onions, green peppers, bruschetta tomatoes, shredded parmesan, mozzarella and pesto drizzle', [16.5, 20.25, 25, 29.75], ['veg'], { group: 'Veggie pizzas' }),
+    P('meat-free-deluxe', 'Meat-free Deluxe Pepperoni', 'Organic tomato sauce, meat-free pepperoni, sliced fresh mushrooms, green peppers and mozzarella', [15, 18.25, 22.5, 27], ['veg'], { group: 'Veggie pizzas' }),
+    P('hot-honey-meat-free', 'Hot Honey Meat-free Pepperoni', 'Organic tomato sauce, mozzarella and cheddar, layers of meat-free pepperoni, hot honey drizzle', [15.5, 18.75, 23, 27], ['veg'], { group: 'Veggie pizzas' }),
+    P('hola-elote', 'Hola Elote', 'Chipotle cilantro sauce, red onions, green peppers, fire-roasted corn, feta, mozzarella, spicy avocado ranch drizzle, Cajun spice', [15.75, 19.75, 24.25, 29.25], ['veg'], { group: 'Veggie pizzas' }),
+    // Plant-based pizzas
+    P('pb-deluxe', 'Plant-based Deluxe Pepperoni', 'Organic tomato sauce, meat-free pepperoni, black olives, green peppers, red onions and Daiya dairy-free cheese', [14.75, 18.5, 22.75, 26.25], ['plant'], { group: 'Plant-based pizzas' }),
+    P('pb-spicy-hawaiian', 'Plant-based Spicy Hawaiian', 'Spicy marinara sauce, meat-free pepperoni, pepperoncini, pineapple and Daiya dairy-free cheese', [14.75, 18.5, 22.75, 26.25], ['plant'], { group: 'Plant-based pizzas' }),
+    P('pb-mediterranean', 'Plant-based Mediterranean', 'Organic tomato sauce, meat-free pepperoni, kalamata olives, red onions, green peppers, bruschetta tomatoes and Daiya dairy-free cheese', [14.75, 18.5, 22.75, 26.25], ['plant', 'deal'], { group: 'Plant-based pizzas', deal: 'Large $19.95 with code PBMED26' }),
+    P('pb-summer-bbq', 'Plant-based Summer BBQ', 'Red onions, extra fire-roasted corn, pepperoncini, Daiya dairy-free cheese and BBQ sauce drizzle', [14.5, 18, 22.25, 26.25], ['plant'], { group: 'Plant-based pizzas' }),
+    P('pb-spicy-calabrese', 'Plant-based Spicy Calabrese', 'Spicy marinara sauce, meat-free pepperoni, red onions, green peppers, pepperoncini and Daiya dairy-free cheese', [14.5, 18, 22.25, 26.25], ['plant'], { group: 'Plant-based pizzas' }),
+    // Everyday value
+    P('ev-pep', 'Everyday Pep', 'Organic tomato sauce, pepperoni and mozzarella', [10, 13.5, 18, 20.75], ['value'], { group: 'Everyday Value pizzas' }),
+    P('ev-hawaiian', 'Everyday Hawaiian', 'Organic tomato sauce, ham, pineapple and mozzarella', [12, 15.5, 20, 23.75], ['value'], { group: 'Everyday Value pizzas' }),
+    P('ev-meat-trio', 'Everyday Meat Trio', 'Organic tomato sauce, pepperoni, Genoa salami, spicy Italian sausage and mozzarella', [13, 17, 22, 26.75], ['value'], { group: 'Everyday Value pizzas' }),
+    P('ev-veggie', 'Everyday Veggie', 'Organic tomato sauce, red onions, green peppers, sliced fresh mushrooms and mozzarella', [10, 13.5, 18, 20.75], ['value', 'veg'], { group: 'Everyday Value pizzas' }),
+    P('ev-chicken-melt', 'Everyday Chicken Melt', 'Spicy marinara sauce, grilled chicken, caramelized onions, sliced fresh mushrooms and mozzarella', [13.5, 17.5, 23.5, 28], ['value'], { group: 'Everyday Value pizzas' }),
+    // Sides
+    I('garlic-cheezy-bread', 'Garlic Cheezy Bread', 'Fresh baked dough, garlic spread, mozzarella and cheddar. Includes dip', 'breads', 7.25, '8 pc', ['veg']),
+    I('super-cheezy-bread', 'Super Cheezy Bread', 'Fresh baked dough, cheezy cheddar sauce, mozzarella and cheddar. Includes dip', 'breads', 7.25, '8 pc', ['veg']),
+    I('pb-cheezy-bread', 'Plant-based Cheezy Bread', 'Fresh baked dough, vegan garlic spread and Daiya dairy-free cheese. Includes dip', 'breads', 7.25, '8 pc', ['plant']),
+    I('wings-8', 'Wings, 8 pc', 'Hot & Spicy, Honey Garlic, Deliciously Simple or Salt & Pepper', 'wings', 11.95, '8 pc', [], { photo: 'wings' }),
+    I('wings-16', 'Wings, 16 pc', 'Hot & Spicy, Honey Garlic, Deliciously Simple or Salt & Pepper', 'wings', 21.75, '16 pc', [], { photo: 'wings' }),
+    I('chicken-bites', 'Chicken Bites', 'Includes dip', 'wings', 11.5, '10 pc', []),
+    I('hot-honey-bites', 'Hot Honey Chicken Bites', 'Includes dip', 'wings', 12, '10 pc', []),
+    I('bbq-bites', 'BBQ Chicken Bites', 'Includes dip', 'wings', 12, '10 pc', []),
+    I('caesar', 'Caesar Salad', 'Romaine, croutons, shredded parmesan, Caesar dressing', 'salads', 8.75, 'entrée', ['veg'], { photo: 'salad' }),
+    I('mediterranean-salad', 'Mediterranean Salad', 'Romaine, red onions, green peppers, diced tomatoes, kalamata olives, feta', 'salads', 9.25, 'entrée', ['veg'], { photo: 'salad' }),
+    I('garden-salad', 'Garden Salad', 'Romaine, green peppers, diced tomatoes, red onions, croutons, mozzarella and cheddar', 'salads', 9.25, 'entrée', ['veg'], { photo: 'salad' }),
+    I('southwest-salad', 'Southwest Salad', 'Romaine, fire-roasted corn, diced tomatoes, pepperoncini, black olives, green peppers, feta', 'salads', 9.25, 'entrée', ['veg'], { photo: 'salad' }),
+    I('cajun-chicken-salad', 'Cajun Chicken Southwest Salad', 'Cajun chicken, romaine, fire-roasted corn, diced tomatoes, pepperoncini, black olives, green peppers, feta', 'salads', 12, 'entrée', [], { photo: 'salad' }),
+    I('churro-8', 'Churro Bites, 8 pc', 'Bite-sized churros in cinnamon sugar with sweet caramel filling', 'desserts', 6.85, '8 pc', ['veg'], { photo: 'churro' }),
+    I('churro-16', 'Churro Bites, 16 pc', 'Bite-sized churros in cinnamon sugar with sweet caramel filling', 'desserts', 13.5, '16 pc', ['veg'], { photo: 'churro' }),
+    I('lava-cake', "S'mores Lava Cake", 'Molten chocolate centre, graham cracker crumbs, toasted marshmallows', 'desserts', 8.5, 'each', ['veg']),
+    I('tiramisu', 'Tiramisu', 'Espresso-soaked ladyfingers, mascarpone cream, cocoa', 'desserts', 8.5, 'each', ['veg']),
+    I('dip', 'Dip', 'Jalapeño Ranch, Chipotle Cilantro, Italian Tomato, Classic Caesar, Garlic, Cheezy Cheddar, Blue Cheese, BBQ and more', 'dips', 1.3, '44 ml', [])
+  ];
+
+  const cats = { pizza: 'Pizzas', breads: 'Breads', wings: 'Wings & bites', salads: 'Salads', desserts: 'Desserts', dips: 'Dips' };
+
+  // Packages: about 3 slices per person; menu prices before tax and delivery.
+  const packages = [
+    { id: 'team-10', clientId: 'panago-gb', name: 'Team 10', people: 10, items: [['ev-pep', 'L', 2], ['ev-veggie', 'L', 1], ['garlic-cheezy-bread', null, 1], ['wings-8', null, 1], ['dip', null, 4]], blurb: '3 large pizzas, Cheezy Bread, 8 wings, 4 dips' },
+    { id: 'night-shift-12', clientId: 'panago-gb', name: 'Night Shift 12', people: 12, items: [['ev-pep', 'L', 2], ['ev-veggie', 'L', 1], ['chicken-bites', null, 1], ['garlic-cheezy-bread', null, 1], ['dip', null, 4]], blurb: '3 large pizzas, 10 chicken bites, Cheezy Bread' },
+    { id: 'game-night-10', clientId: 'panago-gb', name: 'Game Night 10', people: 10, items: [['deluxe', 'L', 1, 19.95], ['hawaiian', 'L', 1, 19.95], ['deluxe', 'L', 1], ['wings-16', null, 1], ['garlic-cheezy-bread', null, 1], ['dip', null, 4]], blurb: '3 large pizzas, 16 wings, Cheezy Bread' },
+    { id: 'office-25', clientId: 'panago-gb', name: 'Office 25', people: 25, featured: true, items: [['deluxe', 'L', 2, 19.95], ['hawaiian', 'L', 1, 19.95], ['spicy-paneer', 'L', 1, 19.95], ['pb-mediterranean', 'L', 1, 19.95], ['ev-veggie', 'L', 2], ['butter-paneer', 'L', 1], ['garlic-cheezy-bread', null, 2], ['wings-16', null, 1], ['dip', null, 10], ['churro-16', null, 1]], blurb: '8 large pizzas incl. paneer and plant-based, 2 Cheezy Breads, 16 wings, churros' },
+    { id: 'party-50', clientId: 'panago-gb', name: 'Party 50', people: 50, items: [['deluxe', 'L', 4, 19.95], ['hawaiian', 'L', 2, 19.95], ['spicy-paneer', 'L', 2, 19.95], ['pb-mediterranean', 'L', 1, 19.95], ['tropical-chicken', 'L', 1, 19.95], ['ev-veggie', 'L', 3], ['butter-paneer', 'L', 2], ['garlic-cheezy-bread', null, 4], ['wings-16', null, 2], ['chicken-bites', null, 2], ['dip', null, 20], ['churro-16', null, 2]], blurb: '15 large pizzas, 4 Cheezy Breads, 32 wings, 20 bites, churros' }
+  ];
+
+  const clients = [
+    { id: 'panago-gb', name: 'Panago Gerrard & Bremner', brand: 'Panago', status: 'live', onboardingStep: 9, colors: { primary: '#522171', accent: '#FAEE23', soft: '#DEF3E0' }, logo: 'assets/panago-logo-white.png', phone: '310-0001', owner: 'owner@panago-gb.demo' },
+    { id: 'wetzels', name: "Wetzel's Pretzels (franchisee)", brand: "Wetzel's Pretzels", status: 'onboarding', onboardingStep: 3, colors: { primary: '#0067B1', accent: '#FFD100', soft: '#E5F1FA' }, logo: null, phone: '', owner: 'owner@wetzels.demo', note: 'Menu not loaded yet: waiting for the franchisee to send it.' }
+  ];
+
+  const stores = [
+    { id: 'gerrard', clientId: 'panago-gb', name: 'Panago Gerrard', address: '44 Gerrard St W, Toronto, ON M5G 2K2', hours: 'Mon–Thu 11 AM–11 PM, Fri–Sat 11 AM–12 AM, Sun 11 AM–11 PM', serves: 'Mount Sinai, Toronto General, U of T, City Hall, MaRS', leadHours: 24, deliveryFee: 5, freeDeliveryOver: 150 },
+    { id: 'bremner', clientId: 'panago-gb', name: 'Panago Bremner', address: '133 Bremner Blvd, Toronto, ON M5J 3A7', hours: 'Mon–Thu 11 AM–11 PM, Fri–Sat 11 AM–12 AM, Sun 11 AM–11 PM', serves: 'South Core towers, Union Station, the arena and stadium', leadHours: 24, deliveryFee: 5, freeDeliveryOver: 150 }
+  ];
+
+  const users = [
+    { id: 'u-super', name: 'Platterly Admin', email: 'superadmin@platterly.demo', role: 'super_admin' },
+    { id: 'u-panago', name: 'Panago Owner', email: 'owner@panago-gb.demo', role: 'client_admin', clientId: 'panago-gb' },
+    { id: 'u-wetzels', name: "Wetzel's Owner", email: 'owner@wetzels.demo', role: 'client_admin', clientId: 'wetzels' },
+    { id: 'u-priya', name: 'Priya (sample)', email: 'priya@demo.office', role: 'customer', company: 'Sample Bay St office', address: '100 Bay St, 12th floor, loading dock on Harbour St', headcount: 25, consent: true, stamps: 2, sample: true },
+    { id: 'u-marcus', name: 'Marcus (sample)', email: 'marcus@demo.hospital', role: 'customer', company: 'Sample hospital unit 7B', address: 'Main entrance, University Ave', headcount: 12, consent: false, stamps: 1, sample: true }
+  ];
+
+  const now = Date.now(), H = 3600e3, D = 24 * H;
+  const at = (days, h, m) => { const d = new Date(); d.setDate(d.getDate() + days); d.setHours(h, m || 0, 0, 0); return d.toISOString(); };
+  const orders = [
+    { id: 'PL-1042', sample: true, userId: 'u-priya', storeId: 'bremner', clientId: 'panago-gb', packageId: 'office-25', status: 'preparing', slot: at(1, 12), createdAt: new Date(now - 20 * H).toISOString(), people: 25, payment: 'invoice', standing: 'weekly' },
+    { id: 'PL-1041', sample: true, userId: 'u-marcus', storeId: 'gerrard', clientId: 'panago-gb', packageId: 'night-shift-12', status: 'received', slot: at(0, 21, 30), createdAt: new Date(now - 1 * H).toISOString(), people: 12, payment: 'on_delivery' },
+    { id: 'PL-1038', sample: true, userId: 'u-priya', storeId: 'bremner', clientId: 'panago-gb', packageId: 'team-10', status: 'delivered', slot: at(-7, 12), createdAt: new Date(now - 7 * D).toISOString(), people: 10, payment: 'invoice' },
+    { id: 'PL-1033', sample: true, userId: 'u-priya', storeId: 'bremner', clientId: 'panago-gb', packageId: 'team-10', status: 'delivered', slot: at(-14, 12), createdAt: new Date(now - 14 * D).toISOString(), people: 10, payment: 'invoice' }
+  ];
+
+  const offers = [
+    { id: 'spin-dip', name: 'Free Dip', odds: 30, rule: 'with any large pizza', value: 1.3 },
+    { id: 'spin-gcb', name: 'Free Garlic Cheezy Bread', odds: 22, rule: 'with any 2 medium pizzas', value: 7.25 },
+    { id: 'spin-churro', name: 'Free Churro Bites, 8 pc', odds: 18, rule: 'with any large pizza', value: 6.85 },
+    { id: 'spin-wings', name: 'Free Wings, 8 pc', odds: 10, rule: 'with any 2 large pizzas', value: 11.95 },
+    { id: 'spin-cater', name: '10% off Catering', odds: 12, rule: 'on 5+ pizzas', value: null },
+    { id: 'spin-pop', name: 'Free 591 ml pop', odds: 8, rule: 'with any pizza', value: null }
+  ];
+
+  const wallet = { 'u-priya': [{ code: 'PG-7KQ2MD', offerId: 'spin-gcb', used: false, sample: true }] };
+
+  const settings = { hst: 0.13, platformFee: 'To be decided', refundPromise: 'More than 15 minutes late: next team order delivers free. Missing items re-sent or refunded in full.' };
+
+  return { SIZES, SLICES, cats, panagoMenu, packages, clients, stores, users, orders, offers, wallet, settings };
+})();
+
+/* Platterly data layer.
+   Two backends share one interface:
+   - Demo: everything lives in this browser (localStorage), seeded from data.js. Used when no Supabase project is configured.
+   - Supabase: sign-in by email code, and data in Postgres with row-level security (see supabase/schema.sql).
+   The app only calls window.Store.*, so switching backends needs no UI changes. */
+(function () {
+  const SEED = window.PLATTERLY_SEED;
+  const CFG = window.PLATTERLY_CONFIG || {};
+  const KEY = 'platterly-demo-v1';
+  const money = n => Math.round(n * 100) / 100;
+
+  function priceItem(menu, [itemId, size, qty, override]) {
+    const it = menu.find(m => m.id === itemId);
+    if (!it) return 0;
+    const unit = override != null ? override : (size ? it.sizes[size] : it.price);
+    return unit * qty;
+  }
+  function packageTotal(pkg, menu) { return money(pkg.items.reduce((s, line) => s + priceItem(menu, line), 0)); }
+  function cartTotals(lines, store, hst) {
+    const food = money(lines.reduce((s, l) => s + l.unit * l.qty, 0));
+    const delivery = !store ? 0 : food >= store.freeDeliveryOver || food === 0 ? 0 : store.deliveryFee;
+    const tax = money((food + delivery) * hst);
+    return { food, delivery, tax, total: money(food + delivery + tax) };
+  }
+  function packageLines(pkg, menu) {
+    return pkg.items.map(([id, size, qty, override]) => {
+      const it = menu.find(m => m.id === id);
+      const unit = override != null ? override : (size ? it.sizes[size] : it.price);
+      return { itemId: id, name: it.name + (size ? ` (${size})` : '') + (override != null ? ' · Larges for Less' : ''), size, qty, unit };
+    });
+  }
+
+  /* ---------------- Demo backend ---------------- */
+  function load() {
+    try { const raw = localStorage.getItem(KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return fresh();
+  }
+  function fresh() {
+    const s = JSON.parse(JSON.stringify(SEED));
+    s.menus = { 'panago-gb': s.panagoMenu, 'wetzels': [] };
+    delete s.panagoMenu;
+    s.orders.forEach(o => { const pkg = s.packages.find(p => p.id === o.packageId); o.lines = packageLines(pkg, s.menus[o.clientId]); o.totals = cartTotals(o.lines, s.stores.find(x => x.id === o.storeId), s.settings.hst); o.history = [{ status: 'received', at: o.createdAt }]; o.packing = {}; });
+    s.consents = s.users.filter(u => u.consent).map(u => ({ userId: u.id, text: 'Deals and catering offers by email or text', at: new Date(Date.now() - 20 * 864e5).toISOString(), source: 'Spin & Win sign-up' }));
+    s.session = null;
+    return s;
+  }
+  let S = load();
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  const Demo = {
+    mode: 'demo',
+    demoCode: '246810',
+    async session() { return S.session ? S.users.find(u => u.id === S.session) || null : null; },
+    async sendCode(contact) { return { sent: true, demoCode: this.demoCode }; },
+    async verifyCode(contact, code, name) {
+      if (code !== this.demoCode) throw new Error('That code doesn’t match. In the demo, the code is ' + this.demoCode + '.');
+      const c = contact.trim().toLowerCase();
+      let u = S.users.find(x => x.email === c || x.phone === c);
+      if (!u) { u = { id: 'u-' + Math.random().toString(36).slice(2, 8), name: name || c.split('@')[0], email: c.includes('@') ? c : '', phone: c.includes('@') ? '' : c, role: 'customer', stamps: 1, consent: false }; S.users.push(u); }
+      S.session = u.id; save(); return u;
+    },
+    async signInAs(userId) { S.session = userId; save(); return S.users.find(u => u.id === userId); },
+    async signOut() { S.session = null; save(); },
+    async resetDemo() { S = fresh(); save(); },
+    async clients() { return S.clients; },
+    async client(id) { return S.clients.find(c => c.id === id); },
+    async addClient(c) { const id = c.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24) + '-' + Math.random().toString(36).slice(2, 5); const row = { id, status: 'onboarding', onboardingStep: 2, colors: { primary: '#0E4D4A', accent: '#E89A2C', soft: '#E3EFEC' }, logo: null, ...c }; S.clients.push(row); S.menus[id] = []; S.users.push({ id: 'u-' + id, name: c.ownerName || 'Client Admin', email: c.owner, role: 'client_admin', clientId: id, invited: true }); save(); return row; },
+    async setStep(clientId, step) { const c = S.clients.find(x => x.id === clientId); c.onboardingStep = step; if (step >= 9) c.status = 'live'; save(); },
+    async stores(clientId) { return S.stores.filter(s => !clientId || s.clientId === clientId); },
+    async menu(clientId) { return S.menus[clientId] || []; },
+    async updateItem(clientId, itemId, patch) { const it = S.menus[clientId].find(m => m.id === itemId); Object.assign(it, patch); save(); return it; },
+    async packages(clientId) { return S.packages.filter(p => p.clientId === clientId); },
+    async offers() { return S.offers; },
+    async updateOffer(id, patch) { Object.assign(S.offers.find(o => o.id === id), patch); save(); },
+    async orders(filter) { let o = S.orders.slice(); if (filter && filter.userId) o = o.filter(x => x.userId === filter.userId); if (filter && filter.clientId) o = o.filter(x => x.clientId === filter.clientId); return o.sort((a, b) => b.createdAt.localeCompare(a.createdAt)); },
+    async placeOrder(order) { const id = 'PL-' + (1043 + S.orders.filter(o => !o.sample).length); const now = new Date().toISOString(); const row = { id, createdAt: now, status: 'received', history: [{ status: 'received', at: now }], packing: {}, ...order }; S.orders.push(row); const u = S.users.find(x => x.id === order.userId); if (u && order.people >= 5) u.stamps = Math.min(6, (u.stamps || 0) + 1); save(); return row; },
+    async setStatus(orderId, status) { const o = S.orders.find(x => x.id === orderId); o.status = status; o.history.push({ status, at: new Date().toISOString() }); save(); return o; },
+    async setPacking(orderId, key, val) { const o = S.orders.find(x => x.id === orderId); o.packing[key] = val; save(); },
+    async setStanding(orderId, val) { const o = S.orders.find(x => x.id === orderId); o.standing = val; save(); },
+    async users() { return S.users; },
+    async updateUser(id, patch) { const u = S.users.find(x => x.id === id); Object.assign(u, patch); if ('consent' in patch) S.consents.push({ userId: id, text: patch.consent ? 'Deals and catering offers by email or text' : 'Withdrew consent', at: new Date().toISOString(), source: 'Account settings' }); save(); return u; },
+    async consents(userId) { return S.consents.filter(c => !userId || c.userId === userId); },
+    async wallet(userId) { return (S.wallet[userId] || []).map(w => ({ ...w, offer: S.offers.find(o => o.id === w.offerId) })); },
+    async redeem(code) { for (const list of Object.values(S.wallet)) { const w = list.find(x => x.code === code.trim().toUpperCase()); if (w) { if (w.used) return { ok: false, msg: 'Already used.' }; w.used = true; save(); return { ok: true, offer: S.offers.find(o => o.id === w.offerId) }; } } return { ok: false, msg: 'No coupon with that code.' }; },
+    async settings() { return S.settings; },
+    async updateSettings(p) { Object.assign(S.settings, p); save(); }
+  };
+
+  /* ---------------- Supabase backend ----------------
+     Activated when config.js sets supabaseUrl and supabaseAnonKey.
+     Tables and access rules: supabase/schema.sql. Menu and packages are read from the
+     database; admin edits go through the same tables, guarded by row-level security. */
+  function makeSupabase() {
+    const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseAnonKey);
+    const one = async q => { const { data, error } = await q; if (error) throw new Error(error.message); return data; };
+    const toUser = p => p && ({ id: p.id, name: p.name, email: p.email, phone: p.phone, role: p.role, clientId: p.client_id, company: p.company, address: p.address, headcount: p.headcount, consent: p.consent, stamps: p.stamps });
+    return {
+      mode: 'supabase',
+      async session() { const { data } = await sb.auth.getUser(); if (!data.user) return null; return toUser(await one(sb.from('profiles').select('*').eq('id', data.user.id).single())); },
+      async sendCode(contact) { const isEmail = contact.includes('@'); const { error } = await sb.auth.signInWithOtp(isEmail ? { email: contact } : { phone: contact }); if (error) throw new Error(error.message); return { sent: true }; },
+      async verifyCode(contact, code, name) { const isEmail = contact.includes('@'); const { data, error } = await sb.auth.verifyOtp(isEmail ? { email: contact, token: code, type: 'email' } : { phone: contact, token: code, type: 'sms' }); if (error) throw new Error(error.message); if (name) await sb.from('profiles').update({ name }).eq('id', data.user.id); return this.session(); },
+      async signInAs() { throw new Error('Demo accounts are only available in demo mode.'); },
+      async signOut() { await sb.auth.signOut(); },
+      async resetDemo() {},
+      async clients() { return (await one(sb.from('clients').select('*').order('name'))).map(c => ({ ...c, onboardingStep: c.onboarding_step })); },
+      async client(id) { const c = await one(sb.from('clients').select('*').eq('id', id).single()); return { ...c, onboardingStep: c.onboarding_step }; },
+      async addClient(c) { return one(sb.from('clients').insert({ name: c.name, brand: c.brand, owner_email: c.owner, status: 'onboarding', onboarding_step: 2 }).select().single()); },
+      async setStep(clientId, step) { await one(sb.from('clients').update({ onboarding_step: step, status: step >= 9 ? 'live' : 'onboarding' }).eq('id', clientId)); },
+      async stores(clientId) { let q = sb.from('stores').select('*'); if (clientId) q = q.eq('client_id', clientId); return (await one(q)).map(s => ({ ...s, clientId: s.client_id, leadHours: s.lead_hours, deliveryFee: Number(s.delivery_fee), freeDeliveryOver: Number(s.free_delivery_over) })); },
+      async menu(clientId) { return (await one(sb.from('menu_items').select('*').eq('client_id', clientId).order('sort'))).map(m => ({ ...m, sizes: m.sizes || undefined, price: m.price == null ? undefined : Number(m.price), soldOut: m.sold_out })); },
+      async updateItem(clientId, itemId, patch) { const row = {}; if ('soldOut' in patch) row.sold_out = patch.soldOut; if ('sizes' in patch) row.sizes = patch.sizes; if ('price' in patch) row.price = patch.price; return one(sb.from('menu_items').update(row).eq('client_id', clientId).eq('id', itemId).select().single()); },
+      async packages(clientId) { return (await one(sb.from('packages').select('*').eq('client_id', clientId))).map(p => ({ ...p, clientId: p.client_id })); },
+      async offers() { return one(sb.from('offers').select('*')); },
+      async updateOffer(id, patch) { await one(sb.from('offers').update(patch).eq('id', id)); },
+      async orders(filter) { let q = sb.from('orders').select('*').order('created_at', { ascending: false }); if (filter && filter.userId) q = q.eq('user_id', filter.userId); if (filter && filter.clientId) q = q.eq('client_id', filter.clientId); return (await one(q)).map(o => ({ ...o, userId: o.user_id, storeId: o.store_id, clientId: o.client_id, packageId: o.package_id, createdAt: o.created_at })); },
+      async placeOrder(o) { return one(sb.from('orders').insert({ user_id: o.userId, store_id: o.storeId, client_id: o.clientId, package_id: o.packageId, lines: o.lines, totals: o.totals, slot: o.slot, people: o.people, address: o.address, notes: o.notes, payment: o.payment, status: 'received', history: [{ status: 'received', at: new Date().toISOString() }], packing: {} }).select().single()); },
+      async setStatus(orderId, status) { const o = await one(sb.from('orders').select('history').eq('id', orderId).single()); return one(sb.from('orders').update({ status, history: [...(o.history || []), { status, at: new Date().toISOString() }] }).eq('id', orderId).select().single()); },
+      async setPacking(orderId, key, val) { const o = await one(sb.from('orders').select('packing').eq('id', orderId).single()); await one(sb.from('orders').update({ packing: { ...(o.packing || {}), [key]: val } }).eq('id', orderId)); },
+      async setStanding(orderId, val) { await one(sb.from('orders').update({ standing: val }).eq('id', orderId)); },
+      async users() { return (await one(sb.from('profiles').select('*'))).map(toUser); },
+      async updateUser(id, patch) { const row = { ...patch }; if ('clientId' in row) { row.client_id = row.clientId; delete row.clientId; } const u = await one(sb.from('profiles').update(row).eq('id', id).select().single()); if ('consent' in patch) await sb.from('consents').insert({ user_id: id, text: patch.consent ? 'Deals and catering offers by email or text' : 'Withdrew consent', source: 'Account settings' }); return toUser(u); },
+      async consents(userId) { let q = sb.from('consents').select('*'); if (userId) q = q.eq('user_id', userId); return (await one(q)).map(c => ({ ...c, at: c.created_at })); },
+      async wallet(userId) { return (await one(sb.from('coupons').select('*, offer:offers(*)').eq('user_id', userId))); },
+      async redeem(code) { const { data, error } = await sb.rpc('redeem_coupon', { p_code: code.trim().toUpperCase() }); if (error) return { ok: false, msg: error.message }; return data; },
+      async settings() { const s = await one(sb.from('settings').select('*').single()); return { hst: Number(s.hst), platformFee: s.platform_fee, refundPromise: s.refund_promise }; },
+      async updateSettings(p) { await one(sb.from('settings').update({ hst: p.hst, platform_fee: p.platformFee, refund_promise: p.refundPromise }).eq('id', 1)); }
+    };
+  }
+
+  const useSupabase = CFG.supabaseUrl && CFG.supabaseAnonKey && window.supabase;
+  window.Store = Object.assign(useSupabase ? makeSupabase() : Demo, { packageTotal, packageLines, cartTotals, money });
+})();
+
+/* Platterly app: one page, three roles. Renders from window.Store (demo or Supabase). */
+(function () {
+  const S = window.Store, SEED = window.PLATTERLY_SEED;
+  const root = document.getElementById('app');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const $ = n => '$' + (Math.round(n * 100) / 100).toFixed(2);
+  const when = iso => new Date(iso).toLocaleString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  const day = iso => new Date(iso).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
+  const PHOTOS = { pizza: 'assets/pizza-top.webp', bbq: 'assets/table-wide.jpg', table: 'assets/table-wide.jpg', wings: 'assets/wings.jpg', churro: 'assets/churro-bites.jpg', salad: 'assets/salad.webp' };
+  const photoOf = it => it.photo ? PHOTOS[it.photo] : it.cat === 'pizza' ? PHOTOS.pizza : null;
+  const PKG_PHOTO = { 'team-10': 'assets/table-wide.jpg', 'night-shift-12': 'assets/wings.jpg', 'game-night-10': 'assets/wings.jpg', 'office-25': 'assets/table-wide.jpg', 'party-50': 'assets/churro-bites.jpg' };
+  const STATUS = [['received', 'Received'], ['preparing', 'Preparing'], ['out', 'Out for delivery'], ['delivered', 'Delivered']];
+  const statusLabel = s => (STATUS.find(x => x[0] === s) || [s, s])[1];
+  const statusBadge = s => `<span class="badge ${s === 'delivered' ? 'good' : s === 'received' ? 'warn' : 'teal'}">${statusLabel(s)}</span>`;
+  const PACKING = [['drinks', 'Drinks'], ['plates', 'Plates and napkins'], ['dips', 'Dips counted'], ['labels', 'Dietary labels on boxes']];
+  const SPIN_URL = 'panago/';
+
+  const ICON = {
+    order: '<path d="M4 11h16M5 11l1.5 8h11L19 11M8 11V7a4 4 0 0 1 8 0v4"/>',
+    orders: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/>',
+    rewards: '<circle cx="12" cy="9" r="5"/><path d="M8.5 13l-1.5 8 5-3 5 3-1.5-8"/>',
+    account: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+    board: '<rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="11" rx="1.5"/><rect x="17" y="4" width="4" height="7" rx="1.5"/>',
+    menu: '<path d="M4 6h16M4 12h16M4 18h10"/>',
+    offers: '<path d="M20 12l-8 8-8-8V4h8z"/><circle cx="8" cy="8" r="1.5"/>',
+    people: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5M16 4.5a3.5 3.5 0 0 1 0 7M18 15c2 .6 3.2 2.2 3.8 5"/>',
+    setup: '<path d="M9 12l2 2 4-4"/><rect x="3" y="3" width="18" height="18" rx="4"/>',
+    sales: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    clients: '<path d="M3 21V8l9-5 9 5v13M9 21v-6h6v6"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'
+  };
+  const icon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+  const MARK = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="var(--teal)" stroke-width="3"/><path d="M20 20 L20 6 A14 14 0 0 1 32.1 27 Z" fill="var(--saffron)"/><path d="M20 20 L32.1 27 A14 14 0 0 1 7.9 27 Z" fill="var(--teal)" opacity="0.85"/><path d="M20 20 L7.9 27 A14 14 0 0 1 20 6 Z" fill="var(--teal)" opacity="0.55"/></svg>`;
+
+  const NAV = {
+    customer: [['order', 'Order', 'order'], ['orders', 'My orders', 'orders'], ['rewards', 'Rewards', 'rewards'], ['account', 'Account', 'account']],
+    client_admin: [['board', 'Orders', 'board'], ['menu', 'Menu', 'menu'], ['offers', 'Packages & offers', 'offers'], ['customers', 'Customers', 'people'], ['sales', 'Sales', 'sales'], ['setup', 'Setup', 'setup']],
+    super_admin: [['overview', 'Overview', 'sales'], ['clients', 'Clients', 'clients'], ['allorders', 'All orders', 'orders'], ['users', 'Users', 'people'], ['settings', 'Settings', 'settings']]
+  };
+  const ROLE_LABEL = { customer: 'Catering customer', client_admin: 'Client admin', super_admin: 'Super admin' };
+
+  let st = { user: null, view: null, cart: { lines: [], clientId: 'panago-gb', storeId: 'bremner', packageId: null, people: 10 }, cat: 'pizza', headcount: 10, sheet: null, login: { step: 'contact', contact: '', name: '' } };
+  try { const c = JSON.parse(localStorage.getItem('platterly-cart') || 'null'); if (c && Array.isArray(c.lines)) st.cart = c; } catch (e) {}
+  const saveCart = () => { try { localStorage.setItem('platterly-cart', JSON.stringify(st.cart)); } catch (e) {} };
+
+  function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+
+  /* ---------------- login ---------------- */
+  function loginView() {
+    const L = st.login;
+    return `<div class="login">
+      <section class="login-art">
+        <div class="mark" style="color:inherit">${MARK.replace(/var\(--teal\)/g, '#FFFFFF')}<b>platterly</b></div>
+        <div style="display:grid;gap:14px;position:relative"><h1>Feed your team at menu price.</h1><p>Catering from Panago Gerrard and Bremner, ordered in a minute, with one honest total and a real person who answers.</p></div>
+        <div class="facts"><div><i></i>Same price as walk-in, no surcharges</div><div><i></i>No service fee, no third-party app markup</div><div><i></i>Vegetarian and plant-based in every package</div></div>
+        <svg class="plate" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="#fff" stroke-width="2"/><path d="M20 20 L20 6 A14 14 0 0 1 32.1 27 Z" fill="#fff"/><path d="M20 20 L7.9 27 A14 14 0 0 1 20 6 Z" fill="#fff" opacity="0.6"/></svg>
+      </section>
+      <section class="login-form"><div>
+        <div><h2>Sign in</h2><p class="muted small" style="margin-top:4px">We send a 6-digit code. No password needed.</p></div>
+        ${L.step === 'contact' ? `
+        <form id="f-contact" class="stack" novalidate>
+          <div class="field"><label for="l-contact">Email or mobile number</label><input id="l-contact" autocomplete="email" value="${esc(L.contact)}" placeholder="you@company.com"></div>
+          <div class="err" id="l-err" role="alert"></div>
+          <button class="btn primary block" type="submit">Send code</button>
+        </form>` : `
+        <form id="f-code" class="stack" novalidate>
+          <p class="small">Code sent to <b>${esc(L.contact)}</b>. <button class="btn ghost small" type="button" data-act="login-back">Change</button></p>
+          <div class="field"><label for="l-code">6-digit code</label><input id="l-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456"></div>
+          <div class="field"><label for="l-name">Your first name (new accounts)</label><input id="l-name" autocomplete="given-name" value="${esc(L.name)}"></div>
+          ${S.mode === 'demo' ? `<p class="tiny muted">Demo mode: the code is <b class="num">${S.demoCode}</b>.</p>` : ''}
+          <div class="err" id="l-err" role="alert"></div>
+          <button class="btn primary block" type="submit">Sign in</button>
+        </form>`}
+        ${S.mode === 'demo' ? `<div class="divider">or try a demo account</div>
+        <div class="demo-accounts">
+          <button type="button" data-act="as" data-id="u-priya"><span class="avatar">PR</span><span><b>Catering Customer</b><small>Priya, office manager on Bay St</small></span></button>
+          <button type="button" data-act="as" data-id="u-panago"><span class="avatar" style="background:#522171;color:#FAEE23">PG</span><span><b>Client Admin</b><small>Panago Gerrard &amp; Bremner owner</small></span></button>
+          <button type="button" data-act="as" data-id="u-super"><span class="avatar" style="background:var(--saffron);color:var(--saffron-ink)">PL</span><span><b>Super Admin</b><small>Platterly team</small></span></button>
+        </div>` : ''}
+        <p class="tiny muted">By signing in you agree to the Platterly terms. Marketing messages only with your separate consent.</p>
+      </div></section></div>`;
+  }
+
+  /* ---------------- shell ---------------- */
+  function shell(content, badges) {
+    const u = st.user, nav = NAV[u.role];
+    const initials = (u.name || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    return `${S.mode === 'demo' ? `<div class="demo-bar"><div class="top-in"><span>Demo mode: data stays in this browser. Sample orders are marked "sample".</span><span class="spacer" style="flex:1"></span><button type="button" data-act="switch">Switch role</button><button type="button" data-act="reset">Reset demo</button></div></div>` : ''}
+    <header class="top"><div class="top-in">
+      <a class="mark" href="#" data-act="home">${MARK}<b>platterly</b></a>
+      <span class="role-pill">${ROLE_LABEL[u.role]}</span>
+      <span class="spacer"></span>
+      <div class="who"><span>${esc(u.name)}</span><span class="avatar">${esc(initials)}</span></div>
+      <button class="btn" type="button" data-act="signout">Sign out</button>
+    </div></header>
+    <div class="shell">
+      <nav class="nav" aria-label="Main">${nav.map(([k, label, ic]) => `<button type="button" data-act="nav" data-view="${k}" ${st.view === k ? 'aria-current="page"' : ''}>${icon(ic)}<span>${label}</span>${badges && badges[k] ? `<span class="badge saffron">${badges[k]}</span>` : ''}</button>`).join('')}</nav>
+      <main id="main">${content}</main>
+    </div>${st.sheet ? st.sheet : ''}`;
+  }
+
+  /* ---------------- customer ---------------- */
+  async function vOrder() {
+    const clients = await S.clients(), client = clients.find(c => c.id === st.cart.clientId) || clients[0];
+    const stores = await S.stores(client.id), menu = await S.menu(client.id), pkgs = await S.packages(client.id);
+    if (!stores.find(s => s.id === st.cart.storeId) && stores[0]) st.cart.storeId = stores[0].id;
+    const hc = st.headcount;
+    const ranked = pkgs.map(p => ({ p, total: S.packageTotal(p, menu) })).sort((a, b) => Math.abs(a.p.people - hc) - Math.abs(b.p.people - hc));
+    const best = ranked[0] && ranked[0].p.id;
+    const cats = [...new Set(menu.map(m => m.cat))];
+    const items = menu.filter(m => m.cat === st.cat);
+    const groups = [...new Set(items.map(i => i.group || SEED.cats[i.cat]))];
+    const live = clients.filter(c => c.status === 'live');
+    const soon = clients.filter(c => c.status !== 'live');
+    return `
+      <section class="hero"><div class="copy">
+        <h1>Hi ${esc((st.user.name || '').split(' ')[0])}, how many are you feeding?</h1>
+        <div class="row"><div class="stepper" role="group" aria-label="Headcount"><button type="button" data-act="hc" data-d="-5" aria-label="5 fewer">−</button><output class="num" aria-live="polite">${hc}</output><button type="button" data-act="hc" data-d="5" aria-label="5 more">+</button></div><span class="muted small">people · about 3 slices each</span></div>
+        <p class="muted small">Every package includes vegetarian and plant-based pizzas. Prices are menu prices; the full total, with delivery and 13% HST, shows before you order.</p>
+      </div><div class="pic" style="background-image:url(assets/table-wide.jpg)" role="img" aria-label="Pizzas, wings and churro bites on a table"></div></section>
+
+      <div class="brand-head" style="--brand:${client.colors.primary}">
+        ${client.logo ? `<img src="${client.logo}" alt="${esc(client.brand)}">` : `<b>${esc(client.brand)}</b>`}
+        <div class="row"><label class="small" for="store-sel" style="opacity:.85">Kitchen</label><select id="store-sel" data-act="store">${stores.map(s => `<option value="${s.id}" ${s.id === st.cart.storeId ? 'selected' : ''}>${esc(s.name)} · ${esc(s.address.split(',')[0])}</option>`).join('')}</select></div>
+        <span class="small" style="opacity:.85;margin-left:auto">${esc((stores.find(s => s.id === st.cart.storeId) || {}).serves || '')}</span>
+      </div>
+      ${soon.length ? `<p class="small muted">Coming soon on Platterly: ${soon.map(c => esc(c.brand)).join(', ')}.</p>` : ''}
+
+      <section class="stack"><div class="row between"><h2>Packages for ${hc}</h2><span class="small muted">Menu prices before tax and delivery</span></div>
+      <div class="grid">${ranked.map(({ p, total }) => `
+        <article class="card pkg ${p.id === best ? 'featured' : ''}">
+          ${p.id === best ? '<span class="badge saffron flag">Best fit</span>' : p.featured ? '<span class="badge saffron flag">Most ordered</span>' : ''}
+          <div class="pic" style="background-image:url(${PKG_PHOTO[p.id] || 'assets/table-wide.jpg'})" role="img" aria-label="${esc(p.name)}"></div>
+          <div class="body">
+            <div class="row between"><h3>${esc(p.name)}</h3><span class="badge">${p.people} people</span></div>
+            <div class="price num">${$(total)}</div>
+            <div class="small"><b class="num">${$(total / p.people)}</b> per person · ${esc(p.blurb)}</div>
+            <button class="btn primary" type="button" data-act="addpkg" data-id="${p.id}">Choose ${esc(p.name)}</button>
+          </div></article>`).join('')}</div></section>
+
+      <section class="stack"><h2>Or build your own</h2>
+        <div class="chips" role="group" aria-label="Menu categories">${cats.map(c => `<button type="button" data-act="cat" data-cat="${c}" aria-pressed="${c === st.cat}">${SEED.cats[c]}</button>`).join('')}</div>
+        ${groups.map(g => `<h3 style="margin-top:6px">${esc(g)}</h3><div class="grid">${items.filter(i => (i.group || SEED.cats[i.cat]) === g).map(it => {
+          const ph = photoOf(it);
+          return `<article class="card item">${ph ? `<img src="${ph}" alt="" loading="lazy">` : '<div class="noimg">Photo coming</div>'}
+            <div><div class="row" style="gap:6px"><h3>${esc(it.name)}</h3>${it.tags.includes('new') ? '<span class="badge saffron">New</span>' : ''}${it.tags.includes('plant') ? '<span class="badge good">Plant-based</span>' : it.tags.includes('veg') ? '<span class="badge good">Veg</span>' : ''}</div>
+            <p>${esc(it.desc)}</p>${it.deal ? `<p class="small" style="color:var(--teal);font-weight:700">${esc(it.deal)}</p>` : ''}
+            ${it.soldOut ? '<p class="small" style="color:var(--bad);font-weight:700;margin-top:6px">Sold out today</p>' : `<div class="sizes">${it.sizes ? Object.entries(it.sizes).map(([sz, pr]) => `<button type="button" data-act="additem" data-id="${it.id}" data-size="${sz}">${sz} ${$(pr)}<small>${SEED.SLICES[sz]} sl</small></button>`).join('') : `<button type="button" data-act="additem" data-id="${it.id}">Add ${$(it.price)}<small>${esc(it.unit)}</small></button>`}</div>`}</div></article>`;
+        }).join('')}</div>`).join('')}
+        <p class="tiny muted">Gluten-Smart crust (medium only) is not recommended for celiac customers. Prices from the Panago Q4 2026 Ontario menu and may change.</p>
+      </section>
+      ${st.cart.lines.length ? cartBar(stores) : ''}`;
+  }
+  function cartBar(stores) {
+    const t = S.cartTotals(st.cart.lines, stores.find(s => s.id === st.cart.storeId), 0.13);
+    const n = st.cart.lines.reduce((s, l) => s + l.qty, 0);
+    return `<div class="cartbar"><div><b>${n} item${n === 1 ? '' : 's'}</b> · <span class="num">${$(t.total)}</span> <span class="small" style="opacity:.75">incl. delivery and tax</span></div><button class="btn" type="button" data-act="opencart">Review order</button></div>`;
+  }
+  async function cartSheet() {
+    const settings = await S.settings(), stores = await S.stores(st.cart.clientId), store = stores.find(s => s.id === st.cart.storeId);
+    const t = S.cartTotals(st.cart.lines, store, settings.hst), people = st.cart.people || st.headcount;
+    const def = new Date(Date.now() + 864e5); def.setHours(11, 30, 0, 0);
+    const pad = n => String(n).padStart(2, '0'), v = `${def.getFullYear()}-${pad(def.getMonth() + 1)}-${pad(def.getDate())}T${pad(def.getHours())}:${pad(def.getMinutes())}`;
+    return `<div class="sheet-bg" data-act="closesheet"><aside class="sheet" role="dialog" aria-label="Your order" data-stop>
+      <div class="row between"><h2>Your order</h2><button class="btn" type="button" data-act="closesheet">Close</button></div>
+      <p class="small muted">${esc(store ? store.name : '')} · ${esc(store ? store.address : '')}</p>
+      <div class="card lines">${st.cart.lines.map((l, i) => `<div class="line"><span>${esc(l.name)}</span><span class="qty"><button type="button" data-act="qty" data-i="${i}" data-d="-1" aria-label="One fewer">−</button><span class="num">${l.qty}</span><button type="button" data-act="qty" data-i="${i}" data-d="1" aria-label="One more">+</button></span><span class="num">${$(l.unit * l.qty)}</span></div>`).join('')}</div>
+      <form id="f-checkout" class="stack" novalidate>
+        <div class="row"><div class="field" style="flex:1"><label for="c-people">People</label><input id="c-people" type="number" min="1" value="${people}"></div><div class="field" style="flex:2"><label for="c-slot">Food arrives by</label><input id="c-slot" type="datetime-local" value="${v}"></div></div>
+        <p class="tiny muted">We aim to arrive 30 minutes before this time. Orders for 25+ people need ${store ? store.leadHours : 24} hours' notice.</p>
+        <div class="field"><label for="c-addr">Delivery address</label><input id="c-addr" value="${esc(st.user.address || '')}" placeholder="Street, floor, suite"></div>
+        <div class="field"><label for="c-notes">Notes for the driver and kitchen</label><textarea id="c-notes" placeholder="Loading dock, security desk, allergies"></textarea></div>
+        <fieldset class="stack" style="border:0;padding:0;margin:0"><legend class="small" style="font-weight:700;margin-bottom:6px">Payment</legend>
+          <label class="check"><input type="radio" name="pay" value="invoice" checked><span>Invoice my company (monthly statement)</span></label>
+          <label class="check"><input type="radio" name="pay" value="on_delivery"><span>Pay on delivery (card or cash)</span></label></fieldset>
+        <div class="card totals"><div><span>Food</span><span class="num">${$(t.food)}</span></div><div><span>Delivery${store && t.food >= store.freeDeliveryOver ? ' (free over ' + $(store.freeDeliveryOver) + ')' : ''}</span><span class="num">${$(t.delivery)}</span></div><div><span>HST 13%</span><span class="num">${$(t.tax)}</span></div><div><span>Service fee</span><span class="num">$0.00</span></div>
+          <div class="grand"><span>Total</span><span class="num">${$(t.total)}</span></div><div class="small muted"><span>Per person</span><span class="num">${$(t.total / Math.max(1, people))}</span></div></div>
+        <p class="tiny muted">${esc(settings.refundPromise)}</p>
+        <div class="err" id="c-err" role="alert"></div>
+        <button class="btn accent block" type="submit">Place order · ${$(t.total)}</button>
+      </form></aside></div>`;
+  }
+  async function vOrders() {
+    const orders = await S.orders({ userId: st.user.id }), stores = await S.stores();
+    if (!orders.length) return `<h1>My orders</h1><div class="empty"><b>No orders yet.</b><span>Pick a package for your team and it will show up here with live status.</span><button class="btn primary" type="button" data-act="nav" data-view="order">Start an order</button></div>`;
+    return `<h1>My orders</h1>${orders.map(o => {
+      const idx = STATUS.findIndex(x => x[0] === o.status), store = stores.find(s => s.id === o.storeId);
+      return `<article class="card stack"><div class="row between"><div class="row"><b class="num">${o.id}</b>${statusBadge(o.status)}${o.sample ? '<span class="badge">sample</span>' : ''}${o.standing ? `<span class="badge teal">Repeats ${o.standing}</span>` : ''}</div><b class="num">${$(o.totals.total)}</b></div>
+        <p class="small muted">${esc(store ? store.name : '')} · ${o.people} people · arrives ${when(o.slot)}</p>
+        <div class="track">${STATUS.map((s, i) => `<div class="${i <= idx ? 'on' : ''}"><i></i>${s[1]}</div>`).join('')}</div>
+        <div class="row"><button class="btn" type="button" data-act="reorder" data-id="${o.id}">Order again</button><button class="btn ghost" type="button" data-act="standing" data-id="${o.id}">${o.standing ? 'Stop repeating' : 'Repeat every week'}</button></div>
+      </article>`; }).join('')}`;
+  }
+  async function vRewards() {
+    const w = await S.wallet(st.user.id), stamps = st.user.stamps || 0;
+    return `<h1>Rewards</h1>
+      <section class="card stack"><div class="row between"><h2>Team order card</h2><span class="badge teal">${stamps} of 6</span></div>
+        <div class="punch">${[1, 2, 3, 4, 5, 6].map(i => `<span class="${i <= stamps ? 'on' : ''}">${i === 6 ? '$25' : i}</span>`).join('')}</div>
+        <p class="small muted">Every catering order for 5+ people adds a stamp. Your 6th team order is $25 off. Stamps never expire. Your first stamp was a welcome bonus.</p>
+        <div class="bar" aria-hidden="true"><i style="width:${stamps / 6 * 100}%"></i></div>
+        <p class="small"><b>${6 - stamps > 0 ? `${6 - stamps} more team order${6 - stamps === 1 ? '' : 's'}` : 'Your next order'}</b> ${6 - stamps > 0 ? 'to $25 off.' : 'is $25 off.'}</p></section>
+      <section class="card stack"><h2>Spin &amp; Win coupons</h2>
+        ${w.length ? w.map(c => `<div class="coupon"><div><b>${esc(c.offer ? c.offer.name : '')}</b><div class="small muted">${esc(c.offer ? c.offer.rule : '')}${c.sample ? ' · sample' : ''}</div></div>${c.used ? '<span class="badge">Used</span>' : `<code>${esc(c.code)}</code>`}</div>`).join('') : '<p class="muted">No coupons yet.</p>'}
+        <p class="small muted">Spin for free on the window screen at Panago Gerrard or Bremner, or <a href="${SPIN_URL}" target="_blank" rel="noopener">open Spin &amp; Win</a>.</p></section>`;
+  }
+  async function vAccount() {
+    const u = st.user, cons = await S.consents(u.id);
+    return `<h1>Account</h1>
+      <form id="f-account" class="card stack" novalidate>
+        <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+          <div class="field"><label for="a-name">Name</label><input id="a-name" value="${esc(u.name)}"></div>
+          <div class="field"><label for="a-company">Company or team</label><input id="a-company" value="${esc(u.company || '')}"></div>
+          <div class="field"><label for="a-head">Usual headcount</label><input id="a-head" type="number" min="1" value="${esc(u.headcount || '')}"></div>
+          <div class="field"><label for="a-addr">Delivery address</label><input id="a-addr" value="${esc(u.address || '')}"></div>
+        </div>
+        <label class="check" for="a-consent"><input type="checkbox" id="a-consent" ${u.consent ? 'checked' : ''}><span>Send me deals and catering offers by email or text from Platterly and the kitchens I order from. I can unsubscribe at any time.</span></label>
+        <div class="row"><button class="btn primary" type="submit">Save</button></div>
+      </form>
+      <section class="card stack"><h3>Consent history</h3>${cons.length ? `<div class="table-wrap"><table><thead><tr><th>When</th><th>What</th><th>Where</th></tr></thead><tbody>${cons.map(c => `<tr><td class="num">${day(c.at)}</td><td>${esc(c.text)}</td><td>${esc(c.source)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted small">No marketing consent recorded.</p>'}</section>`;
+  }
+
+  /* ---------------- client admin ---------------- */
+  async function myClient() { return S.client(st.user.clientId); }
+  async function vBoard() {
+    const client = await myClient(), orders = await S.orders({ clientId: client.id }), users = await S.users(), stores = await S.stores(client.id);
+    const pkgs = await S.packages(client.id);
+    if (client.status !== 'live') return `<h1>Orders</h1><div class="empty"><b>${esc(client.brand)} isn't live yet.</b><span>Finish setup (step ${client.onboardingStep} of 9) and orders will appear here.</span><button class="btn primary" type="button" data-act="nav" data-view="setup">Continue setup</button></div>`;
+    const col = s => orders.filter(o => o.status === s);
+    return `<div class="row between"><h1>Orders</h1><form id="f-redeem" class="row" novalidate><div class="field"><label for="r-code" class="tiny">Check a Spin &amp; Win code</label><input id="r-code" placeholder="PG-XXXXXX" style="width:150px"></div><button class="btn" type="submit" style="align-self:end">Check</button></form></div>
+      <div class="board">${STATUS.map(([s, label], si) => `<section class="col" aria-label="${label}"><h3>${label}<span class="badge">${col(s).length}</span></h3>
+        ${col(s).map(o => { const u = users.find(x => x.id === o.userId) || {}, store = stores.find(x => x.id === o.storeId) || {}, pkg = pkgs.find(p => p.id === o.packageId);
+          const packed = PACKING.every(([k]) => o.packing && o.packing[k]);
+          return `<article class="ocard"><div class="row between"><span class="id">${o.id}</span><b class="num">${$(o.totals.total)}</b></div>
+            <div><b>${esc(u.name || 'Customer')}</b>${o.sample ? ' <span class="badge">sample</span>' : ''}<div class="small muted">${esc(u.company || '')}</div></div>
+            <div class="small">${esc(pkg ? pkg.name : 'Custom order')} · ${o.people} people</div>
+            <div class="small"><b>${when(o.slot)}</b> · ${esc(store.name || '')}</div>
+            <div class="small muted">${o.payment === 'invoice' ? 'Invoice' : 'Pay on delivery'}${o.standing ? ' · repeats ' + o.standing : ''}</div>
+            ${s === 'preparing' ? `<div class="pack">${PACKING.map(([k, l]) => `<label class="check small"><input type="checkbox" data-act="pack" data-id="${o.id}" data-k="${k}" ${o.packing && o.packing[k] ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>` : ''}
+            ${si < 3 ? `<button class="btn ${si === 1 && !packed ? '' : 'primary'}" type="button" data-act="advance" data-id="${o.id}" data-to="${STATUS[si + 1][0]}" ${si === 1 && !packed ? 'disabled title="Tick the packing checklist first"' : ''}>${['Start preparing', 'Send out for delivery', 'Mark delivered'][si]}</button>` : ''}
+          </article>`; }).join('') || '<p class="small muted" style="padding:4px">Nothing here.</p>'}
+      </section>`).join('')}</div>`;
+  }
+  async function vMenu() {
+    const client = await myClient(), menu = await S.menu(client.id);
+    if (!menu.length) return `<h1>Menu</h1><div class="empty"><b>No menu yet.</b><span>Upload the menu as a PDF or spreadsheet. Platterly reads the items and prices, and you confirm them before they go live.</span><button class="btn primary" type="button" data-act="todo" data-msg="Menu import comes with the live backend; in this demo the Panago menu is pre-loaded.">Upload menu</button></div>`;
+    const noPhoto = menu.filter(m => !photoOf(m)).length;
+    return `<div class="row between"><h1>Menu</h1><span class="small muted">${menu.length} items · ${noPhoto} need a photo</span></div>
+      <p class="small muted">Edit the large price for pizzas or the price of a side. Sold-out items are hidden from customers until you turn them back on.</p>
+      <div class="table-wrap"><table><thead><tr><th>Photo</th><th>Item</th><th>Group</th><th>Price</th><th>Tags</th><th>Sold out</th></tr></thead><tbody>
+      ${menu.map(m => { const ph = photoOf(m); return `<tr><td>${ph ? `<img class="thumb" src="${ph}" alt="">` : '<span class="badge warn">Needs photo</span>'}</td><td><b>${esc(m.name)}</b></td><td class="small">${esc(m.group || SEED.cats[m.cat])}</td>
+        <td>${m.sizes ? `<span class="small muted num">S ${$(m.sizes.S)} · M ${$(m.sizes.M)} · </span><label class="small">L <input class="price num" data-act="price" data-id="${m.id}" data-size="L" value="${m.sizes.L.toFixed(2)}" inputmode="decimal" aria-label="${esc(m.name)} large price"></label><span class="small muted num"> · XL ${$(m.sizes.XL)}</span>` : `<input class="price num" data-act="price" data-id="${m.id}" value="${m.price.toFixed(2)}" inputmode="decimal" aria-label="${esc(m.name)} price"> <span class="small muted">${esc(m.unit)}</span>`}</td>
+        <td>${m.tags.map(t => `<span class="badge">${esc(t)}</span>`).join(' ')}</td>
+        <td><button class="toggle" type="button" data-act="soldout" data-id="${m.id}" aria-pressed="${!!m.soldOut}" aria-label="${esc(m.name)} sold out"></button></td></tr>`; }).join('')}
+      </tbody></table></div>`;
+  }
+  async function vOffers() {
+    const client = await myClient(), menu = await S.menu(client.id), pkgs = await S.packages(client.id), offers = await S.offers();
+    const sum = offers.reduce((s, o) => s + Number(o.odds), 0);
+    return `<h1>Packages &amp; offers</h1>
+      <section class="stack"><h2>Catering packages</h2><div class="table-wrap"><table><thead><tr><th>Package</th><th>People</th><th>Contents</th><th>Total</th><th>Per person</th></tr></thead><tbody>
+        ${pkgs.map(p => { const t = S.packageTotal(p, menu); return `<tr><td><b>${esc(p.name)}</b>${p.featured ? ' <span class="badge saffron">Most ordered</span>' : ''}</td><td class="num">${p.people}</td><td class="small">${esc(p.blurb)}</td><td class="num"><b>${$(t)}</b></td><td class="num">${$(t / p.people)}</td></tr>`; }).join('')}
+      </tbody></table></div><p class="tiny muted">Totals update from your menu prices. Larges for Less items use the $19.95 deal price.</p></section>
+      <section class="stack"><div class="row between"><h2>Spin &amp; Win prizes</h2><span class="badge ${sum === 100 ? 'good' : 'bad'}">Odds total ${sum}%</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Prize</th><th>Condition</th><th>Menu value</th><th>Odds %</th></tr></thead><tbody>
+        ${offers.map(o => `<tr><td><b>${esc(o.name)}</b></td><td class="small">${esc(o.rule)}</td><td class="num">${o.value ? $(o.value) : 'Varies'}</td><td><input class="price num" data-act="odds" data-id="${o.id}" value="${o.odds}" inputmode="numeric" aria-label="${esc(o.name)} odds"></td></tr>`).join('')}
+      </tbody></table></div><p class="tiny muted">Odds must total 100%. They are published in the game rules, as Canadian contest rules require.</p></section>`;
+  }
+  async function vCustomers(clientId) {
+    const orders = await S.orders(clientId ? { clientId } : {}), users = (await S.users()).filter(u => u.role === 'customer');
+    const rows = users.map(u => { const mine = orders.filter(o => o.userId === u.id); return { u, n: mine.length, spend: mine.reduce((s, o) => s + o.totals.total, 0), last: mine[0] }; }).filter(r => r.n || !clientId).sort((a, b) => b.spend - a.spend);
+    return `<h1>Customers</h1><div class="table-wrap"><table><thead><tr><th>Customer</th><th>Team</th><th>Orders</th><th>Spend</th><th>Last order</th><th>Deals consent</th></tr></thead><tbody>
+      ${rows.map(r => `<tr><td><b>${esc(r.u.name)}</b><div class="tiny muted">${esc(r.u.email || r.u.phone || '')}</div></td><td class="small">${esc(r.u.company || '')}</td><td class="num">${r.n}</td><td class="num">${$(r.spend)}</td><td class="num small">${r.last ? day(r.last.createdAt) : '—'}</td><td>${r.u.consent ? '<span class="badge good">Yes</span>' : '<span class="badge">No</span>'}</td></tr>`).join('')}
+    </tbody></table></div><p class="tiny muted">Only customers who said yes can receive marketing messages.</p>`;
+  }
+  async function vSales(clientId) {
+    const orders = await S.orders(clientId ? { clientId } : {}), menu = clientId ? await S.menu(clientId) : [];
+    const rev = orders.reduce((s, o) => s + o.totals.food, 0), n = orders.length;
+    const byUser = {}; orders.forEach(o => byUser[o.userId] = (byUser[o.userId] || 0) + 1);
+    const repeat = Object.values(byUser).filter(x => x > 1).length, buyers = Object.keys(byUser).length;
+    const people = orders.reduce((s, o) => s + o.people, 0);
+    const tally = {}; orders.forEach(o => o.lines.forEach(l => { const k = l.name.replace(/ \(.*$/, '').replace(' · Larges for Less', ''); tally[k] = (tally[k] || 0) + l.qty; }));
+    const top = Object.entries(tally).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    return `<h1>${clientId ? 'Sales' : 'Overview'}</h1><p class="small muted">All orders so far, including sample orders.</p>
+      <div class="grid k">
+        <div class="card kpi"><b class="num">${n}</b><span>Orders</span></div>
+        <div class="card kpi"><b class="num">${$(rev)}</b><span>Food sales before tax</span></div>
+        <div class="card kpi"><b class="num">${n ? $(rev / n) : '$0.00'}</b><span>Average order</span></div>
+        <div class="card kpi"><b class="num">${people}</b><span>People fed</span></div>
+        <div class="card kpi"><b class="num">${buyers ? Math.round(repeat / buyers * 100) : 0}%</b><span>Customers who reordered</span></div>
+        <div class="card kpi"><b class="num">${orders.filter(o => o.standing).length}</b><span>Standing orders</span></div>
+      </div>
+      <section class="card stack"><h3>Most ordered items</h3>${top.map(([k, q]) => `<div class="stack" style="gap:4px"><div class="row between small"><span>${esc(k)}</span><b class="num">${q}</b></div><div class="bar"><i style="width:${q / top[0][1] * 100}%"></i></div></div>`).join('') || '<p class="muted small">No orders yet.</p>'}</section>`;
+  }
+  const STEPS = ['Sign the client agreement', 'Create the client and brand kit', 'Invite the client admin', 'Confirm stores, hours and delivery zones', 'Load the menu and photos', 'Set packages and Spin & Win prizes', 'Choose payments and order alerts', 'Place a test order', 'Go live and print QR codes'];
+  async function vSetup(clientId) {
+    const client = await S.client(clientId || st.user.clientId), step = client.onboardingStep;
+    return `<div class="row between"><h1>Setup · ${esc(client.brand)}</h1><span class="badge ${client.status === 'live' ? 'good' : 'warn'}">${client.status === 'live' ? 'Live' : `${step} of 9 done`}</span></div>
+      <div class="bar" aria-label="${step} of 9 steps done"><i style="width:${step / 9 * 100}%"></i></div>
+      ${client.note ? `<p class="small muted">${esc(client.note)}</p>` : ''}
+      <ol class="steps-list">${STEPS.map((s, i) => { const n = i + 1, done = n <= step, now = n === step + 1; return `<li class="${done ? 'done' : now ? 'now' : ''}"><span class="dot">${done ? '✓' : n}</span><div><b>${s}</b><div class="tiny muted">${n <= 3 ? 'Platterly team' : 'You'}</div></div>${now ? `<button class="btn primary" type="button" data-act="step" data-client="${client.id}" data-step="${n}">Mark done</button>` : ''}</li>`; }).join('')}</ol>`;
+  }
+
+  /* ---------------- super admin ---------------- */
+  async function vClients() {
+    const clients = await S.clients(), stores = await S.stores();
+    return `<div class="row between"><h1>Clients</h1><button class="btn primary" type="button" data-act="newclient">Add client</button></div>
+      ${st.newClient ? `<form id="f-client" class="card stack" novalidate><h3>New client</h3><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr))">
+        <div class="field"><label for="n-name">Business name</label><input id="n-name" placeholder="Franchisee legal or trade name"></div>
+        <div class="field"><label for="n-brand">Brand</label><input id="n-brand" placeholder="Wetzel's Pretzels"></div>
+        <div class="field"><label for="n-owner">Client admin email</label><input id="n-owner" type="email" placeholder="owner@example.com"></div></div>
+        <div class="err" id="n-err" role="alert"></div><div class="row"><button class="btn primary" type="submit">Create and send invite</button><button class="btn" type="button" data-act="newclient">Cancel</button></div></form>` : ''}
+      <div class="grid">${clients.map(c => `<article class="card stack"><div class="row between"><h3>${esc(c.brand)}</h3><span class="badge ${c.status === 'live' ? 'good' : 'warn'}">${c.status === 'live' ? 'Live' : 'Onboarding'}</span></div>
+        <p class="small muted">${esc(c.name)} · ${stores.filter(s => s.clientId === c.id).length} stores · admin ${esc(c.owner || '')}</p>
+        <div class="bar"><i style="width:${c.onboardingStep / 9 * 100}%;background:${c.colors ? c.colors.primary : 'var(--teal)'}"></i></div>
+        <div class="row between small"><span>${c.onboardingStep} of 9 setup steps</span><button class="btn ghost" type="button" data-act="viewsetup" data-id="${c.id}">Open setup</button></div></article>`).join('')}</div>
+      ${st.setupFor ? await vSetup(st.setupFor) : ''}`;
+  }
+  async function vAllOrders() {
+    const orders = await S.orders({}), users = await S.users(), clients = await S.clients(), stores = await S.stores();
+    return `<h1>All orders</h1><div class="table-wrap"><table><thead><tr><th>Order</th><th>Client</th><th>Store</th><th>Customer</th><th>Arrives</th><th>People</th><th>Total</th><th>Status</th></tr></thead><tbody>
+      ${orders.map(o => `<tr><td class="num"><b>${o.id}</b>${o.sample ? ' <span class="badge">sample</span>' : ''}</td><td class="small">${esc((clients.find(c => c.id === o.clientId) || {}).brand)}</td><td class="small">${esc((stores.find(s => s.id === o.storeId) || {}).name)}</td><td class="small">${esc((users.find(u => u.id === o.userId) || {}).name)}</td><td class="small num">${when(o.slot)}</td><td class="num">${o.people}</td><td class="num">${$(o.totals.total)}</td><td>${statusBadge(o.status)}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+  async function vUsers() {
+    const users = await S.users(), clients = await S.clients();
+    return `<h1>Users</h1><div class="table-wrap"><table><thead><tr><th>Name</th><th>Email or phone</th><th>Role</th><th>Client</th><th>Deals consent</th></tr></thead><tbody>
+      ${users.map(u => `<tr><td><b>${esc(u.name)}</b>${u.invited ? ' <span class="badge warn">Invited</span>' : ''}</td><td class="small">${esc(u.email || u.phone || '')}</td><td><span class="badge ${u.role === 'super_admin' ? 'saffron' : u.role === 'client_admin' ? 'teal' : ''}">${ROLE_LABEL[u.role]}</span></td><td class="small">${esc((clients.find(c => c.id === u.clientId) || {}).brand || '')}</td><td>${u.role === 'customer' ? (u.consent ? '<span class="badge good">Yes</span>' : '<span class="badge">No</span>') : ''}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  }
+  async function vSettings() {
+    const s = await S.settings();
+    return `<h1>Platform settings</h1><form id="f-settings" class="card stack" novalidate>
+      <div class="field"><label for="s-hst">Sales tax (Ontario HST)</label><input id="s-hst" value="${(s.hst * 100).toFixed(0)}" inputmode="numeric"></div>
+      <div class="field"><label for="s-fee">Client fee model</label><input id="s-fee" value="${esc(s.platformFee)}"></div>
+      <div class="field"><label for="s-promise">Customer promise (shown at checkout)</label><textarea id="s-promise">${esc(s.refundPromise)}</textarea></div>
+      <div class="row"><button class="btn primary" type="submit">Save settings</button></div></form>`;
+  }
+
+  /* ---------------- render ---------------- */
+  const VIEWS = { order: vOrder, orders: vOrders, rewards: vRewards, account: vAccount, board: vBoard, menu: vMenu, offers: vOffers, customers: () => vCustomers(st.user.clientId), sales: () => vSales(st.user.clientId), setup: () => vSetup(), overview: () => vSales(null), clients: vClients, allorders: vAllOrders, users: vUsers, settings: vSettings };
+  async function render() {
+    try {
+      if (!st.user) { root.innerHTML = loginView(); return; }
+      if (!st.view || !NAV[st.user.role].some(n => n[0] === st.view)) st.view = NAV[st.user.role][0][0];
+      const content = await VIEWS[st.view]();
+      let badges = null;
+      if (st.user.role === 'client_admin') { const o = await S.orders({ clientId: st.user.clientId }); badges = { board: o.filter(x => x.status === 'received').length || '' }; }
+      root.innerHTML = shell(content, badges);
+    } catch (e) { root.innerHTML = `<div class="empty" style="margin:20px"><b>Something went wrong loading this page.</b><span>${esc(e.message)}</span><button class="btn" type="button" data-act="home">Try again</button></div>`; }
+  }
+
+  /* ---------------- events ---------------- */
+  root.addEventListener('click', async e => {
+    const el = e.target.closest('[data-act]');
+    if (!el) return;
+    if (el.dataset.act === 'closesheet' && e.target.closest('[data-stop]') && !e.target.closest('button[data-act="closesheet"]')) return;
+    const a = el.dataset.act, d = el.dataset;
+    if (['pack', 'price', 'odds', 'store'].includes(a)) return;
+    if (a === 'home' || a === 'nav') e.preventDefault();
+    if (a === 'as') { st.user = await S.signInAs(d.id); st.view = null; return render(); }
+    if (a === 'login-back') { st.login.step = 'contact'; return render(); }
+    if (a === 'signout') { await S.signOut(); st.user = null; st.login = { step: 'contact', contact: '', name: '' }; return render(); }
+    if (a === 'switch') { await S.signOut(); st.user = null; return render(); }
+    if (a === 'reset') { await S.resetDemo(); st.user = null; st.cart = { lines: [], clientId: 'panago-gb', storeId: 'bremner', packageId: null, people: 10 }; saveCart(); toast('Demo data reset.'); return render(); }
+    if (a === 'home') { st.view = null; return render(); }
+    if (a === 'nav') { st.view = d.view; st.sheet = null; window.scrollTo(0, 0); return render(); }
+    if (a === 'hc') { st.headcount = Math.max(5, Math.min(100, st.headcount + Number(d.d))); return render(); }
+    if (a === 'cat') { st.cat = d.cat; return render(); }
+    if (a === 'addpkg') { const menu = await S.menu(st.cart.clientId), pkg = (await S.packages(st.cart.clientId)).find(p => p.id === d.id); st.cart.lines = S.packageLines(pkg, menu); st.cart.packageId = pkg.id; st.cart.people = Math.max(st.headcount, 1); saveCart(); toast(`${pkg.name} added.`); st.sheet = await cartSheet(); return render(); }
+    if (a === 'additem') { const it = (await S.menu(st.cart.clientId)).find(m => m.id === d.id), size = d.size || null, unit = size ? it.sizes[size] : it.price, name = it.name + (size ? ` (${size})` : ''); const ex = st.cart.lines.find(l => l.itemId === it.id && l.size === size && l.unit === unit); if (ex) ex.qty++; else st.cart.lines.push({ itemId: it.id, name, size, qty: 1, unit }); saveCart(); toast(`${name} added.`); return render(); }
+    if (a === 'opencart') { st.sheet = await cartSheet(); return render(); }
+    if (a === 'closesheet') { st.sheet = null; return render(); }
+    if (a === 'qty') { const l = st.cart.lines[Number(d.i)]; l.qty += Number(d.d); if (l.qty <= 0) st.cart.lines.splice(Number(d.i), 1); if (!st.cart.lines.length) { st.cart.packageId = null; st.sheet = null; } else st.sheet = await cartSheet(); saveCart(); return render(); }
+    if (a === 'reorder') { const o = (await S.orders({ userId: st.user.id })).find(x => x.id === d.id); st.cart = { lines: o.lines.map(l => ({ ...l })), clientId: o.clientId, storeId: o.storeId, packageId: o.packageId, people: o.people }; saveCart(); st.view = 'order'; st.sheet = await cartSheet(); return render(); }
+    if (a === 'standing') { const o = (await S.orders({ userId: st.user.id })).find(x => x.id === d.id); await S.setStanding(d.id, o.standing ? null : 'weekly'); toast(o.standing ? 'This order will not repeat.' : 'This order now repeats every week. We remind you the day before.'); return render(); }
+    if (a === 'advance') { await S.setStatus(d.id, d.to); toast(`${d.id}: ${statusLabel(d.to)}.`); return render(); }
+    if (a === 'soldout') { const it = (await S.menu(st.user.clientId)).find(m => m.id === d.id); await S.updateItem(st.user.clientId, d.id, { soldOut: !it.soldOut }); return render(); }
+    if (a === 'step') { await S.setStep(d.client, Number(d.step)); toast('Step done.'); return render(); }
+    if (a === 'newclient') { st.newClient = !st.newClient; return render(); }
+    if (a === 'viewsetup') { st.setupFor = st.setupFor === d.id ? null : d.id; return render(); }
+    if (a === 'todo') { toast(d.msg); return; }
+  });
+  root.addEventListener('change', async e => {
+    const el = e.target, a = el.dataset.act;
+    if (a === 'store') { st.cart.storeId = el.value; saveCart(); return render(); }
+    if (a === 'pack') { await S.setPacking(el.dataset.id, el.dataset.k, el.checked); return render(); }
+    if (a === 'price') { const v = parseFloat(el.value); if (!(v > 0)) { toast('Enter a price above $0.'); return render(); } const it = (await S.menu(st.user.clientId)).find(m => m.id === el.dataset.id); if (el.dataset.size) await S.updateItem(st.user.clientId, it.id, { sizes: { ...it.sizes, [el.dataset.size]: v } }); else await S.updateItem(st.user.clientId, it.id, { price: v }); toast(`${it.name} price saved.`); return; }
+    if (a === 'odds') { const v = parseInt(el.value, 10); if (!(v >= 0)) return; await S.updateOffer(el.dataset.id, { odds: v }); return render(); }
+  });
+  root.addEventListener('submit', async e => {
+    e.preventDefault(); const f = e.target, v = id => (document.getElementById(id) || {}).value || '';
+    if (f.id === 'f-contact') { const c = v('l-contact').trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c) && c.replace(/\D/g, '').length < 10) { document.getElementById('l-err').textContent = 'Enter an email address or a 10-digit mobile number.'; return; } try { await S.sendCode(c); st.login = { step: 'code', contact: c, name: '' }; render(); } catch (x) { document.getElementById('l-err').textContent = x.message; } return; }
+    if (f.id === 'f-code') { try { st.user = await S.verifyCode(st.login.contact, v('l-code').trim(), v('l-name').trim()); st.view = null; render(); } catch (x) { document.getElementById('l-err').textContent = x.message; } return; }
+    if (f.id === 'f-checkout') {
+      const err = document.getElementById('c-err'), slot = v('c-slot'), people = parseInt(v('c-people'), 10), addr = v('c-addr').trim();
+      const stores = await S.stores(st.cart.clientId), store = stores.find(s => s.id === st.cart.storeId), settings = await S.settings();
+      if (!addr) { err.textContent = 'Add a delivery address, including the floor or suite.'; return; }
+      if (!slot || new Date(slot) < new Date(Date.now() + 60 * 6e4)) { err.textContent = 'Pick a time at least an hour from now.'; return; }
+      if (people >= 25 && new Date(slot) < new Date(Date.now() + store.leadHours * 3600e3)) { err.textContent = `Orders for 25+ people need ${store.leadHours} hours' notice. Pick a later time or call ${'310-0001'}.`; return; }
+      const totals = S.cartTotals(st.cart.lines, store, settings.hst);
+      const o = await S.placeOrder({ userId: st.user.id, storeId: store.id, clientId: st.cart.clientId, packageId: st.cart.packageId, lines: st.cart.lines, totals, slot: new Date(slot).toISOString(), people: people || 1, address: addr, notes: v('c-notes'), payment: (f.querySelector('input[name="pay"]:checked') || {}).value });
+      st.cart = { lines: [], clientId: st.cart.clientId, storeId: st.cart.storeId, packageId: null, people: 10 }; saveCart(); st.sheet = null;
+      if (S.mode === 'demo') st.user = await S.session();
+      st.view = 'orders'; toast(`Order ${o.id} placed. The kitchen has it.`); return render();
+    }
+    if (f.id === 'f-account') { st.user = await S.updateUser(st.user.id, { name: v('a-name'), company: v('a-company'), headcount: parseInt(v('a-head'), 10) || null, address: v('a-addr'), ...(document.getElementById('a-consent').checked !== !!st.user.consent ? { consent: document.getElementById('a-consent').checked } : {}) }); toast('Account saved.'); return render(); }
+    if (f.id === 'f-redeem') { const r = await S.redeem(v('r-code')); toast(r.ok ? `Valid: ${r.offer.name}, ${r.offer.rule}. Marked used.` : r.msg); return; }
+    if (f.id === 'f-client') { const name = v('n-name').trim(), brand = v('n-brand').trim(), owner = v('n-owner').trim(); if (!name || !brand || !/@/.test(owner)) { document.getElementById('n-err').textContent = 'Fill in the business name, brand and a valid email.'; return; } await S.addClient({ name, brand, owner }); st.newClient = false; toast(`${brand} created. Invite ready for ${owner}.`); return render(); }
+    if (f.id === 'f-settings') { await S.updateSettings({ hst: (parseFloat(v('s-hst')) || 13) / 100, platformFee: v('s-fee'), refundPromise: v('s-promise') }); toast('Settings saved.'); return render(); }
+  });
+
+  (async () => { st.user = await S.session(); render(); })();
+  if ('serviceWorker' in navigator && location.protocol === 'https:' && !/claude\.ai|claudeusercontent/.test(location.host)) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+})();
+
+</script>
+
+</body></html>

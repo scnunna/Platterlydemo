@@ -1,0 +1,58 @@
+{
+  "slug": "panago",
+  "name": "Panago (Gerrard St W + Bremner Blvd)",
+  "platforms": ["instagram", "facebook", "tiktok"],
+  "brand_kit": {
+    "palette": {
+      "primary": "#522171",
+      "primary_deep": "#3A1553",
+      "accent": "#FAEE23",
+      "mint": "#DEF3E0",
+      "mint_burst": "#B4DDC1",
+      "mint_strong": "#A6E3BF",
+      "ink": "#2A1238",
+      "bg": "#FFFFFF",
+      "text": "#2A1238",
+      "terrazzo": "#C6CCDA",
+      "muted": "#6B5A78",
+      "_source": "logo-purple.png (#522171, digital master) + Panago Ontario menu PL4, Oct 2026. Print render of the menu reads purple #5C2474, yellow #FCEC3A, mint #B4DDC1; use the digital values on screens.",
+      "_usage": "Purple slanted band at the bottom of every piece; yellow display headlines on purple or terrazzo photos; mint and yellow starbursts for prices and NEW callouts; white for menus and price lists."
+    },
+    "fonts": {
+      "display": "Bowlby One",
+      "body": "Figtree",
+      "hand": "Permanent Marker",
+      "_note": "Google Fonts stand-ins for Panago's own faces: heavy rounded all-caps display, clean geometric sans body, marker script for small handwritten asides (as in the menu's 'All salads are entree sized'). Swap if head office supplies the brand fonts."
+    },
+    "voice": {
+      "tone": "upbeat, plain, food-first; short punchy headlines in caps, then one plain sentence",
+      "tagline": "Panago For It",
+      "proof_points": ["Fresh dough made daily", "We believe in real food", "Plant-based options marked with a leaf"],
+      "do": [
+        "use real menu prices from the current Ontario menu, sizes as S 10\" / M 12\" / L 14\" / XL 16\"",
+        "say 'Taxes extra' or 'before 13% HST' wherever a price appears",
+        "point ordering to Panago 310-0001, panago.com or the Panago app",
+        "mark plant-based items"
+      ],
+      "dont": [
+        "price-gap claims against Uber Eats or DoorDash unless measured item by item",
+        "fake scarcity or countdowns that are not real",
+        "chance prizes that require a purchase (keep 'No purchase necessary')",
+        "show a pepperoni pizza as a veggie or paneer item"
+      ]
+    },
+    "hashtags": ["#Panago", "#PanagoForIt", "#TorontoPizza", "#TorontoEats", "#PaneerPizza"],
+    "cta": {
+      "order": "Panago 310-0001 · Order online at panago.com",
+      "scan": "Scan to win! Spin free, every spin wins",
+      "catering": "Booking December office parties now"
+    },
+    "compliance": {
+      "disclaimer": "Prices from the Ontario menu, October 2026. Taxes extra. Prices subject to change.",
+      "contest": "No purchase necessary. One spin per person per day. Odds and full rules in the game. Draw winners answer a skill-testing question. (Competition Act s.74.06 + Criminal Code s.206)",
+      "casl": "Marketing consent is a separate, unticked box naming Panago Gerrard & Bremner, Toronto, with unsubscribe in every message. Keep consent records 3 years.",
+      "franchise": "Franchisee-run locally; head-office sign-off required for branded contests, store promo codes and the customer list.",
+      "forbidden_words": ["guaranteed", "cheapest in Toronto", "50% cheaper than Uber"]
+    }
+  }
+}

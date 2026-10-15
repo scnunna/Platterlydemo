@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Panago TV Screens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bowlby+One&family=Figtree:wght@400;500;600;700;800;900&family=Permanent+Marker&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<style>
+body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: six 16:9 TV pages in the Panago Q4 2026 Ontario counter-menu system: purple slanted band, yellow display headlines, mint and yellow bursts, terrazzo photography. One "Scan to win" QR badge sits in the same corner of every page. Single committed brand look, no dark variant. */
+:root {
+  --purple: #522171;
+  --purple-deep: #3A1553;
+  --yellow: #FAEE23;
+  --mint: #DEF3E0;
+  --mint-strong: #A6E3BF;
+  --ink: #2A1238;
+  --paper: #FFFFFF;
+  --stone: #C6CCDA;
+  --muted: #6B5A78;
+  --wash: #F6F2F9;
+  --tv: #0D0711;
+  --display: 'Bowlby One', 'Arial Black', Impact, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --hand: 'Permanent Marker', 'Comic Sans MS', cursive;
+  color-scheme: light;
+}
+html, body { background: var(--paper); color: var(--ink); }
+body { font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 56px; display: grid; gap: 18px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+button { font: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+
+/* page chrome */
+.topbar { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between; background: var(--purple); border-radius: 14px; padding: 12px 16px; }
+.brandbox { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; min-width: 0; }
+.brandbox img { height: 34px; width: auto; display: block; }
+.brandbox small { color: var(--mint); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; }
+.seg { display: flex; gap: 4px; background: var(--purple-deep); padding: 4px; border-radius: 999px; }
+.seg button { border: 0; background: transparent; color: var(--mint); font-weight: 800; padding: 7px 14px; border-radius: 999px; font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--yellow); color: var(--purple); }
+.intro { margin: 0; color: var(--muted); max-width: 76ch; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { border: 2px solid var(--purple); background: var(--paper); color: var(--purple); font-weight: 800; padding: 7px 14px; border-radius: 999px; font-size: 14px; }
+.btn.primary { background: var(--purple); color: var(--yellow); }
+.now { margin-left: auto; color: var(--muted); font-size: 14px; font-weight: 600; }
+.dots { display: flex; gap: 6px; }
+.dots button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--purple); background: var(--paper); color: var(--purple); font-weight: 900; font-size: 13px; padding: 0; }
+.dots button[aria-current="true"] { background: var(--purple); color: var(--yellow); }
+
+/* deck */
+.deck { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; border: 7px solid var(--tv); background: var(--tv); overflow: hidden; box-shadow: 0 18px 50px rgba(58,21,83,0.35); }
+.deck .stage { position: absolute; inset: 0; opacity: 0; transition: opacity 650ms ease; pointer-events: none; }
+.deck .stage.on { opacity: 1; pointer-events: auto; }
+.deck.grid { aspect-ratio: auto; border: 0; background: transparent; box-shadow: none; overflow: visible; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 18px; border-radius: 0; }
+.deck.grid .stage { position: relative; inset: auto; opacity: 1; pointer-events: auto; border-radius: 8px; outline: 5px solid var(--tv); }
+.deck.grid .progress { display: none; }
+.deck.grid figure { margin: 0; display: grid; gap: 8px; }
+.deck:not(.grid) figcaption { display: none; }
+.deck:not(.grid) figure { margin: 0; display: contents; }
+figcaption { font-size: 13px; font-weight: 700; color: var(--muted); }
+figcaption b { color: var(--purple); }
+.deck:fullscreen, body.kiosk .deck { border: 0; border-radius: 0; width: 100vw; height: 100vh; max-width: none; aspect-ratio: auto; box-shadow: none; }
+.deck:fullscreen .stage, body.kiosk .deck .stage { inset: auto; left: 50%; top: 50%; width: min(100vw, 177.78vh); transform: translate(-50%, -50%); }
+body.kiosk .wrap { padding: 0; max-width: none; }
+body.kiosk .wrap > :not(.deck) { display: none !important; }
+body.kiosk { background: var(--tv); overflow: hidden; }
+
+/* stage: one TV page. Everything inside is sized in cqw (1cqw = 1% of the page width) */
+.stage { width: 100%; max-width: 100%; aspect-ratio: 16 / 9; overflow: hidden; container-type: inline-size; background: var(--purple); color: var(--ink); isolation: isolate; }
+.stage > .in { position: absolute; inset: 0; }
+.hl { font-family: var(--display); font-weight: 400; line-height: 0.92; letter-spacing: 0.005em; text-transform: uppercase; transform: rotate(-4deg); transform-origin: left center; position: absolute; margin: 0; }
+.eyebrow { position: absolute; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12em; font-size: 1.4cqw; }
+.burst { position: absolute; display: grid; place-items: center; text-align: center; }
+.burst svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.burst > div { position: relative; font-family: var(--display); text-transform: uppercase; line-height: 0.98; transform: rotate(-6deg); }
+.price { font-family: var(--display); font-variant-numeric: tabular-nums; }
+.legal { position: absolute; left: 4.6cqw; bottom: 10.6cqw; z-index: 3; font-size: 0.95cqw; font-weight: 700; letter-spacing: 0.01em; max-width: 64cqw; }
+
+/* bottom band, as on the printed menu */
+.band { position: absolute; left: -2%; right: -2%; bottom: -3.4cqw; height: 11cqw; background: var(--purple); transform: rotate(-2deg); z-index: 4; display: flex; align-items: center; justify-content: space-between; padding: 0 6cqw 3cqw 6.5cqw; }
+.band .call { color: var(--paper); font-family: var(--display); font-size: 2.5cqw; line-height: 1; text-transform: uppercase; }
+.band .call small { display: block; font-family: var(--body); font-weight: 900; font-size: 1.05cqw; letter-spacing: 0.08em; margin-top: 0.5cqw; }
+.band img { height: 5cqw; width: auto; margin-right: 19cqw; }
+
+/* scan to win badge: same corner on every page */
+.scan { position: absolute; z-index: 6; right: 2.6cqw; bottom: 8.6cqw; width: 14.5cqw; display: grid; justify-items: center; transform: rotate(2.5deg); transition: width 400ms ease; }
+.scan .card { position: relative; width: 100%; background: var(--paper); border-radius: 1.3cqw; padding: 1cqw 1cqw 0.9cqw; display: grid; gap: 0.45cqw; justify-items: center; box-shadow: 0 1cqw 2.6cqw rgba(13,7,17,0.35); border: 0.35cqw solid var(--yellow); }
+.scan canvas { width: 100%; height: auto; image-rendering: pixelated; display: block; }
+.scan .cta { font-family: var(--display); color: var(--purple); font-size: 1.5cqw; line-height: 1; text-transform: uppercase; text-align: center; }
+.scan .cta small { display: block; font-family: var(--body); font-weight: 800; font-size: 0.85cqw; letter-spacing: 0.04em; margin-top: 0.3cqw; color: var(--muted); text-transform: none; }
+.scan .flag { position: relative; z-index: 2; margin-bottom: -1.4cqw; width: 14.5cqw; height: 5.6cqw; display: grid; place-items: center; }
+.scan .flag svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.scan .flag span { position: relative; font-family: var(--display); color: var(--purple); font-size: 1.55cqw; line-height: 1; transform: rotate(-5deg); text-transform: uppercase; white-space: nowrap; }
+.scan .card::after { content: ""; position: absolute; inset: -0.35cqw; border-radius: 1.3cqw; border: 0.35cqw solid var(--yellow); animation: ping 2.4s ease-out infinite; pointer-events: none; }
+@keyframes ping { 0% { transform: scale(1); opacity: 0.9; } 70%, 100% { transform: scale(1.12); opacity: 0; } }
+.stage.big-qr .scan { width: 21cqw; }
+.win-note { position: absolute; z-index: 3; right: -0.8cqw; bottom: calc(100% + 0.4cqw); width: 20cqw; margin: 0; background: var(--yellow); color: var(--purple); border: 0.3cqw solid var(--purple); border-radius: 1cqw; padding: 0.6cqw 1cqw 0.7cqw; transform: rotate(-5deg); box-shadow: 0.45cqw 0.45cqw 0 var(--purple); display: grid; gap: 0.15cqw; text-align: left; animation: wiggle 3.2s ease-in-out infinite; }
+.win-note span { font-family: var(--hand); font-size: 1.25cqw; line-height: 1; }
+.win-note b { font-family: var(--display); font-weight: 400; font-size: 1.45cqw; line-height: 1.02; text-transform: uppercase; }
+.win-note small { font-size: 0.8cqw; font-weight: 800; color: var(--ink); }
+.s2 .win-note { background: var(--paper); }
+.stage.big-qr .win-note { width: 23cqw; }
+@keyframes wiggle { 0%, 86%, 100% { transform: rotate(-5deg) scale(1); } 90% { transform: rotate(-2deg) scale(1.06); } 94% { transform: rotate(-7deg) scale(1.03); } }
+.s2 .scan .flag polygon { fill: var(--purple); }
+.s2 .scan .flag span { color: var(--yellow); }
+.s4 .cyo { position: absolute; left: 53cqw; top: 23.4cqw; background: var(--paper); color: var(--purple); border-radius: 99px; font-weight: 900; font-size: 1.2cqw; padding: 0.45cqw 1.2cqw; transform: rotate(-4deg); box-shadow: 0 0.5cqw 1.2cqw rgba(13,7,17,0.18); }
+.stage.big-qr .scan .cta { font-size: 1.9cqw; }
+.stage.big-qr .scan .cta small { font-size: 1.05cqw; }
+.stage.big-qr .scan .flag { width: 19cqw; height: 7cqw; margin-bottom: -1.6cqw; }
+.stage.big-qr .scan .flag span { font-size: 2cqw; }
+
+.progress { position: absolute; left: 0; right: 0; top: 0; height: 0.7cqw; display: flex; gap: 0.35cqw; padding: 0.45cqw; z-index: 9; container-type: inline-size; }
+.progress i { flex: 1; background: rgba(255,255,255,0.4); border-radius: 9px; position: relative; overflow: hidden; height: 6px; }
+.progress i.done::after, .progress i.cur::after { content: ""; position: absolute; inset: 0; background: var(--paper); }
+.progress i.cur::after { transform-origin: left; animation: fill var(--dur, 10s) linear forwards; }
+.deck.paused .progress i.cur::after { animation-play-state: paused; }
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.spin-slow { animation: spin 40s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 1 hero */
+.s1 { background: var(--stone); }
+.s1 .photo { position: absolute; inset: 0; background: url(../assets/hero-wide.jpg) center / cover no-repeat; }
+.s1 .hl { left: 4.6cqw; top: 6.2cqw; color: var(--yellow); font-size: 7.6cqw; text-shadow: 0.35cqw 0.35cqw 0 var(--purple); }
+.s1 .sub { position: absolute; left: 5.2cqw; top: 24.6cqw; background: var(--purple); color: var(--paper); font-weight: 800; font-size: 1.85cqw; padding: 0.8cqw 1.6cqw; border-radius: 0.8cqw; transform: rotate(-3deg); }
+.s1 .burst { right: 4cqw; top: 1.2cqw; width: 15.5cqw; height: 15.5cqw; color: var(--purple); }
+.s1 .burst > div { font-size: 1.3cqw; }
+.s1 .burst .price { font-size: 3.8cqw; display: block; margin: 0.25cqw 0; }
+.s1 .new { position: absolute; left: 5.6cqw; top: 30.2cqw; background: var(--mint); color: var(--purple); border-radius: 99px; font-weight: 900; font-size: 1.4cqw; padding: 0.5cqw 1.3cqw; transform: rotate(-4deg); letter-spacing: 0.03em; text-transform: uppercase; }
+
+/* 2 spin */
+.s2 { background: var(--yellow); color: var(--purple); }
+.s2 .hl { left: 5cqw; top: 7cqw; font-size: 6.6cqw; }
+.s2 .copy { position: absolute; left: 5.3cqw; top: 24.6cqw; width: 38cqw; font-size: 1.9cqw; font-weight: 700; line-height: 1.3; color: var(--ink); }
+.s2 .prizes { position: absolute; left: 5cqw; top: 33.4cqw; width: 42cqw; display: flex; flex-wrap: wrap; gap: 0.7cqw; }
+.chip { background: var(--purple); color: var(--paper); font-weight: 800; font-size: 1.25cqw; padding: 0.42cqw 1.05cqw; border-radius: 99px; white-space: nowrap; }
+.chip b { color: var(--yellow); font-weight: 900; }
+.s2 .wheel { position: absolute; left: 48.6cqw; top: 9.4cqw; width: 26cqw; height: 26cqw; }
+.s2 #tv-wheel, .s2 #tv-wheel svg { width: 100%; height: 100%; display: block; }
+.s2 .pointer { position: absolute; left: 50%; top: -1.4cqw; width: 3cqw; height: 3.6cqw; transform: translateX(-50%); z-index: 2; }
+
+/* 3 team lunch */
+.s3 { background: var(--stone); }
+.s3 .photo { position: absolute; inset: 0 0 0 36%; background: url(../assets/table-portrait.jpg) center 68% / cover no-repeat; }
+.s3 .panel { position: absolute; left: 0; top: 0; bottom: 0; width: 50%; background: var(--purple); clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%); }
+.s3 .eyebrow { left: 4.6cqw; top: 5cqw; color: var(--mint); }
+.s3 .hl { left: 4.6cqw; top: 9.4cqw; color: var(--yellow); font-size: 5.9cqw; }
+.s3 .copy { position: absolute; left: 4.9cqw; top: 30cqw; width: 31cqw; color: var(--paper); font-size: 1.8cqw; font-weight: 600; line-height: 1.32; }
+.s3 .copy b { color: var(--yellow); }
+.s3 .note { position: absolute; left: 44cqw; top: 35.5cqw; max-width: 27cqw; line-height: 1.15; color: var(--purple); background: var(--yellow); font-family: var(--hand); font-size: 2cqw; padding: 0.6cqw 1.3cqw; transform: rotate(-3deg); border-radius: 0.5cqw; box-shadow: 0 0.6cqw 1.4cqw rgba(13,7,17,0.25); }
+.s3 .legal { color: var(--mint); }
+.s3 .legal { max-width: 33cqw; }
+.s1 .legal { background: rgba(255,255,255,0.86); padding: 0.3cqw 0.8cqw; border-radius: 0.4cqw; }
+
+/* 4 new paneer + order direct */
+.s4 { background: var(--mint); color: var(--purple); }
+.s4 .pizza { position: absolute; right: -7cqw; top: -9cqw; width: 42cqw; height: auto; }
+.s4 .burst { left: 4cqw; top: 3.2cqw; width: 10.5cqw; height: 10.5cqw; color: var(--purple); }
+.s4 .burst > div { font-size: 2cqw; }
+.s4 .hl { left: 15cqw; top: 5cqw; font-size: 5.6cqw; }
+.s4 .list { position: absolute; left: 5cqw; top: 19.4cqw; width: 46cqw; display: grid; gap: 1cqw; }
+.s4 .item b { display: block; font-weight: 900; font-size: 1.7cqw; text-transform: uppercase; letter-spacing: 0.02em; }
+.s4 .item span { display: block; font-size: 1.2cqw; color: var(--ink); }
+.s4 .item em { font-style: normal; font-weight: 900; font-size: 1.35cqw; color: var(--purple); display: block; font-variant-numeric: tabular-nums; }
+.s4 .direct { position: absolute; left: 54cqw; top: 31cqw; width: 22cqw; background: var(--purple); color: var(--paper); border-radius: 1.2cqw; padding: 1.2cqw 1.4cqw; transform: rotate(-3deg); font-weight: 700; font-size: 1.3cqw; line-height: 1.3; z-index: 2; }
+.s4 .direct b { display: block; font-family: var(--display); font-weight: 400; color: var(--yellow); font-size: 2.1cqw; line-height: 1; text-transform: uppercase; margin-bottom: 0.5cqw; }
+
+/* 5 deal of the day */
+.s5 { background: var(--purple); color: var(--paper); }
+.s5 .photo { position: absolute; right: 0; top: 0; bottom: 0; width: 46%; background: url(../assets/table-wide.jpg) 70% 60% / cover no-repeat; clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%); }
+.s5 .photo.wings { background-image: url(../assets/wings.jpg); background-position: center; }
+.s5 .photo.churro { background-image: url(../assets/churro-bites.jpg); background-position: center; }
+.s5 .eyebrow { left: 5cqw; top: 5cqw; color: var(--mint); }
+.s5 .hl { left: 4.8cqw; top: 9.2cqw; width: 50cqw; color: var(--yellow); font-size: 5.4cqw; }
+.s5 .copy { position: absolute; left: 5.2cqw; top: 26cqw; width: 34cqw; font-size: 1.8cqw; font-weight: 600; line-height: 1.32; }
+.s5 .week { position: absolute; left: 5cqw; top: 39.4cqw; display: flex; gap: 0.6cqw; }
+.s5 .week span { font-weight: 900; font-size: 1.2cqw; padding: 0.35cqw 0.9cqw; border-radius: 99px; background: var(--purple-deep); color: var(--mint); }
+.s5 .week span.today { background: var(--yellow); color: var(--purple); }
+.s5 .burst { left: 40cqw; top: 22cqw; width: 15cqw; height: 15cqw; color: var(--purple); z-index: 2; }
+.s5 .burst > div { font-size: 1.3cqw; }
+.s5 .burst .price { font-size: 3.6cqw; display: block; }
+.s5 .legal { color: var(--mint); }
+
+/* 6 holiday parties */
+.s6 { background: var(--paper); color: var(--purple); }
+.s6 .eyebrow { left: 5cqw; top: 4.6cqw; color: var(--muted); }
+.s6 .hl { left: 4.8cqw; top: 10cqw; font-size: 5.4cqw; }
+.s6 .pk { position: absolute; left: 5cqw; top: 24.4cqw; width: 66cqw; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4cqw; }
+.s6 .pk > div { border: 0.3cqw solid var(--purple); border-radius: 1.2cqw; padding: 1.2cqw 1.3cqw; position: relative; background: var(--paper); display: grid; align-content: start; gap: 0.2cqw; }
+.s6 .pk > div.top { background: var(--purple); color: var(--paper); }
+.s6 .pk > div.top::after { content: "Most ordered size"; position: absolute; top: -1.3cqw; right: 1cqw; background: var(--yellow); color: var(--purple); font-weight: 900; font-size: 0.95cqw; padding: 0.3cqw 0.8cqw; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.06em; }
+.s6 .pk b { font-weight: 900; font-size: 1.7cqw; text-transform: uppercase; }
+.s6 .pk .price { font-size: 3.5cqw; line-height: 1.05; }
+.s6 .pk .pp { font-size: 1.3cqw; font-weight: 900; }
+.s6 .pk span { font-size: 1.15cqw; font-weight: 600; line-height: 1.3; }
+.s6 .salad { position: absolute; right: 4cqw; top: 2.6cqw; width: 17cqw; height: auto; transform: rotate(-5deg); }
+.s6 .veg { position: absolute; right: 22cqw; top: 13cqw; background: var(--mint); color: var(--purple); font-weight: 900; font-size: 1.1cqw; padding: 0.4cqw 1cqw; border-radius: 99px; transform: rotate(-4deg); }
+.s6 .legal { color: var(--muted); }
+
+/* owner notes */
+.notes { display: grid; gap: 14px; }
+.notes h2 { font-family: var(--display); font-weight: 400; color: var(--purple); font-size: 24px; text-transform: uppercase; }
+.notes p { margin: 0; max-width: 76ch; color: var(--muted); }
+.table-scroll { overflow-x: auto; border-radius: 12px; border: 2px solid #E9E1EF; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #E9E1EF; vertical-align: top; }
+th { background: var(--purple); color: var(--paper); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+td:first-child { font-weight: 900; color: var(--purple); white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+.checks { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.checks li { background: var(--wash); border-radius: 12px; padding: 10px 14px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: start; }
+.checks li::before { content: ""; width: 14px; height: 14px; margin-top: 4px; border-radius: 4px; border: 2px solid var(--purple); }
+.checks b { color: var(--purple); }
+
+@media (max-width: 760px) {
+  .deck.grid { grid-template-columns: minmax(0, 1fr); }
+  .now { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin-slow, .progress i.cur::after, .scan .card::after, .win-note { animation: none; }
+  .deck .stage { transition: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brandbox"><img src="../assets/logo-white.png" alt="Panago For It"><small>In-store TV pages · Gerrard St W + Bremner Blvd, Toronto</small></div>
+    <div class="seg" role="group" aria-label="View">
+      <button type="button" id="v-loop" aria-pressed="true">TV loop</button>
+      <button type="button" id="v-grid" aria-pressed="false">All six pages</button>
+    </div>
+  </header>
+  <p class="intro">Six full-screen pages for the window TV, built on the October 2026 Ontario menu: its logo, purple band, yellow headlines and photography, with menu prices. Every page carries the same Scan to Win code in the same corner, so anyone who glances at the screen can scan. The code opens the Spin &amp; Win phone game, which saves each sign-up for follow-up.</p>
+
+  <div class="controls" id="controls">
+    <button class="btn" id="prev" type="button">Previous</button>
+    <button class="btn" id="pause" type="button">Pause</button>
+    <button class="btn" id="next" type="button">Next</button>
+    <button class="btn primary" id="full" type="button">Full screen</button>
+    <div class="dots" id="dots" aria-label="Go to page"></div>
+    <span class="now" id="now" aria-live="polite"></span>
+  </div>
+
+  <div class="deck" id="deck">
+    <!-- 1 -->
+    <figure><section class="stage s1" data-name="Fresh dough, made daily" aria-label="Page 1: Fresh dough, made daily"><div class="in">
+      <div class="photo" role="img" aria-label="Two large Panago pizzas, wings and churro bites on a terrazzo table"></div>
+      <h2 class="hl">Fresh dough.<br>Made daily.</h2>
+      <div class="sub">Hot pizza, ready right here.</div>
+      <div class="new">New! Paneer pizzas</div>
+      <div class="burst" data-burst="#FAEE23"><div>Build your own<span class="price">$15.75</span>Large · 10 slices</div></div>
+      <div class="legal" style="color:var(--purple)">Create Your Own large 14" starting price. Toppings extra. Taxes extra.</div>
+    </div></section><figcaption><b>Page 1 · Hero.</b> Fresh dough made daily, Create Your Own large from $15.75.</figcaption></figure>
+
+    <!-- 2 -->
+    <figure><section class="stage s2 big-qr" data-name="Every spin wins" aria-label="Page 2: Every spin wins"><div class="in">
+      <h2 class="hl">Every spin<br>wins.</h2>
+      <div class="copy">Scan the code, spin free on your phone, then come inside to claim your prize.</div>
+      <div class="prizes" id="prize-chips"></div>
+      <div class="wheel"><svg class="pointer" viewBox="0 0 36 42" aria-hidden="true"><path d="M18 42 L2 9 Q18 -4 34 9 Z" fill="#FFFFFF" stroke="#522171" stroke-width="3"/></svg><div id="tv-wheel"></div></div>
+      <div class="legal">No purchase necessary to play. One spin per person per day. Prizes need a qualifying order. Odds and full rules in the game.</div>
+    </div></section><figcaption><b>Page 2 · Spin to win.</b> The wheel, the six prizes and their menu values.</figcaption></figure>
+
+    <!-- 3 -->
+    <figure><section class="stage s3 big-qr" data-name="Win your team's lunch" aria-label="Page 3: Win your team's lunch"><div class="in">
+      <div class="photo" role="img" aria-label="Pizzas, wings and churro bites on a table"></div>
+      <div class="panel"></div>
+      <div class="eyebrow">Offices · hospitals · campus teams</div>
+      <h2 class="hl">Win your<br>team's<br>lunch.</h2>
+      <div class="copy">Up to <b>5 large pizzas</b> for your office, drawn every month. Every player is entered.</div>
+      <div class="note">Snap this. Send it to whoever orders lunch!</div>
+      <div class="legal">No purchase necessary. One draw per store per month. Winners answer a skill-testing question. Full rules in the game.</div>
+    </div></section><figcaption><b>Page 3 · Team lunch draw.</b> Big, photo-friendly code so a colleague can scan a snapshot.</figcaption></figure>
+
+    <!-- 4 -->
+    <figure><section class="stage s4" data-name="New paneer pizzas" aria-label="Page 4: New paneer pizzas, order direct"><div class="in">
+      <img class="pizza spin-slow" src="../assets/pizza-top.webp" alt="">
+      <div class="burst" data-burst="#FAEE23"><div>New!</div></div>
+      <h2 class="hl">New paneer<br>pizzas.</h2>
+      <div class="list">
+        <div class="item"><b>Butter Paneer</b><span>Jalapeño white sauce, tandoori spice, paneer, caramelized onions, tomatoes</span><em>S $15 · M $19 · L $23 · XL $27</em></div>
+        <div class="item"><b>Spicy Paneer</b><span>Chipotle cilantro sauce, tandoori spice, paneer, green peppers, caramelized onions, fire-roasted corn, jalapeño peppers</span><em>S $15 · M $19 · L $23 · XL $27</em></div>
+        <div class="item"><b>Veggie Paneer</b><span>Garlic spread, tandoori spice, paneer, caramelized onions, pineapple, mushrooms, red onions, mozzarella, cheddar</span><em>S $15 · M $19 · L $23 · XL $27</em></div>
+      </div>
+      <div class="cyo">Or build your own · L from $15.75</div>
+      <div class="direct"><b>Order direct</b>Same price as walk-in. No delivery fee, no surcharges, no third-party app. Call 310-0001 or order at panago.com.</div>
+      <div class="legal">Veggie pizzas. Prices from the October 2026 Ontario menu. Taxes extra.</div>
+    </div></section><figcaption><b>Page 4 · New paneer + order direct.</b> All three new pizzas with every size price.</figcaption></figure>
+
+    <!-- 5 -->
+    <figure><section class="stage s5" data-name="Deal of the day" aria-label="Page 5: Deal of the day"><div class="in">
+      <div class="photo" id="dotd-photo" role="img" aria-label="Deal photo"></div>
+      <div class="eyebrow" id="dotd-eyebrow">Today's deal</div>
+      <h2 class="hl" id="dotd-title">Deal of the day</h2>
+      <div class="copy" id="dotd-copy"></div>
+      <div class="week" id="dotd-week"></div>
+      <div class="burst" data-burst="#FAEE23"><div id="dotd-burst"></div></div>
+      <div class="legal">Online deals as listed on panago.com. Delivery fees and taxes extra.</div>
+    </div></section><figcaption><b>Page 5 · Deal of the day.</b> Changes by itself each day of the week.</figcaption></figure>
+
+    <!-- 6 -->
+    <figure><section class="stage s6" data-name="Holiday office parties" aria-label="Page 6: Holiday office parties"><div class="in">
+      <img class="salad" src="../assets/salad-bowl.webp" alt="">
+      <div class="veg">Salads + plant-based pizzas too</div>
+      <div class="eyebrow">Booking December office parties now</div>
+      <h2 class="hl">Office party?<br>We've got 50.</h2>
+      <div class="pk" id="packs"></div>
+      <div class="legal">Menu prices from the October 2026 Ontario menu, before 13% HST. No delivery fee when you order direct. Large = 14", 10 slices.</div>
+    </div></section><figcaption><b>Page 6 · Holiday parties.</b> Three catering packages priced from the menu.</figcaption></figure>
+
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <section class="notes" aria-labelledby="n1">
+    <h2 id="n1">What each page says</h2>
+    <p>Prices come from the Ontario menu (PL4, regular menu pricing as of October 2026). Package totals are the sum of the menu items listed, so the owner can change an item and the total stays honest.</p>
+    <div class="table-scroll"><table>
+      <thead><tr><th>Page</th><th>Message</th><th>Prices shown</th><th>Scan to Win code</th></tr></thead>
+      <tbody>
+        <tr><td>1 Hero</td><td>Fresh dough, made daily. New paneer pizzas.</td><td class="n">Create Your Own L from $15.75</td><td>Corner badge</td></tr>
+        <tr><td>2 Spin</td><td>Every spin wins. Scan, spin free, come in to claim.</td><td id="n-prizes"></td><td>Large badge</td></tr>
+        <tr><td>3 Team lunch</td><td>Up to 5 large pizzas for your office, drawn monthly.</td><td>None</td><td>Large badge</td></tr>
+        <tr><td>4 Paneer</td><td>New Butter, Spicy and Veggie Paneer. Order direct.</td><td class="n">S $15 · M $19 · L $23 · XL $27</td><td>Corner badge</td></tr>
+        <tr><td>5 Deal</td><td>One deal per weekday, picked automatically.</td><td>From panago.com deals</td><td>Corner badge</td></tr>
+        <tr><td>6 Parties</td><td>Booking December office parties now.</td><td id="n-packs"></td><td>Corner badge</td></tr>
+      </tbody>
+    </table></div>
+    <h2>Before it goes on the TV</h2>
+    <ul class="checks">
+      <li><span><b>Franchise agreement.</b> Kiran runs the Ontario stores and can promote locally; confirm the agreement covers a branded contest and a store-held customer list.</span></li>
+      <li><span><b>Delivery promise.</b> Pages 4 and 6 say direct orders have no delivery fee and no surcharges, as Kiran described. Confirm before launch.</span></li>
+      <li><span><b>Lawyer read of the contest rules</b> (no purchase necessary, published odds, skill-testing question). About 1 to 2 hours.</span></li>
+      <li><span><b>Deal of the day.</b> The deals on page 5 are the ones panago.com lists for 133 Bremner Blvd. Confirm they also run at Gerrard St W.</span></li>
+      <li><span><b>Package prices.</b> The owner sets the final catering price. The totals shown are menu prices with no discount.</span></li>
+      <li><span><b>Lead capture.</b> Sign-ups, coupon codes and catering requests save to the store database while the store laptop is on. If it is off, the phone holds the sign-up and sends it later.</span></li>
+    </ul>
+    <p>To run on the TV: open this page in the TV's browser with <b>?s=g#tv</b> (Gerrard) or <b>?s=b#tv</b> (Bremner) at the end of the link. It plays all six pages full screen, 10 seconds each, and each code tells us which store and page was scanned.</p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const PLAY_BASE = 'https://godsmustb.github.io/platterlycatering/panago/';
+  const STORE = ({ g: 'g', gerrard: 'g', b: 'b', bremner: 'b' })[(new URLSearchParams(location.search).get('s') || '').toLowerCase()] || '';
+  /* Each page's code carries the store and the page, so every scan is counted per store and per screen. */
+  const playUrl = n => PLAY_BASE + '?' + (STORE ? 's=' + STORE + '&' : '') + 'c=' + n;
+
+  /* menu prices, Ontario menu PL4, October 2026 */
+  const MENU = {
+    evPepL: ['Everyday Pep L', 18], evVegL: ['Everyday Veggie L', 18], butChkL: ['Butter Chicken L', 25.50],
+    butPanL: ['Butter Paneer L', 23], spPanL: ['Spicy Paneer L', 23], bbqL: ['BBQ Bacon Chicken L', 25.50],
+    pbDlxL: ['Plant-based Deluxe Pepperoni L', 22.75], gcb: ['Garlic Cheezy Bread 8 pc', 7.25],
+    w8: ['Wings 8 pc', 11.95], w16: ['Wings 16 pc', 21.75], ch16: ['Churro Bites 16 pc', 13.50]
+  };
+  const PACKS = [
+    { name: 'Team 10', people: 10, items: [['evPepL', 3], ['gcb', 1], ['w8', 1]], blurb: '3 large pizzas, Garlic Cheezy Bread, 8 pc wings' },
+    { name: 'Office 25', people: 25, top: true, items: [['evPepL', 3], ['evVegL', 1], ['butChkL', 2], ['butPanL', 2], ['gcb', 2], ['ch16', 1]], blurb: '8 large pizzas incl. Butter Chicken and Butter Paneer, 2 Cheezy Breads, 16 pc churro bites' },
+    { name: 'Party 50', people: 50, items: [['evPepL', 6], ['evVegL', 2], ['bbqL', 3], ['spPanL', 3], ['pbDlxL', 1], ['w16', 2], ['ch16', 2], ['gcb', 2]], blurb: '15 large pizzas incl. plant-based, 32 pc wings, 32 pc churro bites, 2 Cheezy Breads' }
+  ];
+  const money = v => '$' + v.toFixed(2);
+  PACKS.forEach(p => { p.total = Math.round(p.items.reduce((s, [k, q]) => s + MENU[k][1] * q, 0) * 100) / 100; p.pp = p.total / p.people; });
+  document.getElementById('packs').innerHTML = PACKS.map(p => `<div class="${p.top ? 'top' : ''}"><b>${p.name}</b><span class="price">${money(p.total)}</span><span class="pp">${money(p.pp)} per person</span><span>${p.blurb}</span></div>`).join('');
+  document.getElementById('n-packs').innerHTML = PACKS.map(p => `${p.name} ${money(p.total)}: ` + p.items.map(([k, q]) => `${q} × ${MENU[k][0]}`).join(', ')).join('<br>');
+
+  /* prizes, same as the Spin & Win game */
+  const PRIZES = [
+    { short: 'FREE POP', chip: 'Free pop', val: null, fill: '#FAEE23', ink: '#522171' },
+    { short: 'FREE DIP', chip: 'Free Dip', val: 1.30, fill: '#FFFFFF', ink: '#522171' },
+    { short: 'CHEEZY BREAD', chip: 'Garlic Cheezy Bread', val: 7.25, fill: '#522171', ink: '#FAEE23' },
+    { short: 'CHURRO BITES', chip: 'Churro Bites', val: 6.85, fill: '#DEF3E0', ink: '#522171' },
+    { short: '8 PC WINGS', chip: '8 pc Wings', val: 11.95, fill: '#3A1553', ink: '#FFFFFF' },
+    { short: '10% OFF', chip: '10% off 5+ pizzas', val: null, fill: '#A6E3BF', ink: '#522171' }
+  ];
+  document.getElementById('prize-chips').innerHTML = PRIZES.map(p => `<span class="chip">${p.chip}${p.val ? ` <b>${money(p.val)}</b>` : ''}</span>`).join('');
+  document.getElementById('n-prizes').textContent = PRIZES.map(p => p.chip + (p.val ? ' ' + money(p.val) : '')).join(' · ');
+
+  function wheelSVG() {
+    const n = PRIZES.length, seg = 360 / n, R = 96;
+    const pt = (d, r) => { const a = (d - 90) * Math.PI / 180; return [Math.cos(a) * r, Math.sin(a) * r]; };
+    let s = `<svg class="spin-slow" viewBox="-100 -100 200 200" role="img" aria-label="Prize wheel"><circle r="99" fill="#522171"/>`;
+    PRIZES.forEach((p, i) => {
+      const [x0, y0] = pt(i * seg, R), [x1, y1] = pt(i * seg + seg, R);
+      s += `<path d="M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${p.fill}" stroke="#522171" stroke-width="1.6"/>`;
+      s += `<g transform="rotate(${i * seg + seg / 2})"><text x="0" y="-58" text-anchor="middle" font-family="Figtree, system-ui, sans-serif" font-weight="900" font-size="8.6" fill="${p.ink}">${p.short}</text></g>`;
+    });
+    for (let i = 0; i < 24; i++) { const [x, y] = pt(i * 15, 92); s += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.7" fill="#FAEE23"/>`; }
+    return s + `<circle r="19" fill="#FAEE23" stroke="#522171" stroke-width="3"/><text y="5" text-anchor="middle" font-family="'Bowlby One', Impact, sans-serif" font-size="11" fill="#522171">SPIN</text></svg>`;
+  }
+  document.getElementById('tv-wheel').innerHTML = wheelSVG();
+
+  /* bursts */
+  function burstSVG(fill, points = 14, inner = 41) {
+    const pts = [];
+    for (let i = 0; i < points * 2; i++) { const r = i % 2 ? inner : 50, a = Math.PI * i / points - Math.PI / 2; pts.push((50 + r * Math.cos(a)).toFixed(1) + ',' + (50 + r * Math.sin(a)).toFixed(1)); }
+    return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polygon points="${pts.join(' ')}" fill="${fill}" stroke="#522171" stroke-width="1.2" vector-effect="non-scaling-stroke"/></svg>`;
+  }
+  document.querySelectorAll('[data-burst]').forEach(b => b.insertAdjacentHTML('afterbegin', burstSVG(b.dataset.burst)));
+
+  /* Scan to Win badge on every page, same corner */
+  document.querySelectorAll('.stage .in').forEach(el => el.insertAdjacentHTML('beforeend',
+    `<div class="scan"><div class="win-note"><span>Scan to win free</span><b>Cheezy Bread, wings, dips or pop!</b><small>Every spin wins · with a pizza order</small></div><div class="flag">${burstSVG('#FAEE23', 12, 38)}<span>Scan to win!</span></div><div class="card"><canvas class="qr" aria-label="QR code: scan to spin and win"></canvas><div class="cta">Spin free<small>Every spin wins</small></div></div></div>` +
+    `<div class="band"><div class="call">Panago 310-0001<small>Order online at panago.com</small></div><img src="../assets/logo-white.png" alt="Panago For It"></div>`));
+
+  function drawQR(cv, text) {
+    if (typeof window.qrcode !== 'function') return;
+    try {
+      const q = window.qrcode(0, 'M'); q.addData(text); q.make();
+      const n = q.getModuleCount(), m = 2, sc = 10;
+      cv.width = cv.height = (n + m * 2) * sc;
+      const c = cv.getContext('2d'); c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, cv.width, cv.height); c.fillStyle = '#2A1238';
+      for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) c.fillRect((k + m) * sc, (r + m) * sc, sc, sc);
+    } catch (e) {}
+  }
+  document.querySelectorAll('.stage').forEach((st, i) => st.querySelectorAll('canvas.qr').forEach(cv => drawQR(cv, playUrl(i + 1))));
+
+  /* deal of the day: deals panago.com lists for 133 Bremner Blvd, October 2026 */
+  const DEALS = [
+    { d: 'Sun', title: 'Larges for less', copy: 'Five large recipe pizzas at $19.95 each with a code: Deluxe, Hawaiian, Spicy Paneer, Tropical Chicken, Plant-based Mediterranean.', burst: 'Large<span class="price">$19.95</span>with code', photo: 'table' },
+    { d: 'Mon', title: 'Cheezy Bread for $2.75', copy: 'Buy any two 12" medium recipe pizzas and add 8 pc Garlic Cheezy Bread, dip included, for $2.75.', burst: 'Add for<span class="price">$2.75</span>with 2 M', photo: 'table' },
+    { d: 'Tue', title: 'Larges for less', copy: 'Team Tuesday: five large recipe pizzas at $19.95 each with a code. Feeds the whole office.', burst: 'Large<span class="price">$19.95</span>with code', photo: 'table' },
+    { d: 'Wed', title: 'Free dip with a large', copy: 'Buy any 14" large recipe pizza and get one 44 ml dip free.', burst: 'Dip<span class="price">Free</span>with any L', photo: 'wings' },
+    { d: 'Thu', title: 'Pop Duo for $5', copy: 'Two 591 ml pops for $5 with your order.', burst: '2 pops<span class="price">$5</span>', photo: 'wings' },
+    { d: 'Fri', title: 'Dip lovers', copy: 'Buy four 44 ml dips and get one free. Every dip is $1.30.', burst: 'Buy 4<span class="price">+1</span>free', photo: 'churro' },
+    { d: 'Sat', title: 'Everyday value', copy: 'Everyday Pep and Everyday Veggie from $10 small, $18 large. Great for game night.', burst: 'Large from<span class="price">$18</span>', photo: 'table' }
+  ];
+  const today = new Date().getDay(), D = DEALS[today];
+  document.getElementById('dotd-eyebrow').textContent = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today] + "'s deal";
+  document.getElementById('dotd-title').textContent = D.title;
+  document.getElementById('dotd-copy').textContent = D.copy;
+  document.getElementById('dotd-burst').innerHTML = D.burst;
+  document.getElementById('dotd-photo').className = 'photo ' + (D.photo === 'table' ? '' : D.photo);
+  document.getElementById('dotd-week').innerHTML = DEALS.map((x, i) => `<span class="${i === today ? 'today' : ''}">${x.d}</span>`).join('');
+
+  /* loop */
+  const deck = document.getElementById('deck'), stages = [...deck.querySelectorAll('.stage')];
+  const prog = document.getElementById('progress'), now = document.getElementById('now'), dots = document.getElementById('dots');
+  const DUR = 10000;
+  prog.innerHTML = stages.map(() => '<i></i>').join('');
+  dots.innerHTML = stages.map((s, i) => `<button type="button" aria-label="Page ${i + 1}: ${s.dataset.name}">${i + 1}</button>`).join('');
+  let cur = 0, timer = null, paused = false, grid = false;
+  function show(i) {
+    cur = (i + stages.length) % stages.length;
+    stages.forEach((s, k) => s.classList.toggle('on', k === cur));
+    [...prog.children].forEach((b, k) => b.className = k < cur ? 'done' : '');
+    const bar = prog.children[cur]; void bar.offsetWidth; bar.className = 'cur'; bar.style.setProperty('--dur', DUR + 'ms');
+    [...dots.children].forEach((b, k) => b.setAttribute('aria-current', k === cur ? 'true' : 'false'));
+    now.textContent = `Page ${cur + 1} of ${stages.length} · ${stages[cur].dataset.name}`;
+    clearTimeout(timer); if (!paused && !grid) timer = setTimeout(() => show(cur + 1), DUR);
+  }
+  [...dots.children].forEach((b, k) => b.onclick = () => { if (grid) setGrid(false); show(k); });
+  document.getElementById('next').onclick = () => show(cur + 1);
+  document.getElementById('prev').onclick = () => show(cur - 1);
+  const pb = document.getElementById('pause');
+  pb.onclick = () => { paused = !paused; deck.classList.toggle('paused', paused); pb.textContent = paused ? 'Play' : 'Pause'; if (paused) clearTimeout(timer); else show(cur); };
+  document.getElementById('full').onclick = () => { if (grid) setGrid(false); if (deck.requestFullscreen) deck.requestFullscreen().catch(() => {}); };
+  function setGrid(on) {
+    grid = on; deck.classList.toggle('grid', on);
+    document.getElementById('v-grid').setAttribute('aria-pressed', on); document.getElementById('v-loop').setAttribute('aria-pressed', !on);
+    ['prev', 'pause', 'next'].forEach(id => document.getElementById(id).disabled = on);
+    if (on) { clearTimeout(timer); now.textContent = 'All six pages'; } else show(cur);
+  }
+  document.getElementById('v-grid').onclick = () => setGrid(true);
+  document.getElementById('v-loop').onclick = () => setGrid(false);
+  const h = location.hash;
+  if (h === '#tv') document.body.classList.add('kiosk');
+  const m = /^#page([1-6])$/.exec(h);
+  if (m) { paused = true; deck.classList.add('paused'); pb.textContent = 'Play'; show(+m[1] - 1); }
+  else if (h === '#all') setGrid(true);
+  else show(0);
+  window.__screens = { show, setGrid, stages, PACKS };
+})();
+</script>
+
+</body>
+</html>

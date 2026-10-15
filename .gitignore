@@ -1,0 +1,19 @@
+# Android
+android/local.properties
+android/.gradle/
+android/build/
+android/app/build/
+android/.kotlin/
+*.jks
+*.keystore
+keystore.properties
+# Supabase CLI state
+supabase/.temp/
+supabase/.branches/
+.env
+.env.*
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
