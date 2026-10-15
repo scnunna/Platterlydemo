@@ -1,32 +1,56 @@
 // Platterly lead proxy: the only part of the laptop stack that faces the internet.
-// It forwards exactly two calls to the local Supabase stack and nothing else:
-//   POST /v1/lead      -> rpc/submit_lead
-//   POST /v1/catering  -> rpc/request_catering
-//   GET  /v1/health    -> {ok}
-// The database key is added here, so the public repo and the QR page never hold one.
-// Node 18+, no dependencies.  Env: PLATTERLY_API, PLATTERLY_ANON_KEY, PORT (default 56380).
+// It forwards a fixed list of calls to the local Supabase stack and nothing else.
+//   Public (QR page):   POST /v1/lead, /v1/catering, /v1/me           -> anon role
+//   Staff (admin page): POST /v1/staff/login, then /v1/staff/*        -> service role, scoped in SQL by staff id
+//   GET /v1/health
+// Database keys are added here, so the public repo and the pages never hold one. Staff sessions are random
+// tokens kept in memory (12 h); a restart signs everyone out. Node 18+, no dependencies.
+// Env: PLATTERLY_API, PLATTERLY_ANON_KEY, PLATTERLY_SERVICE_KEY, PORT (default 56380), PLATTERLY_ORIGINS.
 import http from 'node:http';
+import crypto from 'node:crypto';
 
 const API = process.env.PLATTERLY_API || 'http://127.0.0.1:56321';
-const KEY = process.env.PLATTERLY_ANON_KEY || '';
+const ANON = process.env.PLATTERLY_ANON_KEY || '';
+const SERVICE = process.env.PLATTERLY_SERVICE_KEY || '';
 const PORT = Number(process.env.PORT || 56380);
 const ORIGINS = new Set((process.env.PLATTERLY_ORIGINS ||
   'https://godsmustb.github.io,https://appassets.androidplatform.net,http://127.0.0.1:8099,http://localhost:8099').split(','));
-const ROUTES = {
-  '/v1/lead': { rpc: 'submit_lead', fields: ['p_client', 'p_store', 'p_first_name', 'p_contact', 'p_consent', 'p_offer', 'p_quiz_right', 'p_source', 'p_consent_wording'], perMin: 20 },
-  '/v1/catering': { rpc: 'request_catering', fields: ['p_code', 'p_event_date', 'p_package', 'p_headcount'], perMin: 10 }
-};
 const MAX_BODY = 4096;
+const SESSION_MS = 12 * 3600e3;
 
-if (!KEY) { console.error('PLATTERLY_ANON_KEY is not set. Start with server/start.ps1, which reads it from `supabase status`.'); process.exit(1); }
+if (!ANON || !SERVICE) { console.error('PLATTERLY_ANON_KEY and PLATTERLY_SERVICE_KEY must be set. Start with server/start.ps1.'); process.exit(1); }
+
+// route -> rpc, the role key to use, how to build its arguments, per-IP limit per minute
+const PUBLIC = {
+  '/v1/lead': { rpc: 'submit_lead', perMin: 20, args: b => pick(b, ['p_client', 'p_store', 'p_first_name', 'p_contact', 'p_consent', 'p_offer', 'p_quiz_right', 'p_source', 'p_consent_wording']) },
+  '/v1/catering': { rpc: 'request_catering', perMin: 10, args: b => pick(b, ['p_code', 'p_event_date', 'p_package', 'p_headcount']) },
+  '/v1/me': { rpc: 'customer_history', perMin: 10, args: b => pick(b, ['p_client', 'p_contact', 'p_code']) }
+};
+const STAFF = {
+  '/v1/staff/leads': { rpc: 'staff_leads', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_search: b.search || null, p_consent_only: !!b.consent_only, p_limit: Number(b.limit) || 500 }) },
+  '/v1/staff/summary': { rpc: 'staff_summary', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
+  '/v1/staff/catering': { rpc: 'staff_catering', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
+  '/v1/staff/catering-status': { rpc: 'staff_set_catering_status', args: (b, s) => ({ p_staff: s.id, p_id: b.id || null, p_status: b.status || null }) },
+  '/v1/staff/redeem': { rpc: 'staff_redeem', args: (b, s) => ({ p_staff: s.id, p_code: b.code || null, p_store: b.store || null, p_order_total: b.total === '' || b.total == null ? null : Number(b.total) }) },
+  '/v1/staff/password': { rpc: 'staff_change_password', args: (b, s) => ({ p_staff: s.id, p_old: b.old || null, p_new: b.new || null }) }
+};
+const pick = (b, fields) => Object.fromEntries(fields.map(f => [f, b[f] === undefined ? null : b[f]]));
 
 // Per-IP limits allow a whole office on one Wi-Fi (colleagues scanning a shared photo) while stopping floods.
-const hits = new Map(); // ip|route -> [timestamps]
-function limited(ip, route, perMin) {
-  const k = ip + '|' + route, now = Date.now(), arr = (hits.get(k) || []).filter(t => now - t < 60e3);
-  arr.push(now); hits.set(k, arr);
-  if (hits.size > 5000) for (const [kk, v] of hits) if (now - v[v.length - 1] > 60e3) hits.delete(kk);
-  return arr.length > perMin;
+const hits = new Map();
+function limited(key, max, windowMs = 60e3) {
+  const now = Date.now(), arr = (hits.get(key) || []).filter(t => now - t < windowMs);
+  arr.push(now); hits.set(key, arr);
+  if (hits.size > 5000) for (const [k, v] of hits) if (now - v[v.length - 1] > 3600e3) hits.delete(k);
+  return arr.length > max;
+}
+
+const sessions = new Map(); // token -> {id, role, client_id, exp}
+function session(req) {
+  const m = /^Bearer ([A-Za-z0-9_-]{40,})$/.exec(req.headers.authorization || '');
+  const s = m && sessions.get(m[1]);
+  if (!s || s.exp < Date.now()) { if (m) sessions.delete(m[1]); return null; }
+  return s;
 }
 
 function send(res, status, body, origin) {
@@ -35,44 +59,68 @@ function send(res, status, body, origin) {
   res.writeHead(status, h); res.end(JSON.stringify(body));
 }
 
+async function rpc(name, args, key) {
+  const r = await fetch(`${API}/rest/v1/rpc/${name}`, {
+    method: 'POST', headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
+    body: JSON.stringify(args), signal: AbortSignal.timeout(8000)
+  });
+  const data = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data };
+}
+function dbError(res, r, origin) {
+  // Postgres errors carry our message + hint; pass only those, never internals.
+  const d = r.data || {};
+  const msg = typeof d.message === 'string' && /^[\w\s.,'’()-]{1,160}$/.test(d.message) ? d.message : 'Could not do that.';
+  const status = d.code === '42501' ? 403 : r.status >= 500 ? 502 : 400;
+  return send(res, status, { error: msg, hint: typeof d.hint === 'string' ? d.hint.slice(0, 200) : undefined }, origin);
+}
+
 const server = http.createServer((req, res) => {
   const origin = req.headers.origin;
-  const url = new URL(req.url, 'http://x');
+  const path = new URL(req.url, 'http://x').pathname;
   const ip = String(req.headers['cf-connecting-ip'] || req.socket.remoteAddress || '?');
+  const known = PUBLIC[path] || STAFF[path] || path === '/v1/staff/login' || path === '/v1/staff/logout';
 
   if (req.method === 'OPTIONS') {
-    if (!origin || !ORIGINS.has(origin) || !ROUTES[url.pathname]) { res.writeHead(403); return res.end(); }
-    res.writeHead(204, { 'access-control-allow-origin': origin, 'access-control-allow-methods': 'POST', 'access-control-allow-headers': 'content-type', 'access-control-max-age': '600', 'vary': 'Origin' });
+    if (!origin || !ORIGINS.has(origin) || !known) { res.writeHead(403); return res.end(); }
+    res.writeHead(204, { 'access-control-allow-origin': origin, 'access-control-allow-methods': 'POST', 'access-control-allow-headers': 'content-type, authorization', 'access-control-max-age': '600', 'vary': 'Origin' });
     return res.end();
   }
-  if (req.method === 'GET' && url.pathname === '/v1/health') return send(res, 200, { ok: true }, origin);
+  if (req.method === 'GET' && path === '/v1/health') return send(res, 200, { ok: true }, origin);
+  if (req.method !== 'POST' || !known) return send(res, 404, { error: 'Not found' }, origin);
+  if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'This page is not allowed here.' }, origin);
+  if (limited(ip + '|' + path, PUBLIC[path] ? PUBLIC[path].perMin : 60)) return send(res, 429, { error: 'Too many tries. Wait a minute and try again.' }, origin);
 
-  const route = ROUTES[url.pathname];
-  if (req.method !== 'POST' || !route) return send(res, 404, { error: 'Not found' }, origin);
-  if (origin && !ORIGINS.has(origin)) return send(res, 403, { error: 'This page is not allowed to send leads.' }, origin);
-  if (limited(ip, url.pathname, route.perMin)) return send(res, 429, { error: 'Too many tries. Wait a minute and try again.' }, origin);
-
-  let size = 0, chunks = [];
-  req.on('data', c => { size += c.length; if (size > MAX_BODY) { req.destroy(); } else chunks.push(c); });
+  let size = 0; const chunks = [];
+  req.on('data', c => { size += c.length; if (size > MAX_BODY) req.destroy(); else chunks.push(c); });
   req.on('end', async () => {
-    let body;
-    try { body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { return send(res, 400, { error: 'The request was not valid JSON.' }, origin); }
-    if (typeof body !== 'object' || body === null || Array.isArray(body)) return send(res, 400, { error: 'Expected a JSON object.' }, origin);
-    const args = {};
-    for (const f of route.fields) args[f] = body[f] === undefined ? null : body[f];
+    let b;
+    try { b = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); } catch { return send(res, 400, { error: 'The request was not valid JSON.' }, origin); }
+    if (typeof b !== 'object' || b === null || Array.isArray(b)) return send(res, 400, { error: 'Expected a JSON object.' }, origin);
     try {
-      const r = await fetch(`${API}/rest/v1/rpc/${route.rpc}`, {
-        method: 'POST',
-        headers: { apikey: KEY, authorization: `Bearer ${KEY}`, 'content-type': 'application/json' },
-        body: JSON.stringify(args), signal: AbortSignal.timeout(8000)
-      });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        // Postgres errors carry our message + hint; pass only those, never internals.
-        const msg = data && data.message && /^[\w\s.,'’()-]{1,160}$/.test(data.message) ? data.message : 'Could not save that.';
-        return send(res, r.status >= 500 ? 502 : 400, { error: msg, hint: typeof data.hint === 'string' ? data.hint.slice(0, 200) : undefined }, origin);
+      if (PUBLIC[path]) {
+        const r = await rpc(PUBLIC[path].rpc, PUBLIC[path].args(b), ANON);
+        return r.ok ? send(res, 200, r.data, origin) : dbError(res, r, origin);
       }
-      return send(res, 200, data, origin);
+      if (path === '/v1/staff/login') {
+        const email = String(b.email || '').trim().toLowerCase();
+        if (limited('login-ip|' + ip, 8, 600e3) || limited('login-email|' + email, 10, 3600e3)) return send(res, 429, { error: 'Too many sign-in attempts. Try again in 10 minutes.' }, origin);
+        const r = await rpc('staff_login', { p_email: email, p_password: String(b.password || '') }, SERVICE);
+        if (!r.ok) return dbError(res, r, origin);
+        if (!r.data.ok) return send(res, 401, { error: 'Email or password is wrong.' }, origin);
+        const token = crypto.randomBytes(32).toString('base64url');
+        sessions.set(token, { id: r.data.id, role: r.data.role, client_id: r.data.client_id, exp: Date.now() + SESSION_MS });
+        const { id, ...who } = r.data;
+        return send(res, 200, { token, expires_in: SESSION_MS / 1000, ...who }, origin);
+      }
+      if (path === '/v1/staff/logout') {
+        const m = /^Bearer (.+)$/.exec(req.headers.authorization || ''); if (m) sessions.delete(m[1]);
+        return send(res, 200, { ok: true }, origin);
+      }
+      const s = session(req);
+      if (!s) return send(res, 401, { error: 'Signed out. Sign in again.' }, origin);
+      const r = await rpc(STAFF[path].rpc, STAFF[path].args(b, s), SERVICE);
+      return r.ok ? send(res, 200, r.data, origin) : dbError(res, r, origin);
     } catch (e) {
       return send(res, 503, { error: 'The store system is offline right now.', hint: 'Your spin is saved on this phone. Show this screen at the counter.' }, origin);
     }
