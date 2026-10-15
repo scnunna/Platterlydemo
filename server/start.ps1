@@ -1,12 +1,14 @@
 # Platterly lead stack on the store laptop: Supabase (Docker) + lead proxy + public tunnel.
 # Safe to run any time: if everything is already healthy it does nothing.
-# Installed as the "Platterly-Leads" scheduled task by server/install-autostart.ps1 (at logon + every 30 min).
-$ErrorActionPreference = 'Stop'
+# To run it automatically, register it as a scheduled task (see README: Platterly-Leads, at logon + every 30 min).
+# 'Continue': native tools (supabase CLI, git) write normal progress to stderr, which PowerShell 5.1 would
+# otherwise turn into fatal errors. Each step checks its own result instead.
+$ErrorActionPreference = 'Continue'
 $Repo = Split-Path -Parent $PSScriptRoot
 $State = Join-Path $env:LOCALAPPDATA 'platterly'
 New-Item -ItemType Directory -Force $State | Out-Null
 $Log = Join-Path $State 'start.log'
-function Say($m) { "$(Get-Date -Format s) $m" | Tee-Object -FilePath $Log -Append }
+function Say($m) { $line = "$(Get-Date -Format s) $m"; Add-Content -Path $Log -Value $line -Encoding utf8; $line }
 $Cloudflared = 'C:\Program Files (x86)\cloudflared\cloudflared.exe'
 $ApiJson = Join-Path $Repo 'web\panago\api.json'
 $ProxyPort = 56380
