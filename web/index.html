@@ -183,6 +183,25 @@ td input.price { width: 84px; border: 1px solid var(--line); border-radius: 8px;
 .punch { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 .punch span { aspect-ratio: 1; max-width: 100%; border-radius: 50%; border: 2px dashed var(--line); display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--muted); }
 .punch span.on { background: var(--saffron); border: 2px solid var(--saffron); color: var(--saffron-ink); }
+.foryou { border: 2px solid var(--teal); }
+.foryou .lines { margin: 4px 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.credit-big { font-family: var(--display); font-weight: 800; font-size: 38px; letter-spacing: -0.02em; line-height: 1; }
+.boxes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.boxes button { aspect-ratio: 1; max-width: 100%; border: 2px solid var(--line); border-radius: 16px; background: var(--surface-2); font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--teal); transition: transform 160ms; display: grid; place-items: center; }
+.boxes button:hover:not([disabled]) { transform: translateY(-3px); border-color: var(--saffron); }
+.boxes button.win { background: var(--saffron); color: var(--saffron-ink); border-color: var(--saffron); transform: scale(1.05); }
+.boxes button.miss { opacity: 0.55; }
+.boxes button[disabled] { cursor: default; }
+.paybox { display: grid; gap: 10px; }
+.paymethods { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.paymethods label { border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; gap: 8px; align-items: center; font-weight: 700; font-size: 13.5px; background: var(--surface); }
+.paymethods label:has(input:checked) { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal); }
+.paymethods input { accent-color: var(--teal); }
+.cardform { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.demo-pay { font-size: 12px; font-weight: 700; color: var(--warn); }
+input[type=range] { width: 100%; accent-color: var(--saffron); }
+@media (max-width: 520px) { .cardform { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .cardform .wide { grid-column: 1 / -1; } }
 .coupon { display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 2px dashed var(--line); border-radius: 12px; padding: 10px 12px; }
 .coupon code { font-family: var(--mono); font-weight: 800; font-size: 17px; letter-spacing: 0.06em; }
 
@@ -331,16 +350,16 @@ window.PLATTERLY_SEED = (function () {
   ];
 
   const stores = [
-    { id: 'gerrard', clientId: 'panago-gb', name: 'Panago Gerrard', address: '44 Gerrard St W, Toronto, ON M5G 2K2', hours: 'Mon–Thu 11 AM–11 PM, Fri–Sat 11 AM–12 AM, Sun 11 AM–11 PM', serves: 'Mount Sinai, Toronto General, U of T, City Hall, MaRS', leadHours: 24, deliveryFee: 5, freeDeliveryOver: 150 },
-    { id: 'bremner', clientId: 'panago-gb', name: 'Panago Bremner', address: '133 Bremner Blvd, Toronto, ON M5J 3A7', hours: 'Mon–Thu 11 AM–11 PM, Fri–Sat 11 AM–12 AM, Sun 11 AM–11 PM', serves: 'South Core towers, Union Station, the arena and stadium', leadHours: 24, deliveryFee: 5, freeDeliveryOver: 150 }
+    { id: 'gerrard', clientId: 'panago-gb', name: 'Panago Gerrard', address: '44 Gerrard St W, Toronto, ON M5G 2K2', hours: 'Mon–Thu 11 AM–11 PM, Fri–Sat 11 AM–12 AM, Sun 11 AM–11 PM', serves: 'Mount Sinai, Toronto General, U of T, City Hall, MaRS', leadHours: 24, deliveryFee: 0, freeDeliveryOver: 0 },
+    { id: 'bremner', clientId: 'panago-gb', name: 'Panago Bremner', address: '133 Bremner Blvd, Toronto, ON M5J 3A7', hours: 'Mon–Thu 11 AM–11 PM, Fri–Sat 11 AM–12 AM, Sun 11 AM–11 PM', serves: 'South Core towers, Union Station, the arena and stadium', leadHours: 24, deliveryFee: 0, freeDeliveryOver: 0 }
   ];
 
   const users = [
     { id: 'u-super', name: 'Platterly Admin', email: 'superadmin@platterly.demo', role: 'super_admin' },
     { id: 'u-panago', name: 'Panago Owner', email: 'owner@panago-gb.demo', role: 'client_admin', clientId: 'panago-gb' },
     { id: 'u-wetzels', name: "Wetzel's Owner", email: 'owner@wetzels.demo', role: 'client_admin', clientId: 'wetzels' },
-    { id: 'u-priya', name: 'Priya (sample)', email: 'priya@demo.office', role: 'customer', company: 'Sample Bay St office', address: '100 Bay St, 12th floor, loading dock on Harbour St', headcount: 25, consent: true, stamps: 2, sample: true },
-    { id: 'u-marcus', name: 'Marcus (sample)', email: 'marcus@demo.hospital', role: 'customer', company: 'Sample hospital unit 7B', address: 'Main entrance, University Ave', headcount: 12, consent: false, stamps: 1, sample: true }
+    { id: 'u-priya', name: 'Priya (sample)', email: 'priya@demo.office', role: 'customer', company: 'Sample Bay St office', address: '100 Bay St, 12th floor, loading dock on Harbour St', headcount: 25, consent: true, stamps: 2, credits: 12.4, chances: 1, sample: true },
+    { id: 'u-marcus', name: 'Marcus (sample)', email: 'marcus@demo.hospital', role: 'customer', company: 'Sample hospital unit 7B', address: 'Main entrance, University Ave', headcount: 12, consent: false, stamps: 1, credits: 3.2, chances: 0, sample: true }
   ];
 
   const now = Date.now(), H = 3600e3, D = 24 * H;
@@ -363,9 +382,19 @@ window.PLATTERLY_SEED = (function () {
 
   const wallet = { 'u-priya': [{ code: 'PG-7KQ2MD', offerId: 'spin-gcb', used: false, sample: true }] };
 
+  /* Platterly Credits: 5% of food on every order, plus one Pick-a-Box chance per team order (5+ people).
+     1 credit = $1 off a future Platterly order. Box prizes and their odds (out of 100): */
+  const credits = { earnRate: 0.05, box: [[1, 40], [2, 30], [3, 15], [5, 10], [10, 5]] };
+  const creditLog = [
+    { userId: 'u-priya', amount: 9.8, why: 'Earned on PL-1033 (5% of food)', at: new Date(Date.now() - 14 * 864e5).toISOString(), sample: true },
+    { userId: 'u-priya', amount: 2, why: 'Pick-a-Box win', at: new Date(Date.now() - 13 * 864e5).toISOString(), sample: true },
+    { userId: 'u-priya', amount: 0.6, why: 'Earned on PL-1038 (5% of food)', at: new Date(Date.now() - 7 * 864e5).toISOString(), sample: true },
+    { userId: 'u-marcus', amount: 3.2, why: 'Welcome credit', at: new Date(Date.now() - 3 * 864e5).toISOString(), sample: true }
+  ];
+
   const settings = { hst: 0.13, platformFee: 'To be decided', refundPromise: 'More than 15 minutes late: next team order delivers free. Missing items re-sent or refunded in full.' };
 
-  return { SIZES, SLICES, cats, panagoMenu, packages, clients, stores, users, orders, offers, wallet, settings };
+  return { SIZES, SLICES, cats, panagoMenu, packages, clients, stores, users, orders, offers, wallet, settings, credits, creditLog };
 })();
 
 /* Platterly data layer.
@@ -376,7 +405,7 @@ window.PLATTERLY_SEED = (function () {
 (function () {
   const SEED = window.PLATTERLY_SEED;
   const CFG = window.PLATTERLY_CONFIG || {};
-  const KEY = 'platterly-demo-v1';
+  const KEY = 'platterly-demo-v2'; // v2 adds credits; older saved demos start fresh
   const money = n => Math.round(n * 100) / 100;
 
   function priceItem(menu, [itemId, size, qty, override]) {
@@ -386,12 +415,55 @@ window.PLATTERLY_SEED = (function () {
     return unit * qty;
   }
   function packageTotal(pkg, menu) { return money(pkg.items.reduce((s, line) => s + priceItem(menu, line), 0)); }
-  function cartTotals(lines, store, hst) {
+  function cartTotals(lines, store, hst, creditsUsed) {
     const food = money(lines.reduce((s, l) => s + l.unit * l.qty, 0));
-    const delivery = !store ? 0 : food >= store.freeDeliveryOver || food === 0 ? 0 : store.deliveryFee;
+    const delivery = !store || !store.deliveryFee ? 0 : food >= store.freeDeliveryOver || food === 0 ? 0 : store.deliveryFee;
     const tax = money((food + delivery) * hst);
-    return { food, delivery, tax, total: money(food + delivery + tax) };
+    const total = money(food + delivery + tax);
+    const credits = money(Math.min(Math.max(0, creditsUsed || 0), total));
+    return { food, delivery, tax, total, credits, due: money(total - credits) };
   }
+
+  /* What a customer usually orders, from their order history. */
+  function orderProfile(orders, menu) {
+    const real = orders.filter(o => o.lines && o.lines.length);
+    if (!real.length) return null;
+    const qty = {}, people = [], days = {}, hours = {};
+    let vegSlices = 0, allSlices = 0;
+    real.forEach(o => {
+      people.push(o.people || 1);
+      const d = new Date(o.slot); days[d.getDay()] = (days[d.getDay()] || 0) + 1; hours[d.getHours()] = (hours[d.getHours()] || 0) + 1;
+      o.lines.forEach(l => {
+        const k = l.itemId + '|' + (l.size || ''); qty[k] = (qty[k] || 0) + l.qty / (o.people || 1);
+        const it = menu.find(m => m.id === l.itemId);
+        if (it && it.cat === 'pizza') { allSlices += l.qty; if (it.tags.some(t => t === 'veg' || t === 'plant')) vegSlices += l.qty; }
+      });
+    });
+    Object.keys(qty).forEach(k => { qty[k] /= real.length; }); // average portion per person across orders
+    const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1])[0][0];
+    const avgPeople = Math.round(people.reduce((a, b) => a + b, 0) / people.length);
+    return { orders: real.length, avgPeople, perPerson: qty, day: Number(top(days)), hour: Number(top(hours)), vegShare: allSlices ? vegSlices / allSlices : 0,
+      favourites: Object.entries(qty).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k.split('|')) };
+  }
+  /* Their usual order, scaled to today's headcount, at today's menu prices. */
+  function usualLines(profile, headcount, menu) {
+    if (!profile) return [];
+    return Object.entries(profile.perPerson).map(([k, perHead]) => {
+      const [id, size] = k.split('|'), it = menu.find(m => m.id === id);
+      if (!it || it.soldOut) return null;
+      // Items this headcount would not normally get (rounds to 0) are left out, not forced to 1.
+      const unit = size ? it.sizes[size] : it.price, q = Math.round(perHead * headcount);
+      return q >= 1 ? { itemId: id, name: it.name + (size ? ` (${size})` : ''), size: size || null, qty: q, unit } : null;
+    }).filter(Boolean);
+  }
+  /* One thing to try: a new item that fits how they order (vegetarian-leaning teams get a veg pick). */
+  function suggestion(profile, menu, lines) {
+    const have = new Set((lines || []).map(l => l.itemId));
+    const pool = menu.filter(m => m.cat === 'pizza' && !m.soldOut && !have.has(m.id));
+    const veg = profile && profile.vegShare >= 0.3;
+    return pool.find(m => m.tags.includes('new') && (!veg || m.tags.includes('veg'))) || pool.find(m => m.tags.includes('new')) || pool[0] || null;
+  }
+  function pickBox(table) { const tot = table.reduce((s, x) => s + x[1], 0); let r = Math.random() * tot; for (const [v, w] of table) { r -= w; if (r < 0) return v; } return table[0][0]; }
   function packageLines(pkg, menu) {
     return pkg.items.map(([id, size, qty, override]) => {
       const it = menu.find(m => m.id === id);
@@ -410,6 +482,7 @@ window.PLATTERLY_SEED = (function () {
     s.menus = { 'panago-gb': s.panagoMenu, 'wetzels': [] };
     delete s.panagoMenu;
     s.orders.forEach(o => { const pkg = s.packages.find(p => p.id === o.packageId); o.lines = packageLines(pkg, s.menus[o.clientId]); o.totals = cartTotals(o.lines, s.stores.find(x => x.id === o.storeId), s.settings.hst); o.history = [{ status: 'received', at: o.createdAt }]; o.packing = {}; });
+    s.creditLog = s.creditLog || [];
     s.consents = s.users.filter(u => u.consent).map(u => ({ userId: u.id, text: 'Deals and catering offers by email or text', at: new Date(Date.now() - 20 * 864e5).toISOString(), source: 'Spin & Win sign-up' }));
     s.session = null;
     return s;
@@ -443,7 +516,27 @@ window.PLATTERLY_SEED = (function () {
     async offers() { return S.offers; },
     async updateOffer(id, patch) { Object.assign(S.offers.find(o => o.id === id), patch); save(); },
     async orders(filter) { let o = S.orders.slice(); if (filter && filter.userId) o = o.filter(x => x.userId === filter.userId); if (filter && filter.clientId) o = o.filter(x => x.clientId === filter.clientId); return o.sort((a, b) => b.createdAt.localeCompare(a.createdAt)); },
-    async placeOrder(order) { const id = 'PL-' + (1043 + S.orders.filter(o => !o.sample).length); const now = new Date().toISOString(); const row = { id, createdAt: now, status: 'received', history: [{ status: 'received', at: now }], packing: {}, ...order }; S.orders.push(row); const u = S.users.find(x => x.id === order.userId); if (u && order.people >= 5) u.stamps = Math.min(6, (u.stamps || 0) + 1); save(); return row; },
+    async placeOrder(order) {
+      const id = 'PL-' + (1043 + S.orders.filter(o => !o.sample).length); const now = new Date().toISOString();
+      const u = S.users.find(x => x.id === order.userId);
+      const used = Math.min(order.totals.credits || 0, (u && u.credits) || 0);
+      if (used < (order.totals.credits || 0) - 0.001) throw new Error('Not enough credits. Lower the credits you use.');
+      const row = { id, createdAt: now, status: 'received', history: [{ status: 'received', at: now }], packing: {}, ...order }; S.orders.push(row);
+      let earned = 0, chance = false;
+      if (u) {
+        if (used) { u.credits = money(u.credits - used); S.creditLog.push({ userId: u.id, amount: -used, why: `Paid on ${id}`, at: now }); }
+        earned = money(order.totals.food * SEED.credits.earnRate); u.credits = money((u.credits || 0) + earned);
+        S.creditLog.push({ userId: u.id, amount: earned, why: `Earned on ${id} (5% of food)`, at: now });
+        if (order.people >= 5) { u.stamps = Math.min(6, (u.stamps || 0) + 1); u.chances = (u.chances || 0) + 1; chance = true; }
+      }
+      save(); return Object.assign(row, { earned, chance });
+    },
+    async credits(userId) { const u = S.users.find(x => x.id === userId) || {}; return { balance: money(u.credits || 0), chances: u.chances || 0, log: S.creditLog.filter(c => c.userId === userId).sort((a, b) => b.at.localeCompare(a.at)) }; },
+    async playBox(userId) {
+      const u = S.users.find(x => x.id === userId); if (!u || !(u.chances > 0)) throw new Error('No Pick-a-Box chances left. Every team order gives you one.');
+      const amount = pickBox(SEED.credits.box); u.chances -= 1; u.credits = money((u.credits || 0) + amount);
+      S.creditLog.push({ userId, amount, why: 'Pick-a-Box win', at: new Date().toISOString() }); save(); return { amount, balance: u.credits, chances: u.chances };
+    },
     async setStatus(orderId, status) { const o = S.orders.find(x => x.id === orderId); o.status = status; o.history.push({ status, at: new Date().toISOString() }); save(); return o; },
     async setPacking(orderId, key, val) { const o = S.orders.find(x => x.id === orderId); o.packing[key] = val; save(); },
     async setStanding(orderId, val) { const o = S.orders.find(x => x.id === orderId); o.standing = val; save(); },
@@ -498,7 +591,7 @@ window.PLATTERLY_SEED = (function () {
   }
 
   const useSupabase = CFG.supabaseUrl && CFG.supabaseAnonKey && window.supabase;
-  window.Store = Object.assign(useSupabase ? makeSupabase() : Demo, { packageTotal, packageLines, cartTotals, money });
+  window.Store = Object.assign(useSupabase ? makeSupabase() : Demo, { packageTotal, packageLines, cartTotals, money, orderProfile, usualLines, suggestion });
 })();
 
 /* Platterly app: one page, three roles. Renders from window.Store (demo or Supabase). */
@@ -546,6 +639,13 @@ window.PLATTERLY_SEED = (function () {
   try { const c = JSON.parse(localStorage.getItem('platterly-cart') || 'null'); if (c && Array.isArray(c.lines)) st.cart = c; } catch (e) {}
   const saveCart = () => { try { localStorage.setItem('platterly-cart', JSON.stringify(st.cart)); } catch (e) {} };
 
+  function luhn(n) { let s = 0; for (let i = 0; i < n.length; i++) { let d = +n[n.length - 1 - i]; if (i % 2) { d *= 2; if (d > 9) d -= 9; } s += d; } return s % 10 === 0; }
+  const PAY_LABEL = { card: 'Card', wallet: 'Apple Pay / Google Pay', invoice: 'Invoice', on_delivery: 'Pay on delivery', credits: 'Credits' };
+  function payText(o) {
+    const p = o.payment; if (!p || typeof p === 'string') return p === 'invoice' ? 'Invoice' : p ? 'Pay on delivery' : '';
+    const parts = []; if (p.credits) parts.push(`${$(p.credits)} credits`); if (p.due) parts.push(`${$(p.due)} ${PAY_LABEL[p.method] || ''}${p.card ? ' ' + p.card : ''}`.trim());
+    return parts.join(' + ');
+  }
   function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
 
   /* ---------------- login ---------------- */
@@ -604,6 +704,21 @@ window.PLATTERLY_SEED = (function () {
   }
 
   /* ---------------- customer ---------------- */
+  const DAYS = ['Sundays', 'Mondays', 'Tuesdays', 'Wednesdays', 'Thursdays', 'Fridays', 'Saturdays'];
+  const hourLabel = h => new Date(2026, 0, 1, h).toLocaleTimeString('en-CA', { hour: 'numeric' });
+  async function forYou(client, menu, hc) {
+    const mine = (await S.orders({ userId: st.user.id })).filter(o => o.clientId === client.id);
+    const prof = S.orderProfile(mine, menu);
+    if (!prof) return `<section class="card stack"><h2>Made for you</h2><p class="small muted">After your first order, Platterly learns what your team likes and builds your usual order here, sized to the headcount.</p></section>`;
+    const lines = S.usualLines(prof, hc, menu), t = S.cartTotals(lines, null, 0), sug = S.suggestion(prof, menu, lines);
+    st.usual = lines;
+    return `<section class="card stack foryou"><div class="row between"><h2>Made for you: your usual, for ${hc}</h2><span class="badge teal">From ${prof.orders} past order${prof.orders === 1 ? '' : 's'}</span></div>
+      <div class="stats"><span class="badge">Usually ${prof.avgPeople} people</span><span class="badge">Mostly ${DAYS[prof.day]} around ${hourLabel(prof.hour)}</span><span class="badge good">${Math.round(prof.vegShare * 100)}% vegetarian slices</span></div>
+      <div class="lines small">${lines.map(l => `<div class="line"><span>${esc(l.name)}</span><span class="num">× ${l.qty}</span><span class="num">${$(l.unit * l.qty)}</span></div>`).join('')}</div>
+      <div class="row between"><b class="num">${$(t.food)} <span class="small muted">· ${$(t.food / hc)} per person before tax</span></b><button class="btn primary" type="button" data-act="usual">Order my usual</button></div>
+      ${sug ? `<div class="row small" style="border-top:1px solid var(--line);padding-top:10px"><span><b>Try something new:</b> ${esc(sug.name)}${sug.tags.includes('new') ? ' <span class="badge saffron">New</span>' : ''} <span class="muted">· ${prof.vegShare >= 0.3 ? 'your team orders vegetarian' : 'popular this season'}</span></span><button class="btn" type="button" data-act="additem" data-id="${sug.id}" data-size="L">Add a large ${$(sug.sizes.L)}</button></div>` : ''}
+    </section>`;
+  }
   async function vOrder() {
     const clients = await S.clients(), client = clients.find(c => c.id === st.cart.clientId) || clients[0];
     const stores = await S.stores(client.id), menu = await S.menu(client.id), pkgs = await S.packages(client.id);
@@ -629,6 +744,8 @@ window.PLATTERLY_SEED = (function () {
         <span class="small" style="opacity:.85;margin-left:auto">${esc((stores.find(s => s.id === st.cart.storeId) || {}).serves || '')}</span>
       </div>
       ${soon.length ? `<p class="small muted">Coming soon on Platterly: ${soon.map(c => esc(c.brand)).join(', ')}.</p>` : ''}
+
+      ${await forYou(client, menu, hc)}
 
       <section class="stack"><div class="row between"><h2>Packages for ${hc}</h2><span class="small muted">Menu prices before tax and delivery</span></div>
       <div class="grid">${ranked.map(({ p, total }) => `
@@ -662,7 +779,8 @@ window.PLATTERLY_SEED = (function () {
   }
   async function cartSheet() {
     const settings = await S.settings(), stores = await S.stores(st.cart.clientId), store = stores.find(s => s.id === st.cart.storeId);
-    const t = S.cartTotals(st.cart.lines, store, settings.hst), people = st.cart.people || st.headcount;
+    const cr = await S.credits(st.user.id);
+    const t = S.cartTotals(st.cart.lines, store, settings.hst, cr.balance), people = st.cart.people || st.headcount;
     const def = new Date(Date.now() + 864e5); def.setHours(11, 30, 0, 0);
     const pad = n => String(n).padStart(2, '0'), v = `${def.getFullYear()}-${pad(def.getMonth() + 1)}-${pad(def.getDate())}T${pad(def.getHours())}:${pad(def.getMinutes())}`;
     return `<div class="sheet-bg" data-act="closesheet"><aside class="sheet" role="dialog" aria-label="Your order" data-stop>
@@ -674,14 +792,30 @@ window.PLATTERLY_SEED = (function () {
         <p class="tiny muted">We aim to arrive 30 minutes before this time. Orders for 25+ people need ${store ? store.leadHours : 24} hours' notice.</p>
         <div class="field"><label for="c-addr">Delivery address</label><input id="c-addr" value="${esc(st.user.address || '')}" placeholder="Street, floor, suite"></div>
         <div class="field"><label for="c-notes">Notes for the driver and kitchen</label><textarea id="c-notes" placeholder="Loading dock, security desk, allergies"></textarea></div>
-        <fieldset class="stack" style="border:0;padding:0;margin:0"><legend class="small" style="font-weight:700;margin-bottom:6px">Payment</legend>
-          <label class="check"><input type="radio" name="pay" value="invoice" checked><span>Invoice my company (monthly statement)</span></label>
-          <label class="check"><input type="radio" name="pay" value="on_delivery"><span>Pay on delivery (card or cash)</span></label></fieldset>
-        <div class="card totals"><div><span>Food</span><span class="num">${$(t.food)}</span></div><div><span>Delivery${store && t.food >= store.freeDeliveryOver ? ' (free over ' + $(store.freeDeliveryOver) + ')' : ''}</span><span class="num">${$(t.delivery)}</span></div><div><span>HST 13%</span><span class="num">${$(t.tax)}</span></div><div><span>Service fee</span><span class="num">$0.00</span></div>
-          <div class="grand"><span>Total</span><span class="num">${$(t.total)}</span></div><div class="small muted"><span>Per person</span><span class="num">${$(t.total / Math.max(1, people))}</span></div></div>
+        <fieldset class="paybox" style="border:0;padding:0;margin:0"><legend class="small" style="font-weight:700;margin-bottom:6px">Payment</legend>
+          ${cr.balance > 0 ? `<div class="card flat stack" style="gap:6px"><div class="row between"><b>Platterly Credits</b><span class="num small">Balance <b>${$(cr.balance)}</b></span></div>
+            <input type="range" id="c-credits" min="0" max="${Math.min(cr.balance, t.total).toFixed(2)}" step="0.01" value="${Math.min(cr.balance, t.total).toFixed(2)}" aria-label="Credits to use">
+            <div class="row between small"><span>Use <b class="num" id="c-cr-val">${$(Math.min(cr.balance, t.total))}</b> of your credits</span><button class="btn ghost small" type="button" data-act="credits-max">Use all I can</button></div></div>` : ''}
+          <div id="c-methods" class="paybox" ${t.due <= 0 ? 'hidden' : ''}>
+            <div class="paymethods" role="radiogroup" aria-label="Pay the rest with">
+              <label><input type="radio" name="pay" value="card" checked>Card</label>
+              <label><input type="radio" name="pay" value="wallet">Apple Pay / Google Pay</label>
+              <label><input type="radio" name="pay" value="invoice">Invoice my company</label>
+              <label><input type="radio" name="pay" value="on_delivery">Pay on delivery</label>
+            </div>
+            <div class="cardform" id="c-card">
+              <div class="field wide"><label for="c-num">Card number</label><input id="c-num" inputmode="numeric" autocomplete="off" placeholder="4242 4242 4242 4242"></div>
+              <div class="field"><label for="c-exp">Expiry</label><input id="c-exp" inputmode="numeric" autocomplete="off" placeholder="MM/YY"></div>
+              <div class="field"><label for="c-cvc">CVC</label><input id="c-cvc" inputmode="numeric" autocomplete="off" placeholder="123"></div>
+            </div>
+          </div>
+          <p class="demo-pay">Demo checkout: nothing is charged and no card details are sent or stored.</p></fieldset>
+        <div class="card totals"><div><span>Food</span><span class="num">${$(t.food)}</span></div><div><span>Delivery${store && !store.deliveryFee ? ' (free when you order direct)' : ''}</span><span class="num">${$(t.delivery)}</span></div><div><span>HST 13%</span><span class="num">${$(t.tax)}</span></div><div><span>Service fee</span><span class="num">$0.00</span></div><div id="c-cr-row"><span>Platterly Credits</span><span class="num" id="c-cr-line">−${$(t.credits)}</span></div>
+          <div class="grand"><span>To pay</span><span class="num" id="c-due" data-total="${t.total.toFixed(2)}">${$(t.due)}</span></div><div class="small muted"><span>Order total</span><span class="num">${$(t.total)}</span></div><div class="small muted"><span>Per person</span><span class="num">${$(t.total / Math.max(1, people))}</span></div></div>
         <p class="tiny muted">${esc(settings.refundPromise)}</p>
         <div class="err" id="c-err" role="alert"></div>
-        <button class="btn accent block" type="submit">Place order · ${$(t.total)}</button>
+        <button class="btn accent block" type="submit" id="c-submit">${t.due > 0 ? 'Place order · pay ' + $(t.due) : 'Place order · paid with credits'}</button>
+        <p class="tiny muted">You earn ${$(t.food * SEED.credits.earnRate)} in credits on this order${(people || 0) >= 5 ? ', plus a Pick-a-Box chance' : ''}.</p>
       </form></aside></div>`;
   }
   async function vOrders() {
@@ -690,14 +824,24 @@ window.PLATTERLY_SEED = (function () {
     return `<h1>My orders</h1>${orders.map(o => {
       const idx = STATUS.findIndex(x => x[0] === o.status), store = stores.find(s => s.id === o.storeId);
       return `<article class="card stack"><div class="row between"><div class="row"><b class="num">${o.id}</b>${statusBadge(o.status)}${o.sample ? '<span class="badge">sample</span>' : ''}${o.standing ? `<span class="badge teal">Repeats ${o.standing}</span>` : ''}</div><b class="num">${$(o.totals.total)}</b></div>
-        <p class="small muted">${esc(store ? store.name : '')} · ${o.people} people · arrives ${when(o.slot)}</p>
+        <p class="small muted">${esc(store ? store.name : '')} · ${o.people} people · arrives ${when(o.slot)}${payText(o) ? ' · paid ' + esc(payText(o)) : ''}</p>
         <div class="track">${STATUS.map((s, i) => `<div class="${i <= idx ? 'on' : ''}"><i></i>${s[1]}</div>`).join('')}</div>
         <div class="row"><button class="btn" type="button" data-act="reorder" data-id="${o.id}">Order again</button><button class="btn ghost" type="button" data-act="standing" data-id="${o.id}">${o.standing ? 'Stop repeating' : 'Repeat every week'}</button></div>
       </article>`; }).join('')}`;
   }
   async function vRewards() {
-    const w = await S.wallet(st.user.id), stamps = st.user.stamps || 0;
+    const w = await S.wallet(st.user.id), stamps = st.user.stamps || 0, cr = await S.credits(st.user.id);
+    const box = st.box || null;
     return `<h1>Rewards</h1>
+      <section class="card stack"><div class="row between"><h2>Platterly Credits</h2><span class="badge saffron">$1 credit = $1 off</span></div>
+        <div class="row between"><div><div class="credit-big num">${$(cr.balance)}</div><p class="small muted">Use them at checkout for part or all of an order. You earn 5% of food on every order.</p></div></div>
+        <div class="card flat stack"><div class="row between"><h3>Pick a box</h3><span class="badge ${cr.chances ? 'good' : ''}">${cr.chances} chance${cr.chances === 1 ? '' : 's'}</span></div>
+          <p class="small muted">Every team order (5+ people) gives you one pick. Each box hides $1 to $10 in credits. Every pick wins.</p>
+          <div class="boxes">${[0, 1, 2].map(i => `<button type="button" data-act="box" data-i="${i}" ${!cr.chances && !box ? 'disabled' : box ? 'disabled' : ''} class="${box ? (box.i === i ? 'win' : 'miss') : ''}" aria-label="Box ${i + 1}">${box ? (box.i === i ? '+' + $(box.amount) : '?') : '?'}</button>`).join('')}</div>
+          ${box ? `<div class="row between"><b>You won ${$(box.amount)} in credits.</b>${cr.chances ? '<button class="btn" type="button" data-act="box-again">Pick again</button>' : '<span class="small muted">Your next team order brings another pick.</span>'}</div>` : ''}
+          <p class="tiny muted">Odds per pick: $1 40%, $2 30%, $3 15%, $5 10%, $10 5%. Credits have no cash value.</p></div>
+        ${cr.log.length ? `<details><summary class="small" style="cursor:pointer;font-weight:700">Credit history</summary><div class="table-wrap" style="margin-top:8px"><table><tbody>${cr.log.map(c => `<tr><td class="small num">${day(c.at)}</td><td class="small">${esc(c.why)}${c.sample ? ' · sample' : ''}</td><td class="num" style="text-align:right;color:${c.amount < 0 ? 'var(--bad)' : 'var(--good)'}">${c.amount < 0 ? '−' : '+'}${$(Math.abs(c.amount))}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
+      </section>
       <section class="card stack"><div class="row between"><h2>Team order card</h2><span class="badge teal">${stamps} of 6</span></div>
         <div class="punch">${[1, 2, 3, 4, 5, 6].map(i => `<span class="${i <= stamps ? 'on' : ''}">${i === 6 ? '$25' : i}</span>`).join('')}</div>
         <p class="small muted">Every catering order for 5+ people adds a stamp. Your 6th team order is $25 off. Stamps never expire. Your first stamp was a welcome bonus.</p>
@@ -870,6 +1014,10 @@ window.PLATTERLY_SEED = (function () {
     if (a === 'nav') { st.view = d.view; st.sheet = null; window.scrollTo(0, 0); return render(); }
     if (a === 'hc') { st.headcount = Math.max(5, Math.min(100, st.headcount + Number(d.d))); return render(); }
     if (a === 'cat') { st.cat = d.cat; return render(); }
+    if (a === 'usual') { if (!st.usual || !st.usual.length) return; st.cart.lines = st.usual.map(l => ({ ...l })); st.cart.packageId = null; st.cart.people = st.headcount; saveCart(); toast('Your usual is in the cart.'); st.sheet = await cartSheet(); return render(); }
+    if (a === 'box') { try { const r = await S.playBox(st.user.id); st.box = { i: Number(d.i), amount: r.amount }; } catch (x) { toast(x.message); } return render(); }
+    if (a === 'box-again') { st.box = null; return render(); }
+    if (a === 'credits-max') { const r = document.getElementById('c-credits'); if (r) { r.value = r.max; r.dispatchEvent(new Event('input', { bubbles: true })); } return; }
     if (a === 'addpkg') { const menu = await S.menu(st.cart.clientId), pkg = (await S.packages(st.cart.clientId)).find(p => p.id === d.id); st.cart.lines = S.packageLines(pkg, menu); st.cart.packageId = pkg.id; st.cart.people = Math.max(st.headcount, 1); saveCart(); toast(`${pkg.name} added.`); st.sheet = await cartSheet(); return render(); }
     if (a === 'additem') { const it = (await S.menu(st.cart.clientId)).find(m => m.id === d.id), size = d.size || null, unit = size ? it.sizes[size] : it.price, name = it.name + (size ? ` (${size})` : ''); const ex = st.cart.lines.find(l => l.itemId === it.id && l.size === size && l.unit === unit); if (ex) ex.qty++; else st.cart.lines.push({ itemId: it.id, name, size, qty: 1, unit }); saveCart(); toast(`${name} added.`); return render(); }
     if (a === 'opencart') { st.sheet = await cartSheet(); return render(); }
@@ -884,7 +1032,18 @@ window.PLATTERLY_SEED = (function () {
     if (a === 'viewsetup') { st.setupFor = st.setupFor === d.id ? null : d.id; return render(); }
     if (a === 'todo') { toast(d.msg); return; }
   });
+  /* Checkout: credits slider and payment method update the totals in place. */
+  root.addEventListener('input', e => {
+    if (e.target.id !== 'c-credits') return;
+    const used = parseFloat(e.target.value) || 0;
+    const due = Math.max(0, Math.round((parseFloat(document.getElementById('c-due').dataset.total || '0') - used) * 100) / 100);
+    document.getElementById('c-cr-val').textContent = $(used); document.getElementById('c-cr-line').textContent = '−' + $(used);
+    document.getElementById('c-due').textContent = $(due);
+    document.getElementById('c-methods').hidden = due <= 0;
+    document.getElementById('c-submit').textContent = due > 0 ? 'Place order · pay ' + $(due) : 'Place order · paid with credits';
+  });
   root.addEventListener('change', async e => {
+    if (e.target.name === 'pay') { const c = document.getElementById('c-card'); if (c) c.hidden = e.target.value !== 'card'; }
     const el = e.target, a = el.dataset.act;
     if (a === 'store') { st.cart.storeId = el.value; saveCart(); return render(); }
     if (a === 'pack') { await S.setPacking(el.dataset.id, el.dataset.k, el.checked); return render(); }
@@ -901,11 +1060,22 @@ window.PLATTERLY_SEED = (function () {
       if (!addr) { err.textContent = 'Add a delivery address, including the floor or suite.'; return; }
       if (!slot || new Date(slot) < new Date(Date.now() + 60 * 6e4)) { err.textContent = 'Pick a time at least an hour from now.'; return; }
       if (people >= 25 && new Date(slot) < new Date(Date.now() + store.leadHours * 3600e3)) { err.textContent = `Orders for 25+ people need ${store.leadHours} hours' notice. Pick a later time or call ${'310-0001'}.`; return; }
-      const totals = S.cartTotals(st.cart.lines, store, settings.hst);
-      const o = await S.placeOrder({ userId: st.user.id, storeId: store.id, clientId: st.cart.clientId, packageId: st.cart.packageId, lines: st.cart.lines, totals, slot: new Date(slot).toISOString(), people: people || 1, address: addr, notes: v('c-notes'), payment: (f.querySelector('input[name="pay"]:checked') || {}).value });
+      const crEl = document.getElementById('c-credits');
+      const totals = S.cartTotals(st.cart.lines, store, settings.hst, crEl ? parseFloat(crEl.value) || 0 : 0);
+      const method = totals.due > 0 ? (f.querySelector('input[name="pay"]:checked') || {}).value : 'credits';
+      if (method === 'card') {
+        const num = v('c-num').replace(/\s/g, ''), exp = v('c-exp').trim(), cvc = v('c-cvc').trim();
+        if (!/^\d{13,19}$/.test(num) || !luhn(num)) { err.textContent = 'That card number does not look right. In this demo, try 4242 4242 4242 4242.'; return; }
+        if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(exp)) { err.textContent = 'Enter the expiry as MM/YY.'; return; }
+        if (!/^\d{3,4}$/.test(cvc)) { err.textContent = 'Enter the 3 or 4 digit CVC.'; return; }
+      }
+      const payment = { method, credits: totals.credits, due: totals.due, card: method === 'card' ? '•••• ' + v('c-num').replace(/\D/g, '').slice(-4) : null };
+      let o;
+      try { o = await S.placeOrder({ userId: st.user.id, storeId: store.id, clientId: st.cart.clientId, packageId: st.cart.packageId, lines: st.cart.lines, totals, slot: new Date(slot).toISOString(), people: people || 1, address: addr, notes: v('c-notes'), payment }); }
+      catch (x) { err.textContent = x.message; return; }
       st.cart = { lines: [], clientId: st.cart.clientId, storeId: st.cart.storeId, packageId: null, people: 10 }; saveCart(); st.sheet = null;
       if (S.mode === 'demo') st.user = await S.session();
-      st.view = 'orders'; toast(`Order ${o.id} placed. The kitchen has it.`); return render();
+      st.view = 'orders'; toast(`Order ${o.id} placed. You earned ${$(o.earned || 0)} in credits${o.chance ? ' and a Pick-a-Box chance' : ''}.`); return render();
     }
     if (f.id === 'f-account') { st.user = await S.updateUser(st.user.id, { name: v('a-name'), company: v('a-company'), headcount: parseInt(v('a-head'), 10) || null, address: v('a-addr'), ...(document.getElementById('a-consent').checked !== !!st.user.consent ? { consent: document.getElementById('a-consent').checked } : {}) }); toast('Account saved.'); return render(); }
     if (f.id === 'f-redeem') { const r = await S.redeem(v('r-code')); toast(r.ok ? `Valid: ${r.offer.name}, ${r.offer.rule}. Marked used.` : r.msg); return; }
