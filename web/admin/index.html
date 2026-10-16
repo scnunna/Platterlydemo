@@ -186,7 +186,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
 
   /* ------------ console ------------ */
   let tab = 'overview', client = null, cache = {};
-  const TABS = [['overview', 'Overview'], ['orders', 'Orders'], ['leads', 'Leads'], ['redeem', 'Redeem a code'], ['catering', 'Catering'], ['onboarding', 'Onboarding', true], ['account', 'Account']];
+  const TABS = [['overview', 'Overview'], ['orders', 'Orders'], ['leads', 'Leads'], ['redeem', 'Redeem a code'], ['catering', 'Catering'], ['billing', 'Billing'], ['onboarding', 'Onboarding', true], ['account', 'Account']];
   function shell(body) {
     const supa = me.role === 'super_admin';
     app.innerHTML = `<header class="top"><div class="wrap">
@@ -325,7 +325,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
   const PAY = { pay_at_store: 'Pay at the counter', pay_on_delivery: 'Pay the driver', card_demo: 'Card (demo, not charged): collect payment' };
   let ofilter = 'open';
   async function vOrders() {
-    const rows = await call('/v1/staff/orders', { client }); cache.orders = rows;
+    const [rows, bill] = await Promise.all([call('/v1/staff/orders', { client }), call('/v1/staff/billing', { client }).catch(() => null)]); cache.orders = rows;
     const open = rows.filter(o => !['completed', 'cancelled'].includes(o.status)), shown = ofilter === 'open' ? open : rows;
     const nextOf = o => o.status === 'new' ? ['accepted', 'Accept'] : o.status === 'accepted' ? ['ready', o.mode === 'delivery' ? 'Ready for the driver' : 'Ready for pickup'] : o.status === 'ready' ? (o.mode === 'delivery' ? ['out_for_delivery', 'Out for delivery'] : ['completed', 'Picked up']) : o.status === 'out_for_delivery' ? ['completed', 'Delivered'] : null;
     return `<div class="row between"><div style="display:grid;gap:2px"><h1>Orders <span class="muted small num">${open.length} open</span></h1><span class="small muted">Orders placed through Platterly. Same price as your counter, no delivery fee. Enter each one in your till as usual.</span></div>
@@ -337,9 +337,37 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
         <div class="row between small"><span>Food ${money(o.subtotal)}${Number(o.discount) ? ' · prize −' + money(o.discount) : ''} · HST ${money(o.tax)}${o.points_used ? ' · points −' + money(o.credit) : ''} · <b>Total ${money(o.total)}</b> · ${esc(PAY[o.payment])}${o.code ? ` · code <code>${esc(o.code)}</code>` : ''}</span>
           <span class="row">${nx ? `<button class="btn primary" type="button" data-ord="${o.id}" data-st="${nx[0]}">${nx[1]}</button>` : ''}${!['completed', 'cancelled'].includes(o.status) ? `<button class="btn" type="button" data-ord="${o.id}" data-st="cancelled">Cancel</button>` : ''}</span></div></article>`; }).join('')}</div>`
       : `<div class="empty"><b>${ofilter === 'open' ? 'No open orders.' : 'No orders yet.'}</b><span>Customers order from the prize screen after Spin &amp; Win, or from a reminder link.</span></div>`}
-      ${Number(rows.filter(o => o.points_used).reduce((a, o) => a + Number(o.credit), 0)) ? `<p class="tiny muted">Platterly points used on orders: ${money(rows.reduce((a, o) => a + Number(o.credit || 0), 0))} in total. Platterly settles these with you.</p>` : ''}`;
+      ${bill ? `<section class="card" style="display:grid;gap:4px"><h2>Running total</h2>${bill.clients.map(c => `<p class="small"><b>${esc(c.name)}</b>: Platterly owes ${money(c.unsettled_credit)} in points used on ${c.unsettled_orders} completed order${c.unsettled_orders === 1 ? '' : 's'} (${money(c.clearing)} still clearing). Next settlement ${day(c.next_settlement)}.</p>`).join('')}
+        <p class="tiny muted">Settled every 3 days for orders completed at least 3 days earlier (card and other payments take about 3 days to clear). Invoice every Wednesday for the week to Sunday. Details in Billing.</p></section>` : ''}`;
   }
-  const VIEWS = { orders: vOrders, onboarding: vOnboarding, overview: vOverview, leads: vLeads, redeem: vRedeem, catering: vCatering, account: vAccount };
+  /* ------------ billing: settlements every 3 days, Wednesday invoices, weekly reports ------------ */
+  const ST_LABEL = { statement_sent: 'Statement sent', paid: 'Paid', draft: 'Draft (not sent)', sent: 'Sent', void: 'Void', nothing_due: 'Nothing due' };
+  const MAIL_LABEL = { pending: 'Queued', sending: 'Sending', sent: 'Sent', test_inbox: 'Test inbox only', failed: 'Failed' };
+  async function vBilling() {
+    const d = await call('/v1/staff/billing', { client }); cache.billing = d; const supa = me.role === 'super_admin';
+    const cname = id => (d.clients.find(c => c.id === id) || {}).name || id;
+    const cards = d.clients.map(c => `<section class="card" style="display:grid;gap:10px">
+      <div class="row between"><h2>${esc(c.name)}</h2>${supa ? `<form class="row f-rate" data-client="${esc(c.id)}" novalidate><label class="small" for="rate-${esc(c.id)}">Commission</label><input id="rate-${esc(c.id)}" inputmode="decimal" value="${c.commission_pct == null ? '' : esc(c.commission_pct)}" placeholder="not set" style="width:80px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface)"><span class="small">%</span><button class="btn" type="submit">Save</button></form>` : `<span class="small muted">${c.commission_pct == null ? 'Commission: not set yet' : 'Commission: ' + esc(c.commission_pct) + '% of food on Platterly orders'}</span>`}</div>
+      <div class="grid">${kpi(money(c.unsettled_credit), 'Platterly owes, not yet settled')}${kpi(money(c.clearing), 'Of that, still clearing (under 3 days)')}${kpi(day(c.next_settlement), 'Next settlement')}${kpi(money(c.statements_unpaid), 'Settled, transfer pending')}${kpi(money(c.invoices_open), 'Open Platterly invoices')}</div></section>`).join('');
+    const sts = d.settlements.length ? `<div class="table-wrap"><table><thead><tr><th>Settlement</th><th>Date</th>${!client && supa ? '<th>Client</th>' : ''}<th>Orders</th><th>Points used</th><th>Platterly pays</th><th>Status</th>${supa ? '<th></th>' : ''}</tr></thead><tbody>
+      ${d.settlements.map(x => `<tr><td><code>${esc(x.number)}</code></td><td class="small">${day(x.created_at)}<br><span class="muted">orders to ${day(x.cutoff)}</span></td>${!client && supa ? `<td class="small">${esc(cname(x.client_id))}</td>` : ''}<td class="num">${x.orders}</td><td class="num">${money(x.points_credit)}</td><td class="num"><b>${money(x.amount)}</b></td><td><span class="badge ${x.status === 'paid' ? 'good' : 'warn'}">${ST_LABEL[x.status]}</span></td>${supa ? `<td>${x.status === 'statement_sent' ? `<button class="btn" type="button" data-bill="settlement_paid" data-id="${x.id}">Mark paid</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
+      : `<div class="empty"><b>Nothing settled yet.</b><span>Next settlement: ${d.clients.map(c => esc(c.name) + ' ' + day(c.next_settlement)).join(', ')}, at 9 AM, then every 3 days.</span></div>`;
+    const invs = d.invoices.filter(x => x.status !== 'nothing_due');
+    const inv = invs.length ? `<div style="display:grid;gap:8px">${invs.map(x => `<details class="card" style="padding:12px 14px"><summary class="row between" style="cursor:pointer;list-style:none"><span><code>${esc(x.number)}</code> · ${day(x.week_start + 'T12:00')} to ${day(x.week_end + 'T12:00')}${!client && supa ? ' · ' + esc(cname(x.client_id)) : ''}</span>
+        <span class="row"><span class="small">${x.orders} orders · food ${money(x.food)} · ${x.commission_pct == null ? 'rate not set' : esc(x.commission_pct) + '%'} · <b>${x.total == null ? '—' : money(x.total)}</b></span><span class="badge ${x.status === 'paid' ? 'good' : x.status === 'draft' ? 'warn' : ''}">${ST_LABEL[x.status]}</span></span></summary>
+        <div class="table-wrap" style="margin-top:8px"><table style="min-width:420px"><thead><tr><th>Order</th><th>Taken</th><th>Type</th><th>Food</th></tr></thead><tbody>${(x.lines || []).map(l => `<tr><td><code>${esc(l.number)}</code></td><td class="small">${when(l.created_at)}</td><td>${esc(l.mode)}</td><td class="num">${money(l.food)}</td></tr>`).join('')}</tbody></table></div>
+        ${supa ? `<div class="row" style="margin-top:8px">${x.status === 'draft' ? `<button class="btn primary" type="button" data-bill="invoice_send" data-id="${x.id}">Send invoice</button>` : ''}${x.status === 'sent' ? `<button class="btn" type="button" data-bill="invoice_paid" data-id="${x.id}">Mark paid</button>` : ''}${['draft', 'sent'].includes(x.status) ? `<button class="btn" type="button" data-bill="invoice_void" data-id="${x.id}">Void</button>` : ''}</div>` : ''}</details>`).join('')}</div>`
+      : '<div class="empty"><b>No invoices yet.</b><span>Every Wednesday at 9 AM, for every order taken Monday to Sunday of the week before.</span></div>';
+    const reps = d.reports.length ? `<div class="table-wrap"><table><thead><tr><th>Week</th>${!client && supa ? '<th>Client</th>' : ''}<th>Orders</th><th>Food</th><th>Points earned</th><th>Points used</th><th>New leads</th><th>Net to store</th></tr></thead><tbody>
+      ${d.reports.map(r => `<tr><td class="small">${day(r.week_start + 'T12:00')}</td>${!client && supa ? `<td class="small">${esc(cname(r.client_id))}</td>` : ''}<td class="num">${r.data.orders}</td><td class="num">${money(r.data.food)}</td><td class="num">${r.data.points_earned}</td><td class="num">${r.data.points_used}</td><td class="num">${r.data.leads_new}</td><td class="num">${money((r.data.balance || {}).net_to_client)}</td></tr>`).join('')}</tbody></table></div>`
+      : '<div class="empty"><b>No weekly reports yet.</b><span>One per week, every Monday at 9 AM, for the week to Sunday.</span></div>';
+    const mail = d.outbox.length ? `<div class="table-wrap"><table><thead><tr><th>Email</th><th>Status</th><th>Sent</th></tr></thead><tbody>${d.outbox.map(o => `<tr><td class="small">${esc({ settlement: 'Settlement', invoice: 'Invoice', weekly_report: 'Weekly report' }[o.kind])} <code>${esc(o.ref)}</code></td><td><span class="badge ${o.status === 'sent' ? 'good' : o.status === 'failed' ? 'warn' : ''}">${MAIL_LABEL[o.status]}</span>${o.error ? `<br><span class="tiny muted">${esc(o.error)}</span>` : ''}</td><td class="small">${when(o.sent_at)}</td></tr>`).join('')}</tbody></table></div>
+      ${d.outbox.some(o => o.status === 'test_inbox') ? '<p class="tiny muted">"Test inbox only": the Listmonk sender still points at the local test inbox, so these did not leave the store laptop. Add the real SMTP server in that Listmonk\'s Settings.</p>' : ''}` : '<p class="small muted">No billing emails yet.</p>';
+    return `<div class="row between"><div style="display:grid;gap:2px"><h1>Billing</h1><span class="small muted">Settlement every 3 days · invoice every Wednesday for the week to Sunday · weekly report every Monday</span></div>${supa ? '<button class="btn" type="button" data-bill="run">Run billing now</button>' : ''}</div>
+      ${cards}<section style="display:grid;gap:8px"><h2>Settlements</h2>${sts}</section><section style="display:grid;gap:8px"><h2>Invoices</h2>${inv}</section>
+      <section style="display:grid;gap:8px"><h2>Weekly reports</h2>${reps}</section><section style="display:grid;gap:8px"><h2>Billing emails</h2>${mail}</section>`;
+  }
+  const VIEWS = { billing: vBilling, orders: vOrders, onboarding: vOnboarding, overview: vOverview, leads: vLeads, redeem: vRedeem, catering: vCatering, account: vAccount };
   async function render() {
     if (!me) return signin();
     shell('<p class="muted">Loading…</p>');
@@ -355,6 +383,11 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
     if (b.dataset.onbClient) { onb.sel = b.dataset.onbClient; onb.edit = null; return render(); }
     if (b.dataset.onbNote) { onb.edit = b.dataset.onbNote; return render(); }
     if (b.dataset.act === 'note-cancel') { onb.edit = null; return render(); }
+    if (b.dataset.bill) {
+      b.disabled = true;
+      try { const r = await call('/v1/staff/billing-action', { action: b.dataset.bill, id: b.dataset.id || null }); toast(r.ok ? (b.dataset.bill === 'run' ? 'Billing run. Emails go out in a moment.' : 'Done.') : r.msg); } catch (x) { toast(x.message); }
+      return render();
+    }
     if (b.dataset.ord) {
       b.disabled = true;
       try { const r = await call('/v1/staff/order-status', { id: b.dataset.ord, status: b.dataset.st }); toast(r.ok ? (r.points_awarded ? `Done. The customer earned ${r.points_awarded} Platterly points.` : 'Order updated.') : r.msg); } catch (x) { toast(x.message); }
@@ -397,6 +430,12 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
           ${(r.orders || []).length ? `<h3 style="margin-top:10px">Your orders</h3><div style="display:grid;gap:6px;margin-top:6px">${r.orders.map(o => `<div class="card" style="padding:8px 12px"><div class="row between"><b><code>${esc(o.number)}</code></b><span class="badge">${esc(ORDER_ST[o.status] || o.status)}</span></div><div class="small muted">${esc(o.client)} · ${esc(o.mode)} · ${money(o.total)} · ${day(o.created_at)}</div></div>`).join('')}</div>` : ''}
           <h3 style="margin-top:10px">Your prizes</h3><div style="display:grid;gap:8px;margin-top:8px">${r.spins.map(s => `<div class="card" style="padding:10px 12px"><div class="row between"><b>${esc(s.prize)}</b>${s.redeemed ? '<span class="badge">Used</span>' : new Date(s.expires_at) < new Date() ? '<span class="badge">Expired</span>' : '<span class="badge good">Valid today</span>'}</div><div class="small muted">${esc(s.client || '')} · ${esc(s.rule)} · ${day(s.day + 'T12:00')} · <code>${esc(s.code)}</code></div></div>`).join('')}</div>`;
       } catch (x) { err.textContent = x.message; }
+    }
+    if (f.classList.contains('f-rate')) {
+      const v = f.querySelector('input').value.trim();
+      if (v !== '' && !(Number(v) >= 0 && Number(v) <= 50)) { toast('Use a rate from 0 to 50%, or leave it empty.'); return; }
+      try { const r = await call('/v1/staff/billing-rate', { client: f.dataset.client, pct: v }); toast(r.ok ? 'Commission saved. Draft invoices updated.' : r.msg); } catch (x) { toast(x.message); }
+      return render();
     }
     if (f.classList.contains('f-note')) {
       try { const r = await call('/v1/staff/onboarding-set', { client: onb.sel, step: f.dataset.step, note: f.querySelector('textarea').value }); if (!r.ok) { toast(r.msg); return; } onb.edit = null; toast('Note saved.'); return render(); }

@@ -40,18 +40,38 @@ Codes (`PL-XXXXXX`) and credit points are Platterly's, not the stores'.
 7. Points: 5 per $1 of food on a completed order or a counter redemption with the order total entered, plus the
    fast-claim bonus. One Platterly member per person across partners (matched by email or phone).
 
-## Reminders
-`server/lead-proxy.mjs` sends due reminders every minute. Without a sender configured, emails go to the local test
-inbox (Mailpit, http://127.0.0.1:56324) and are marked `test_inbox`: **they do not reach customers**. To send for
-real, create `%LOCALAPPDATA%\platterly\mail.env` (never commit it) and restart with `server\start.ps1 -RestartProxy`:
-```
-PLATTERLY_MAIL=resend
-RESEND_API_KEY=re_...
-PLATTERLY_MAIL_FROM=Platterly <codes@your-domain>
-TWILIO_ACCOUNT_SID=AC...
-TWILIO_AUTH_TOKEN=...
-TWILIO_FROM=+1...
-```
+## Email: self-hosted Listmonk, one per sender
+`server/listmonk/docker-compose.yml` runs three Listmonk instances on the Platterly Postgres (databases
+`listmonk_platterly`, `listmonk_panago`, `listmonk_wetzels`), local only:
+
+| Instance | Admin | Sends |
+|---|---|---|
+| platterly | http://127.0.0.1:56390/admin | settlements, invoices, weekly reports to partner admins |
+| panago | http://127.0.0.1:56391/admin | Panago customers: claim reminders; "Deals and catering offers" list |
+| wetzels | http://127.0.0.1:56392/admin | Wetzel's customers: claim reminders; "Deals and party-pack offers" list |
+
+`server/start.ps1` starts them and runs `server/listmonk/setup.mjs` (sender, template "Platterly message", lists).
+Secrets: `%LOCALAPPDATA%\platterly\listmonk.env` (DB password, admin passwords, API tokens; never committed).
+
+**SMTP.** Each instance starts pointed at the local test inbox (Mailpit, http://127.0.0.1:56324): mail is recorded as
+`test_inbox` and **does not reach anyone**. Put the real SMTP server in that instance's admin, Settings > SMTP
+(setup never overwrites a real one). The proxy notices within 10 minutes and marks mail `sent`.
+
+**Deals lists.** Every 15 minutes the proxy copies leads who ticked the deals box and gave an email into the client's
+list, and turns consent off in Platterly for anyone who unsubscribed or was blocklisted there (logged in `consent_log`).
+Reminder-only contacts are kept as subscribers with no list.
+
+Text reminders (optional): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` in `%LOCALAPPDATA%\platterly\mail.env`.
+
+## Billing (all times Toronto)
+- **Settlement every 3 days**, 9 AM: orders completed at least 3 days earlier (payments take about 3 days to clear).
+  Platterly owes the store the Platterly points customers used. A statement is emailed; mark the transfer paid in
+  the portal (Billing).
+- **Invoice every Wednesday**, 9 AM: every order taken Monday 00:00 to Sunday 23:59 the week before. Commission =
+  the client's rate x food (menu price minus prize discounts, before tax). With no rate set, the invoice stays a draft.
+- **Weekly report every Monday**, 9 AM: orders, sales, points earned and used, leads, balance.
+- A missed day (laptop off) is caught up on the next run. The proxy runs billing every 5 minutes; super admin can
+  run it from the portal. Tests: `supabase/tests/billing_test.sql`.
 
 ## Lead database (runs on the store laptop)
 `supabase/` is a self-hosted Supabase CLI stack (`project_id = platterly`, ports 563xx) in Docker Desktop.

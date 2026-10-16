@@ -1,0 +1,75 @@
+# Platterly email: one self-hosted Listmonk per sender, so each client has its own subscribers, lists, templates,
+# sender address and SMTP settings.
+#   platterly  127.0.0.1:56390  Platterly's own mail to partners: weekly report, settlements, invoices
+#   panago     127.0.0.1:56391  Panago customers: claim reminders, deals list (consented contacts only)
+#   wetzels    127.0.0.1:56392  Wetzel's customers: same
+# Databases live on the Platterly Postgres (supabase_db_platterly) as listmonk_<name>, owned by role "listmonk".
+# Secrets come from %LOCALAPPDATA%\platterly\listmonk.env (never committed). Start with server\start.ps1, or:
+#   docker compose -p platterly-mail --env-file "$env:LOCALAPPDATA\platterly\listmonk.env" -f server\listmonk\docker-compose.yml up -d
+# Then server\listmonk\setup.mjs configures SMTP, templates and lists (safe to re-run).
+# Ports are local only: Listmonk's admin is never exposed through the tunnel.
+
+x-listmonk: &listmonk
+  image: listmonk/listmonk:v5.1.0
+  restart: unless-stopped
+  networks: [supabase]
+  command: [sh, -c, "./listmonk --install --idempotent --yes --config '' && ./listmonk --upgrade --yes --config '' && ./listmonk --config ''"]
+  mem_limit: 128m
+
+services:
+  platterly:
+    <<: *listmonk
+    container_name: platterly_mail_platterly
+    ports: ["127.0.0.1:56390:9000"]
+    environment:
+      TZ: America/Toronto
+      LISTMONK_app__address: 0.0.0.0:9000
+      LISTMONK_db__host: supabase_db_platterly
+      LISTMONK_db__port: "5432"
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: ${LISTMONK_DB_PASSWORD}
+      LISTMONK_db__database: listmonk_platterly
+      LISTMONK_db__ssl_mode: disable
+      LISTMONK_ADMIN_USER: platterly-admin
+      LISTMONK_ADMIN_PASSWORD: ${LM_PLATTERLY_ADMIN_PASSWORD}
+      LISTMONK_ADMIN_API_USER: platterly-api
+      LISTMONK_ADMIN_API_TOKEN: ${LM_PLATTERLY_API_TOKEN}
+  panago:
+    <<: *listmonk
+    container_name: platterly_mail_panago
+    ports: ["127.0.0.1:56391:9000"]
+    environment:
+      TZ: America/Toronto
+      LISTMONK_app__address: 0.0.0.0:9000
+      LISTMONK_db__host: supabase_db_platterly
+      LISTMONK_db__port: "5432"
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: ${LISTMONK_DB_PASSWORD}
+      LISTMONK_db__database: listmonk_panago
+      LISTMONK_db__ssl_mode: disable
+      LISTMONK_ADMIN_USER: panago-admin
+      LISTMONK_ADMIN_PASSWORD: ${LM_PANAGO_ADMIN_PASSWORD}
+      LISTMONK_ADMIN_API_USER: platterly-api
+      LISTMONK_ADMIN_API_TOKEN: ${LM_PANAGO_API_TOKEN}
+  wetzels:
+    <<: *listmonk
+    container_name: platterly_mail_wetzels
+    ports: ["127.0.0.1:56392:9000"]
+    environment:
+      TZ: America/Toronto
+      LISTMONK_app__address: 0.0.0.0:9000
+      LISTMONK_db__host: supabase_db_platterly
+      LISTMONK_db__port: "5432"
+      LISTMONK_db__user: listmonk
+      LISTMONK_db__password: ${LISTMONK_DB_PASSWORD}
+      LISTMONK_db__database: listmonk_wetzels
+      LISTMONK_db__ssl_mode: disable
+      LISTMONK_ADMIN_USER: wetzels-admin
+      LISTMONK_ADMIN_PASSWORD: ${LM_WETZELS_ADMIN_PASSWORD}
+      LISTMONK_ADMIN_API_USER: platterly-api
+      LISTMONK_ADMIN_API_TOKEN: ${LM_WETZELS_API_TOKEN}
+
+networks:
+  supabase:
+    name: supabase_network_platterly
+    external: true

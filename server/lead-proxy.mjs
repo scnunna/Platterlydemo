@@ -7,10 +7,11 @@
 //   GET /v1/health
 // Database keys are added here, so the public repo and the pages never hold one. Staff sessions are random
 // tokens kept in memory (12 h); a restart signs everyone out. Node 18+, no dependencies.
-// It also sends the 2-hour claim reminders (see sendReminders below).
+// It also runs Platterly's background jobs: claim reminders, billing (settlements, invoices, weekly reports) and the
+// Listmonk deals-list sync. Email goes out through the self-hosted Listmonk instances (server/listmonk).
 // Env: PLATTERLY_API, PLATTERLY_ANON_KEY, PLATTERLY_SERVICE_KEY, PORT (default 56380), PLATTERLY_ORIGINS,
-//      PLATTERLY_MAIL (test | resend), RESEND_API_KEY, PLATTERLY_MAIL_FROM, PLATTERLY_MAILPIT,
-//      TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM, PLATTERLY_SITE.
+//      LM_PLATTERLY_API_TOKEN, LM_PANAGO_API_TOKEN, LM_WETZELS_API_TOKEN (listmonk.env), PLATTERLY_SITE,
+//      TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM (texts, optional).
 import http from 'node:http';
 import crypto from 'node:crypto';
 
@@ -45,6 +46,9 @@ const STAFF = {
   '/v1/staff/redeem': { rpc: 'staff_redeem', args: (b, s) => ({ p_staff: s.id, p_code: b.code || null, p_store: b.store || null, p_order_total: b.total === '' || b.total == null ? null : Number(b.total) }) },
   '/v1/staff/orders': { rpc: 'staff_orders', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
   '/v1/staff/order-status': { rpc: 'staff_set_order_status', args: (b, s) => ({ p_staff: s.id, p_id: b.id || null, p_status: b.status || null }) },
+  '/v1/staff/billing': { rpc: 'staff_billing', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
+  '/v1/staff/billing-rate': { rpc: 'staff_billing_rate', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_pct: b.pct === '' || b.pct == null ? null : Number(b.pct) }) },
+  '/v1/staff/billing-action': { rpc: 'staff_billing_action', args: (b, s) => ({ p_staff: s.id, p_action: b.action || null, p_id: b.id || null }), after: () => setTimeout(sendOutbox, 500) },
   // Super admin only (checked in SQL): the client onboarding board.
   '/v1/staff/onboarding': { rpc: 'staff_onboarding', args: (b, s) => ({ p_staff: s.id }) },
   '/v1/staff/onboarding-set': { rpc: 'staff_onboarding_set', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_step: b.step || null, p_done: typeof b.done === 'boolean' ? b.done : null, p_note: typeof b.note === 'string' ? b.note : null }) },
@@ -136,73 +140,169 @@ const server = http.createServer((req, res) => {
       const s = session(req);
       if (!s) return send(res, 401, { error: 'Signed out. Sign in again.' }, origin);
       const r = await rpc(STAFF[path].rpc, STAFF[path].args(b, s), SERVICE);
+      if (r.ok && STAFF[path].after) STAFF[path].after();
       return r.ok ? send(res, 200, r.data, origin) : dbError(res, r, origin);
     } catch (e) {
       return send(res, 503, { error: 'The store system is offline right now.', hint: 'Your spin is saved on this phone. Show this screen at the counter.' }, origin);
     }
   });
 });
-// ---------- claim reminders ----------
-// Two hours after a claim the fast-claim bonus ends; the code stays valid until the store closes. The customer chose
-// to get one reminder (email when they gave one, else a text). It is a service message about the code they asked
-// for, not marketing: no other offers in it.
-// Email: PLATTERLY_MAIL=resend sends through Resend (RESEND_API_KEY, PLATTERLY_MAIL_FROM on a verified domain).
-//        Otherwise it goes to the local test inbox (Mailpit, http://127.0.0.1:56324) and is marked test_inbox:
-//        it does NOT reach the customer until a real sender is set.
-// Text:  TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM. Without them a text reminder is marked skipped.
-const MAIL = process.env.PLATTERLY_MAIL || 'test';
-const MAILPIT = process.env.PLATTERLY_MAILPIT || 'http://127.0.0.1:56324';
-const FROM = process.env.PLATTERLY_MAIL_FROM || 'Platterly <codes@platterly.local>';
+// ---------- email through Listmonk ----------
+// One Listmonk per sender (server/listmonk/docker-compose.yml): 'platterly' for partner mail, one per client for that
+// client's customers. Each has its own SMTP setting; while it points at the local test inbox (Mailpit) a message is
+// recorded as test_inbox, meaning it did not leave this laptop.
 const SITE = process.env.PLATTERLY_SITE || 'https://godsmustb.github.io/platterlycatering';
-const closeText = iso => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Toronto' }).replace(':00', '');
-function reminderText(r) {
-  const link = `${SITE}/order/?code=${encodeURIComponent(r.code)}`, ways = r.delivery ? 'pickup or delivery' : 'pickup';
-  return {
-    subject: `Your Platterly code is still good until ${closeText(r.expires_at)} today`,
-    sms: `Platterly: Hi ${r.first_name}, your prize (${r.prize}) is still yours until ${closeText(r.expires_at)} today at ${r.store}. Code ${r.code}. Order for ${ways}: ${link} Reply STOP to opt out.`,
-    text: `Hi ${r.first_name},\n\nYour 2-hour fast-claim bonus has ended, but your prize is still yours:\n\n  ${r.prize}, ${r.rule}\n  Code: ${r.code}\n  Valid until ${closeText(r.expires_at)} today at ${r.store}${r.address ? ', ' + r.address : ''}\n\n` +
-          `Show the code at the counter, or order through Platterly for ${ways} at the same price as the store: ${link}\n\n` +
-          `You are getting this one reminder because you asked for it when you claimed your prize. It is not a marketing message.\n` +
-          `Platterly, marketing partner of ${r.client}. ${SITE}/`
-  };
+const LM = { platterly: 56390, panago: 56391, wetzels: 56392 };
+const lmTemplate = {}, lmTest = {};
+const instanceFor = client => (LM[client] && process.env[`LM_${client.toUpperCase()}_API_TOKEN`]) ? client : 'platterly';
+async function lm(inst, method, p, body) {
+  const token = process.env[`LM_${inst.toUpperCase()}_API_TOKEN`];
+  if (!token) throw new Error(`Listmonk ${inst}: no API token (listmonk.env)`);
+  const r = await fetch(`http://127.0.0.1:${LM[inst]}/api${p}`, { method, signal: AbortSignal.timeout(15000),
+    headers: { authorization: `token platterly-api:${token}`, 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  return { ok: r.ok, status: r.status, data: j.data, message: j.message };
 }
-async function sendEmail(to, m) {
-  if (MAIL === 'resend') {
-    const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(10000),
-      headers: { authorization: `Bearer ${process.env.RESEND_API_KEY || ''}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ from: FROM, to: [to], subject: m.subject, text: m.text }) });
-    if (!r.ok) throw new Error(`Resend ${r.status}`);
-    return 'sent';
+async function lmReady(inst) {
+  if (!lmTemplate[inst] || Date.now() - (lmTest[inst]?.at || 0) > 600e3) {
+    const t = await lm(inst, 'GET', '/templates'); if (!t.ok) throw new Error(`Listmonk ${inst}: ${t.status} ${t.message || ''}`);
+    const tpl = (t.data || []).find(x => x.name === 'Platterly message'); if (!tpl) throw new Error(`Listmonk ${inst}: run server/listmonk/setup.mjs`);
+    lmTemplate[inst] = tpl.id;
+    const st = await lm(inst, 'GET', '/settings');
+    lmTest[inst] = { at: Date.now(), test: !st.ok || (st.data.smtp || []).filter(x => x.enabled).every(x => /inbucket|mailpit|yoursite\.com/.test(x.host || '')) };
   }
-  const r = await fetch(`${MAILPIT}/api/v1/send`, { method: 'POST', signal: AbortSignal.timeout(10000), headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ From: { Email: 'codes@platterly.local', Name: 'Platterly' }, To: [{ Email: to }], Subject: m.subject, Text: m.text }) });
-  if (!r.ok) throw new Error(`test inbox ${r.status}`);
-  return 'test_inbox';
 }
-async function sendSms(to, m) {
+async function sendEmail(inst, to, name, subject, html) {
+  await lmReady(inst);
+  const c = await lm(inst, 'POST', '/subscribers', { email: to, name: name || to.split('@')[0], status: 'enabled', lists: [], preconfirm_subscriptions: true });
+  if (!c.ok && c.status !== 409) throw new Error(`Listmonk ${inst} subscriber: ${c.status} ${c.message || ''}`);
+  const r = await lm(inst, 'POST', '/tx', { subscriber_email: to, template_id: lmTemplate[inst], content_type: 'html', data: { subject, html } });
+  if (!r.ok) throw new Error(`Listmonk ${inst} send: ${r.status} ${r.message || ''}`);
+  return lmTest[inst].test ? 'test_inbox' : 'sent';
+}
+async function sendSms(to, text) {
   const sid = process.env.TWILIO_ACCOUNT_SID, tok = process.env.TWILIO_AUTH_TOKEN, from = process.env.TWILIO_FROM;
   if (!sid || !tok || !from) return 'skipped';
   const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, { method: 'POST', signal: AbortSignal.timeout(10000),
     headers: { authorization: 'Basic ' + Buffer.from(`${sid}:${tok}`).toString('base64'), 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ To: to, From: from, Body: m.sms }) });
+    body: new URLSearchParams({ To: to, From: from, Body: text }) });
   if (!r.ok) throw new Error(`Twilio ${r.status}`);
   return 'sent';
 }
-let sending = false;
-async function sendReminders() {
-  if (sending) return; sending = true;
-  try {
-    const due = await rpc('reminders_claim', { p_limit: 20 }, SERVICE);
-    for (const r of (due.ok && Array.isArray(due.data) ? due.data : [])) {
-      let status = 'failed', error = null;
-      try { const m = reminderText(r); status = r.channel === 'email' ? await sendEmail(r.to, m) : await sendSms(r.to, m); if (status === 'skipped') error = 'No SMS sender configured'; }
-      catch (e) { error = String(e.message || e).slice(0, 200); }
-      await rpc('reminder_done', { p_id: r.id, p_status: status, p_error: error }, SERVICE);
-      console.log(`reminder ${r.id} ${r.channel} ${status}${error ? ' (' + error + ')' : ''}`); // no addresses in the log
-    }
-  } catch (e) { console.error('reminders:', e.message); } finally { sending = false; }
-}
-setInterval(sendReminders, 60e3);
-setTimeout(sendReminders, 5e3);
 
-server.listen(PORT, '127.0.0.1', () => console.log(`lead proxy on http://127.0.0.1:${PORT} -> ${API} · reminders: email ${MAIL === 'resend' ? 'Resend' : 'test inbox only'}, SMS ${process.env.TWILIO_ACCOUNT_SID ? 'Twilio' : 'off'}`));
+const H = v => String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = n => '$' + Number(n || 0).toFixed(2);
+const tz = { timeZone: 'America/Toronto' };
+const dLong = iso => new Date(iso).toLocaleDateString('en-CA', { ...tz, weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+const dShort = iso => new Date(iso).toLocaleDateString('en-CA', { ...tz, month: 'short', day: 'numeric' });
+const dDay = ymd => new Date(ymd + 'T12:00:00Z').toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+const closeText = iso => new Date(iso).toLocaleTimeString('en-CA', { ...tz, hour: 'numeric', minute: '2-digit' }).replace(':00', '');
+function shell(title, inner, foot) {
+  return `<div style="font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#13201F;max-width:640px;margin:0 auto">
+  <div style="background:#0E4D4A;color:#fff;padding:16px 20px;border-radius:12px 12px 0 0"><div style="font-size:20px;font-weight:800;letter-spacing:-.02em">platterly</div><div style="font-size:15px;opacity:.9">${H(title)}</div></div>
+  <div style="border:1px solid #D3DBD6;border-top:0;border-radius:0 0 12px 12px;padding:18px 20px;font-size:14px;line-height:1.5">${inner}
+  <p style="color:#56645F;font-size:12px;margin-top:18px">${foot || ''} Platterly · ${H(SITE)}/</p></div></div>`;
+}
+const table = (head, rows, right = []) => `<table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr>${head.map((h, k) => `<th style="text-align:${right.includes(k) ? 'right' : 'left'};padding:6px 8px;background:#E9EEEB;border-bottom:1px solid #D3DBD6">${H(h)}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map((c, k) => `<td style="text-align:${right.includes(k) ? 'right' : 'left'};padding:6px 8px;border-bottom:1px solid #E9EEEB">${c}</td>`).join('')}</tr>`).join('')}</table>`;
+const kv = pairs => `<table style="border-collapse:collapse;width:100%;font-size:14px;margin:8px 0">${pairs.map(([k, v, b]) => `<tr><td style="padding:5px 0;color:#56645F">${H(k)}</td><td style="padding:5px 0;text-align:right;${b ? 'font-weight:800;font-size:16px' : ''}">${v}</td></tr>`).join('')}</table>`;
+const PAYN = { pay_at_store: 'At the counter', pay_on_delivery: 'To the driver', card_demo: 'At the store (demo card)' };
+
+function render(kind, p) {
+  if (kind === 'settlement') return { subject: `Platterly settlement ${p.number}: ${$(p.amount)} for ${p.client}`, html: shell(`Settlement ${p.number}`,
+    `<p>Every 3 days Platterly settles the orders whose payments have cleared (completed on or before <b>${H(dLong(p.cutoff))}</b>).</p>
+     ${kv([['Orders settled', String(p.orders)], ['Platterly points used by customers', $(p.points_credit)], ['Card payments collected by Platterly', $(p.card_prepaid)], ['Platterly pays you', $(p.amount), true]])}
+     ${table(['Order', 'Completed', 'Type', 'Paid', 'Total', 'Points'], (p.lines || []).map(l => [H(l.number), H(dShort(l.completed_at)), H(l.mode), H(PAYN[l.payment] || l.payment), $(l.total), $(l.credit)]), [4, 5])}
+     <p style="color:#56645F;font-size:12px">Customers paid you the order totals directly. The points part is Platterly's: we transfer it to you.</p>`) };
+  if (kind === 'invoice') return { subject: `Platterly invoice ${p.number}: ${$(p.total)} (week of ${dDay(p.week_start)})`, html: shell(`Invoice ${p.number}`,
+    `<p>To <b>${H(p.client)}</b>, for every order taken through Platterly from <b>${H(dDay(p.week_start))}</b> to <b>${H(dDay(p.week_end))}</b> (Sunday, end of day).</p>
+     ${table(['Order', 'Taken', 'Type', 'Food'], (p.lines || []).map(l => [H(l.number), H(dShort(l.created_at)), H(l.mode), $(l.food)]), [3])}
+     ${kv([['Orders', String(p.orders)], ['Food sold through Platterly', $(p.food)], [`Platterly commission (${Number(p.commission_pct)}%)`, $(p.commission)], ['Amount due', $(p.total), true]])}
+     <p style="color:#56645F;font-size:12px">Food is menu price minus prize discounts, before tax. Points customers used are settled to you separately every 3 days.</p>`) };
+  if (kind === 'weekly_report') {
+    const b = p.balance || {};
+    return { subject: `Platterly weekly report: ${p.client}, ${dDay(p.week_start)} to ${dDay(p.week_end)}`, html: shell(`Weekly report · ${dDay(p.week_start)} to ${dDay(p.week_end)}`,
+    `<h3 style="margin:4px 0">Orders through Platterly</h3>${kv([['Orders', `${p.orders} (${p.pickup} pickup, ${p.delivery} delivery)`], ['Cancelled', String(p.cancelled)], ['Food sold', $(p.food)], ['Prizes given on orders', $(p.prize_value)]])}
+     <h3 style="margin:12px 0 4px">Platterly points at your store</h3>${kv([['Points earned by your customers', String(p.points_earned)], ['Points used on orders', String(p.points_used)], ['Value of points used (Platterly pays)', $(p.points_credit)]])}
+     <h3 style="margin:12px 0 4px">Leads from Spin &amp; Win</h3>${kv([['New leads', String(p.leads_new)], ['Said yes to deals', String(p.leads_consented)], ['Prizes redeemed at the counter', String(p.counter_redemptions)]])}
+     <h3 style="margin:12px 0 4px">Balance</h3>${kv([['Platterly owes you, clearing', $(b.platterly_owes_unsettled)], ['Platterly owes you, settled', $(b.platterly_owes_statements)], ['Open Platterly invoices', $(b.client_owes_invoices)], ['Net to you', $(b.net_to_client), true]])}
+     <p>Next settlement: ${p.next_settlement ? H(dLong(p.next_settlement)) : 'the first one runs on the next billing day'}. Your invoice for this week arrives on Wednesday.</p>`) };
+  }
+}
+
+let busy = { reminders: false, outbox: false, billing: false, sync: false };
+const job = (name, fn) => async () => { if (busy[name]) return; busy[name] = true; try { await fn(); } catch (e) { console.error(`${name}:`, e.message); } finally { busy[name] = false; } };
+
+// Two hours after a claim the fast-claim bonus ends; the code stays valid until close. One reminder, by the customer's
+// choice, through the client's own Listmonk (or a text). A service message about their code: no other offers in it.
+const sendReminders = job('reminders', async () => {
+  const due = await rpc('reminders_claim', { p_limit: 20 }, SERVICE);
+  for (const r of (due.ok && Array.isArray(due.data) ? due.data : [])) {
+    const link = `${SITE}/order/?code=${encodeURIComponent(r.code)}`, ways = r.delivery ? 'pickup or delivery' : 'pickup', until = closeText(r.expires_at);
+    let status = 'failed', error = null;
+    try {
+      if (r.channel === 'email') status = await sendEmail(instanceFor(r.client_id), r.to, r.first_name, `Your Platterly code is still good until ${until} today`, shell(`Your prize is still yours until ${until} today`,
+        `<p>Hi ${H(r.first_name)},</p><p>Your 2-hour fast-claim bonus has ended, but your prize is still yours:</p>
+         <p style="background:#F3F5F2;border-radius:10px;padding:12px 14px"><b>${H(r.prize)}</b>, ${H(r.rule)}<br>Code <b style="font-family:monospace;font-size:17px">${H(r.code)}</b><br>Valid until ${H(until)} today at ${H(r.store)}${r.address ? ', ' + H(r.address) : ''}</p>
+         <p>Show the code at the counter, or <a href="${H(link)}">order through Platterly</a> for ${ways} at the same price as the store.</p>`,
+        `You are getting this one reminder because you asked for it when you claimed your prize. It is not a marketing message. Platterly, marketing partner of ${H(r.client)}.`));
+      else { status = await sendSms(r.to, `Platterly: Hi ${r.first_name}, your prize (${r.prize}) is still yours until ${until} today at ${r.store}. Code ${r.code}. Order for ${ways}: ${link} Reply STOP to opt out.`); if (status === 'skipped') error = 'No SMS sender configured'; }
+    } catch (e) { error = String(e.message || e).slice(0, 200); }
+    await rpc('reminder_done', { p_id: r.id, p_status: status, p_error: error }, SERVICE);
+    console.log(`reminder ${r.id} ${r.channel} ${status}${error ? ' (' + error + ')' : ''}`); // no addresses in the log
+  }
+});
+
+// Partner mail: settlements, invoices, weekly reports, through Platterly's own Listmonk.
+const sendOutbox = job('outbox', async () => {
+  const due = await rpc('outbox_claim', { p_limit: 20 }, SERVICE);
+  for (const o of (due.ok && Array.isArray(due.data) ? due.data : [])) {
+    let status = 'failed', error = null;
+    try {
+      const m = render(o.kind, o.payload); const got = [];
+      for (const to of o.recipients || []) got.push(await sendEmail('platterly', to, null, m.subject, m.html));
+      status = !got.length ? 'failed' : got.every(x => x === 'test_inbox') ? 'test_inbox' : 'sent'; if (!got.length) error = 'No recipients (no active client admin)';
+    } catch (e) { error = String(e.message || e).slice(0, 200); }
+    await rpc('outbox_done', { p_id: o.id, p_status: status, p_error: error }, SERVICE);
+    console.log(`outbox ${o.kind} ${o.ref} ${status}${error ? ' (' + error + ')' : ''}`);
+  }
+});
+const runBilling = job('billing', async () => {
+  const r = await rpc('billing_tick', { p_now: new Date().toISOString() }, SERVICE);
+  if (r.ok && r.data && r.data.made && r.data.made.length) console.log('billing', JSON.stringify(r.data.made));
+  await sendOutbox();
+});
+
+// Each client's Listmonk "deals" list holds exactly the leads who ticked the deals box and gave an email.
+// Unsubscribes and blocklists in Listmonk turn consent off in Platterly (logged in consent_log).
+const DEALS = { panago: 'Deals and catering offers', wetzels: 'Deals and party-pack offers' };
+const syncLists = job('sync', async () => {
+  for (const [client, listName] of Object.entries(DEALS)) {
+    if (instanceFor(client) !== client) continue;
+    const lists = await lm(client, 'GET', '/lists?per_page=all'); const list = (lists.data?.results || []).find(l => l.name === listName);
+    if (!list) continue;
+    const subs = await lm(client, 'GET', `/subscribers?list_id=${list.id}&per_page=all`);
+    const inList = new Map((subs.data?.results || []).map(x => [x.email.toLowerCase(), x]));
+    const out = [...inList.values()].filter(x => x.status === 'blocklisted' || (x.lists || []).some(l => l.id === list.id && l.subscription_status === 'unsubscribed')).map(x => x.email.toLowerCase());
+    if (out.length) { const r = await rpc('marketing_optout', { p_client: client, p_emails: out }, SERVICE); if (r.ok && r.data) console.log(`sync ${client}: ${r.data} unsubscribed`); }
+    const want = await rpc('marketing_contacts', { p_client: client }, SERVICE);
+    let added = 0;
+    for (const c of (want.ok && Array.isArray(want.data) ? want.data : [])) {
+      if (inList.has(c.email) || out.includes(c.email)) continue;
+      const attribs = { platterly: { phone: c.phone, store: c.store, source: c.source, since: c.since, points: c.points } };
+      const r = await lm(client, 'POST', '/subscribers', { email: c.email, name: c.name, status: 'enabled', lists: [list.id], attribs, preconfirm_subscriptions: true });
+      if (r.status === 409) {
+        const f = await lm(client, 'GET', `/subscribers?query=${encodeURIComponent(`subscribers.email = '${c.email.replace(/'/g, "''")}'`)}`);
+        const sub = f.data?.results?.[0];
+        if (sub && sub.status !== 'blocklisted') await lm(client, 'PUT', '/subscribers/lists', { ids: [sub.id], action: 'add', target_list_ids: [list.id], status: 'confirmed' });
+      }
+      if (r.ok || r.status === 409) added++;
+    }
+    if (added) console.log(`sync ${client}: ${added} added to "${listName}"`);
+  }
+});
+
+setInterval(sendReminders, 60e3); setTimeout(sendReminders, 5e3);
+setInterval(runBilling, 300e3); setTimeout(runBilling, 15e3);
+setInterval(syncLists, 900e3); setTimeout(syncLists, 30e3);
+
+server.listen(PORT, '127.0.0.1', () => console.log(`lead proxy on http://127.0.0.1:${PORT} -> ${API} · email via Listmonk (${Object.keys(LM).filter(k => process.env[`LM_${k.toUpperCase()}_API_TOKEN`]).join(', ') || 'not configured'}), SMS ${process.env.TWILIO_ACCOUNT_SID ? 'Twilio' : 'off'}`));

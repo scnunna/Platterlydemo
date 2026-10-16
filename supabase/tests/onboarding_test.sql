@@ -30,7 +30,7 @@ do $$ declare s uuid := (select id from public.staff where email = 'super@test.c
   assert not (public.customer_history(null, 'other@test.ca', (select v->>'code' from t where k = 'w'))->>'ok')::boolean, 'wrong contact refused';
   -- board: super admin only
   x := public.staff_onboarding(s);
-  assert jsonb_array_length(x->'stages') = 7 and jsonb_array_length(x->'steps') = 27, 'stages and steps';
+  assert jsonb_array_length(x->'stages') = 7 and jsonb_array_length(x->'steps') = 28, 'stages and steps';
   assert x->'clients' @> '[{"id":"wetzels"}]' and x->'clients' @> '[{"id":"panago"}]', 'board lists every client';
   begin perform public.staff_onboarding(w); raise exception 'client admin read the board';
   exception when insufficient_privilege then null; end;

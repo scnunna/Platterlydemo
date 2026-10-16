@@ -44,12 +44,18 @@ $anon = ($envLines | Where-Object { $_ -match '^ANON_KEY=' }) -replace '^ANON_KE
 $service = ($envLines | Where-Object { $_ -match '^SERVICE_ROLE_KEY=' }) -replace '^SERVICE_ROLE_KEY="?([^"]*)"?$', '$1'
 if (-not $anon -or -not $service) { Say 'ERROR: database did not start (no keys from supabase status)'; exit 1 }
 
+# 1b. Email: the Listmonk instances (one per sender) on the same database server, then their settings.
+if (Test-Path "$State\listmonk.env") {
+  docker compose -p platterly-mail --env-file "$State\listmonk.env" -f "$Repo\server\listmonk\docker-compose.yml" up -d 2>&1 | Out-Null
+  node "$Repo\server\listmonk\setup.mjs" 2>&1 | ForEach-Object { Say "listmonk: $_" }
+} else { Say 'WARN: no listmonk.env: email (reminders, invoices, reports) is off. See README: Email.' }
+
 # 2. Lead proxy (localhost only)
 if ($restartProxy -and (Alive "$State\proxy.pid")) { Stop-Process -Id ([int](Get-Content "$State\proxy.pid")) -Force; Start-Sleep 1 }
 if (-not (Alive "$State\proxy.pid")) {
-  # Optional reminder senders, one KEY=VALUE per line, kept outside the repo: PLATTERLY_MAIL=resend, RESEND_API_KEY,
-  # PLATTERLY_MAIL_FROM, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM. Without it reminders go to the test inbox.
-  if (Test-Path "$State\mail.env") { Get-Content "$State\mail.env" | Where-Object { $_ -match '^\s*([A-Z_]+)\s*=\s*(.+?)\s*$' } | ForEach-Object { Set-Item "Env:$($Matches[1])" $Matches[2] } }
+  # Secrets kept outside the repo, one KEY=VALUE per line: listmonk.env (Listmonk API tokens, made on first setup) and
+  # optional mail.env (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM for text reminders).
+  foreach ($f in @("$State\listmonk.env", "$State\mail.env")) { if (Test-Path $f) { Get-Content $f | Where-Object { $_ -match '^\s*([A-Z_]+)\s*=\s*(.+?)\s*$' } | ForEach-Object { Set-Item "Env:$($Matches[1])" $Matches[2] } } }
   $env:PLATTERLY_ANON_KEY = $anon; $env:PLATTERLY_SERVICE_KEY = $service; $env:PORT = "$ProxyPort"
   $p = Start-Process node -ArgumentList "`"$Repo\server\lead-proxy.mjs`"" -WindowStyle Hidden -PassThru `
        -RedirectStandardOutput "$State\proxy.log" -RedirectStandardError "$State\proxy.err"
