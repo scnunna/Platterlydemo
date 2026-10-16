@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wetzel's Spin &amp; Win</title>
+<meta name="description" content="Spin free, every spin wins. Wetzel's Pretzels, CF Toronto Eaton Centre.">
+<meta name="theme-color" content="#004089">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&family=Montserrat:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one phone-width column in Wetzel's own look: blue band with the white wordmark, yellow buttons and prize cards,
+   sky-blue notes. Tokens from wetzels.com (style.css: #004089, #FED900, #B7E5F0; Londrina Solid display) and web/wetzels/brand.json. */
+:root {
+  --blue: #004089; --blue-deep: #002A5C; --yellow: #FED900; --sky: #B7E5F0; --sky-soft: #E6F5FA;
+  --ink: #0B2340; --paper: #FFFFFF; --muted: #4F6378; --line: #CFE3EE; --bad: #B3261E; --good: #1F7A4D; --good-soft: #CDEFD9;
+  --display: 'Londrina Solid', 'Arial Black', Impact, sans-serif;
+  --body: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); }
+body { font-family: var(--body); font-size: 15px; line-height: 1.5; padding-bottom: env(safe-area-inset-bottom, 0px); }
+[hidden] { display: none !important; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.app { max-width: 480px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.ghead { background: var(--blue); padding: calc(14px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) 22px max(18px, env(safe-area-inset-left, 0px)); border-bottom: 6px solid var(--yellow); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ghead img { height: 40px; width: auto; display: block; }
+.ghead span { color: var(--sky); font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; text-align: right; line-height: 1.3; }
+.steps { display: flex; gap: 5px; padding: 10px 18px 0; }
+.steps i { flex: 1; height: 5px; border-radius: 4px; background: var(--sky-soft); }
+.steps i.on { background: var(--blue); }
+.slabels { display: flex; justify-content: space-between; padding: 5px 18px 0; font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.panel { padding: 14px max(18px, env(safe-area-inset-right, 0px)) 22px max(18px, env(safe-area-inset-left, 0px)); display: grid; gap: 13px; align-content: start; }
+.panel h1 { font-family: var(--display); font-weight: 900; color: var(--blue); font-size: 36px; line-height: 1; padding-top: 4px; margin: 0; text-wrap: balance; }
+.panel h1 em { font-style: normal; background: var(--yellow); padding: 0 6px; border-radius: 6px; }
+.panel p { margin: 0; color: var(--muted); }
+.wheel-box { position: relative; width: 100%; max-width: 300px; margin: 2px auto 0; aspect-ratio: 1; }
+.wheel-box svg.wheel { width: 100%; height: 100%; transition: transform 4.6s cubic-bezier(0.12, 0.72, 0.1, 1); }
+.pointer { position: absolute; left: 50%; top: -8px; transform: translateX(-50%); width: 36px; height: 42px; z-index: 2; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3)); }
+.big { border: 0; width: 100%; background: var(--yellow); color: var(--blue); font-family: var(--display); font-weight: 900; font-size: 26px; padding: 12px; border-radius: 999px; box-shadow: 0 6px 0 var(--blue); }
+.big:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--blue); }
+.big[disabled] { opacity: 0.6; }
+.btn { border: 2px solid var(--blue); background: var(--paper); color: var(--blue); font-weight: 800; padding: 8px 14px; border-radius: 999px; font-size: 14px; }
+.btn.primary { background: var(--blue); color: var(--paper); }
+.fine { font-size: 12px; color: var(--muted); }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--blue); font-weight: 800; text-decoration: underline; font-size: 12.5px; }
+.prize { background: var(--yellow); border-radius: 18px; padding: 16px; display: grid; gap: 6px; position: relative; overflow: hidden; color: var(--blue); }
+.prize .lab { font-weight: 800; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; }
+.prize .ttl { font-family: var(--display); font-weight: 900; font-size: 32px; line-height: 1; }
+.prize .cond { font-size: 13px; font-weight: 600; color: var(--ink); }
+.prize .val { font-size: 12px; font-weight: 800; }
+.timer { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--blue); color: var(--paper); border-radius: 14px; padding: 12px 14px; }
+.timer b { font-family: var(--display); font-weight: 900; font-size: 28px; color: var(--yellow); font-variant-numeric: tabular-nums; }
+.timer span { font-size: 13px; font-weight: 600; line-height: 1.25; }
+.note { background: var(--sky); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--ink); }
+.note b { color: var(--blue); }
+.note.wash { background: var(--sky-soft); }
+.find { background: var(--blue); color: var(--paper); border-radius: 14px; padding: 13px 15px; font-size: 13.5px; }
+.find b { display: block; font-family: var(--display); font-weight: 900; color: var(--yellow); font-size: 22px; line-height: 1.05; margin-bottom: 3px; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: 13px; font-weight: 800; color: var(--blue); }
+.field input, .field select { border: 2px solid var(--line); border-radius: 10px; padding: 11px 12px; width: 100%; background: var(--paper); color: var(--ink); }
+.field input:focus, .field select:focus { border-color: var(--blue); outline: none; }
+.consent { display: flex; gap: 10px; align-items: flex-start; font-size: 12.5px; color: var(--muted); }
+.consent input { width: 18px; height: 18px; margin-top: 2px; flex: none; accent-color: var(--blue); }
+.err { color: var(--bad); font-size: 13px; font-weight: 600; min-height: 1em; }
+.answers { display: grid; gap: 9px; }
+.answer { text-align: left; border: 2px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 12px; padding: 12px 14px; font-weight: 700; }
+.answer:hover { border-color: var(--blue); }
+.answer.right { background: var(--good-soft); border-color: var(--good); }
+.answer.wrong { background: #FBE3E1; border-color: var(--bad); }
+.coupon { border: 2px dashed var(--blue); border-radius: 12px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--paper); }
+.coupon code { font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 20px; letter-spacing: 0.08em; color: var(--blue); }
+.coupon button { border: 0; background: var(--blue); color: var(--paper); border-radius: 8px; padding: 7px 10px; font-weight: 800; font-size: 12px; }
+.tag { justify-self: start; background: var(--blue); color: var(--yellow); font-weight: 800; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 9px; border-radius: 99px; }
+.tag.gold { background: #B8860B; color: var(--paper); }
+.rules { margin: 0 18px 14px; font-size: 12px; color: var(--muted); background: var(--sky-soft); border-radius: 12px; padding: 10px 12px; }
+.rules summary { cursor: pointer; font-weight: 800; color: var(--blue); }
+.rules ul { padding-left: 18px; margin: 8px 0 0; display: grid; gap: 4px; }
+.status { margin: 0 18px 16px; text-align: center; font-size: 11.5px; color: var(--muted); }
+.status.warn { color: var(--bad); font-weight: 700; }
+.confetti { position: absolute; inset: 0; pointer-events: none; }
+.foot { margin-top: auto; padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--blue); color: var(--paper); font-size: 12px; display: grid; gap: 2px; border-top: 6px solid var(--yellow); }
+.foot b { font-family: var(--display); font-weight: 900; font-size: 22px; }
+@media (prefers-reduced-motion: reduce) { .wheel-box svg.wheel { transition-duration: 1ms; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="ghead"><img src="assets/logo-white.png" alt="Wetzel's Pretzels"><span id="store-name">CF Toronto<br>Eaton Centre</span></header>
+  <div class="steps" id="steps"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="slabels"><span>Spin</span><span>Come by</span><span>Join</span><span>Quiz</span><span>Prize</span></div>
+
+  <section class="panel" id="p0">
+    <h1>Your free spin is <em>ready</em></h1>
+    <p>No purchase and no sign-up needed to spin. Every spin wins something.</p>
+    <div class="wheel-box">
+      <svg class="pointer" viewBox="0 0 36 42" aria-hidden="true"><path d="M18 42 L2 9 Q18 -4 34 9 Z" fill="#FED900" stroke="#004089" stroke-width="3"/></svg>
+      <div id="wheel-slot"></div>
+    </div>
+    <button class="big" id="spin" type="button">Spin</button>
+    <p class="fine">One spin per person per day. <button class="linkbtn" type="button" data-rules>Rules and odds</button></p>
+  </section>
+
+  <section class="panel" id="p1" hidden>
+    <h1>You <em>won!</em></h1>
+    <div class="prize"><div class="lab">Held for you</div><div class="ttl" id="w-title"></div><div class="cond" id="w-cond"></div><div class="val" id="w-val"></div></div>
+    <div class="timer"><span>Come by the counter today.<br>Show this screen to claim it.</span><b id="hold">0:00:00</b></div>
+    <div class="note"><b>Make it bigger.</b> Join free and answer one Wetzel's question. A right answer upsizes your prize. Been here before? Returning customers get the upsized prize automatically.</div>
+    <button class="big" id="counter" type="button">Claim my prize</button>
+    <p class="fine" id="hours-line">Open Mon to Sat 10 AM to 9 PM, Sun 11 AM to 7 PM.</p>
+  </section>
+
+  <section class="panel" id="p2" hidden>
+    <h1>Join in <em>10 seconds</em></h1>
+    <p>We hold your prize under your name and send your code here.</p>
+    <form id="join" novalidate style="display:grid;gap:11px">
+      <div class="field"><label for="f-name">First name</label><input id="f-name" autocomplete="given-name" maxlength="60" placeholder="Maya"></div>
+      <div class="field"><label for="f-contact">Email or mobile</label><input id="f-contact" autocomplete="email" maxlength="120" placeholder="you@email.com or 416 555 0123"></div>
+      <label class="consent" for="f-consent"><input type="checkbox" id="f-consent"><span id="consent-text">Yes, send me deals and party-pack offers by email or text from Wetzel's Pretzels Toronto Eaton Centre (220 Yonge St, Toronto ON M5B 2H1 · 647-250-8200). I can unsubscribe at any time.</span></label>
+      <div class="err" id="f-err" role="alert"></div>
+      <button class="big" type="submit">Join and continue</button>
+    </form>
+    <p class="fine">Your prize does not depend on the deals box.</p>
+  </section>
+
+  <section class="panel" id="p3" hidden>
+    <h1>One question. <em>Bigger prize.</em></h1>
+    <p id="quiz-q"></p>
+    <div class="answers" id="answers"></div>
+    <p class="fine">Any answer keeps your prize. The right one upsizes it.</p>
+  </section>
+
+  <section class="panel" id="p4" hidden>
+    <h1 id="f-h">Here's your prize</h1>
+    <div class="prize">
+      <canvas class="confetti" id="confetti"></canvas>
+      <span class="tag" id="up-tag" hidden>Upsized</span>
+      <div class="ttl" id="f-title"></div>
+      <div class="cond" id="f-cond"></div>
+      <div class="coupon"><code id="code">…</code><button type="button" id="copy">Copy</button></div>
+      <div class="val" id="f-valid"></div>
+    </div>
+    <div class="err" id="save-err" role="alert"></div>
+    <div class="find"><b>Find us in the Eaton Centre</b>Wetzel's Toronto Eaton Centre, 220 Yonge St. Show your code at the counter. Questions: 647-250-8200.</div>
+    <div class="note"><b>You're in the Office Party Pack Draw.</b> A Party Pack for your team, drawn monthly. Winners answer a skill-testing question.</div>
+    <div class="note wash">
+      <b>Feeding a team?</b> Ask for a quote on a Party Pack, Bitz tray or pretzel pack for your office, birthday or event. The store calls you back to confirm what it can make.
+      <form id="cater" novalidate style="display:grid;gap:9px;margin-top:9px">
+        <div class="field"><label for="c-date">Event date</label><input id="c-date" type="date"></div>
+        <div class="field"><label for="c-size">Package</label><select id="c-size"><option>Party Pack (12 people)</option><option>Bitz tray (12 people)</option><option>Pretzel Pack (12 pretzels)</option><option>Something else</option></select></div>
+        <button class="btn primary" type="submit">Request a quote</button>
+        <div class="fine" id="c-msg" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <details class="rules" id="rules"><summary>Rules and odds</summary><ul id="rules-list"></ul></details>
+  <p class="status" id="status"></p>
+  <footer class="foot"><b>Wetzel's Toronto Eaton Centre</b><span>220 Yonge St, Toronto · 647-250-8200 · Prices as listed for this store, Oct 2026. Taxes extra.</span></footer>
+</div>
+
+<script>
+(() => {
+  const CLIENT = 'wetzels';
+  const store = 'eaton';
+  const qs = new URLSearchParams(location.search);
+  const source = ['tv', qs.get('c') || qs.get('src') || 'direct'].join('-').slice(0, 40);
+
+  /* Same ids and odds as supabase/seed.sql (offers). Values: this store's listed prices, Oct 2026 (web/wetzels/menu.json).
+     Draft list: the owner approves prizes and food cost before launch. */
+  const PRIZES = [
+    { id: 'wp-dip', short: 'FREE DIP', title: 'Free dip', rule: 'with any pretzel', bigTitle: 'Two free dips', bigRule: 'with any pretzel', w: 30, val: null, fill: '#FED900', ink: '#004089' },
+    { id: 'wp-off', short: '$2 OFF', title: '$2 off', rule: 'any order of $10 or more', bigTitle: '$5 off', bigRule: 'any order of $15 or more', w: 20, val: null, fill: '#004089', ink: '#FED900' },
+    { id: 'wp-lemon', short: 'LEMONADE', title: 'Free Fresh Lemonade', rule: 'with any 2 pretzels', bigTitle: 'Free Fresh Lemonade', bigRule: 'with any pretzel', w: 15, val: 5.59, fill: '#B7E5F0', ink: '#004089' },
+    { id: 'wp-bogo', short: 'BOGO', title: 'Buy one, get one Original', rule: 'Original or Sinful Cinnamon', bigTitle: 'Buy one, get one any pretzel', bigRule: 'any pretzel on the menu', w: 15, val: 6.49, fill: '#FFFFFF', ink: '#004089' },
+    { id: 'wp-bitz', short: 'FREE BITZ', title: 'Free Wetzel Bitz', rule: 'with any 2 pretzels', bigTitle: 'Free Wetzel Bitz', bigRule: 'with any pretzel', w: 15, val: 8.25, fill: '#002A5C', ink: '#FFFFFF' },
+    { id: 'wp-party', short: 'PARTY PACK', title: '10% off a Party Pack', rule: 'or any catering tray', bigTitle: '15% off a Party Pack', bigRule: 'or any catering tray', w: 5, val: null, fill: '#FED900', ink: '#002A5C' }
+  ];
+  const TOT = PRIZES.reduce((s, p) => s + p.w, 0);
+  const money = v => '$' + v.toFixed(2);
+  /* Store hours (America/Toronto): Mon to Sat 10 to 9, Sun 11 to 7. */
+  const closeHour = d => d.getDay() === 0 ? 19 : 21;
+  const closeLabel = d => d.getDay() === 0 ? '7 PM' : '9 PM';
+
+  /* The lead API address is published by server/start.ps1 into the Panago page's api.json (one store laptop serves every client). */
+  let API = null;
+  const statusEl = document.getElementById('status');
+  const apiReady = fetch('../panago/api.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(j => { API = j.leadApi || null; }).catch(() => { API = null; });
+  async function call(path, body) {
+    await apiReady;
+    if (!API) throw Object.assign(new Error('offline'), { offline: true });
+    let r;
+    try { r = await fetch(API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(10000) }); }
+    catch (e) { throw Object.assign(new Error('offline'), { offline: true }); }
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 503 || r.status === 502) throw Object.assign(new Error(j.error || 'offline'), { offline: true });
+    if (!r.ok) throw Object.assign(new Error(j.error || 'Could not save that.'), { hint: j.hint });
+    return j;
+  }
+
+  /* Leads that could not be sent wait on this phone and go out the next time the page opens. */
+  const QKEY = 'wetzels-pending-leads';
+  const readQ = () => { try { return JSON.parse(localStorage.getItem(QKEY) || '[]'); } catch { return []; } };
+  const writeQ = q => { try { localStorage.setItem(QKEY, JSON.stringify(q.slice(-5))); } catch {} };
+  apiReady.then(async () => {
+    const q = readQ(); if (!q.length || !API) return;
+    const left = [];
+    for (const item of q) { try { await call('/v1/lead', item); } catch (e) { if (e.offline) left.push(item); } }
+    writeQ(left);
+  });
+
+  function wheelSVG() {
+    const n = PRIZES.length, seg = 360 / n, R = 96;
+    const pt = (d, r) => { const a = (d - 90) * Math.PI / 180; return [Math.cos(a) * r, Math.sin(a) * r]; };
+    let s = `<svg class="wheel" viewBox="-100 -100 200 200" role="img" aria-label="Prize wheel"><circle r="99" fill="#004089"/>`;
+    PRIZES.forEach((p, i) => {
+      const [x0, y0] = pt(i * seg, R), [x1, y1] = pt(i * seg + seg, R);
+      s += `<path d="M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${p.fill}" stroke="#004089" stroke-width="1.6"/>`;
+      s += `<g transform="rotate(${i * seg + seg / 2})"><text x="0" y="-58" text-anchor="middle" font-family="Montserrat, system-ui, sans-serif" font-weight="800" font-size="8.4" fill="${p.ink}">${p.short}</text></g>`;
+    });
+    for (let i = 0; i < 24; i++) { const [x, y] = pt(i * 15, 92); s += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="1.7" fill="#FED900"/>`; }
+    return s + `<circle r="19" fill="#FED900" stroke="#004089" stroke-width="3"/><text y="5" text-anchor="middle" font-family="'Londrina Solid', Impact, sans-serif" font-weight="900" font-size="13" fill="#004089">SPIN</text></svg>`;
+  }
+  document.getElementById('wheel-slot').innerHTML = wheelSVG();
+  const wheel = document.querySelector('#wheel-slot svg');
+
+  document.getElementById('rules-list').innerHTML = [
+    'No purchase necessary to spin or to enter the Office Party Pack Draw.',
+    'One spin per person per day. Open to Ontario residents 18+.',
+    'Odds per spin: ' + PRIZES.map(p => `${p.title} ${Math.round(p.w / TOT * 100)}%`).join(', ') + '.',
+    'A right quiz answer, or having spun with us on an earlier day, upsizes the prize.',
+    'Instant prizes are single-use codes, valid until close on the day you spin with the qualifying order, at Wetzel\'s Toronto Eaton Centre only. Not combinable with Wetzel\'s Rewards offers.',
+    'Office Party Pack Draw: one Party Pack, drawn monthly. Winners must answer a skill-testing question.',
+    'Prices are this store\'s listed prices before tax (October 2026) and may change. Full rules in store.'
+  ].map(x => `<li>${x}</li>`).join('');
+  document.querySelectorAll('[data-rules]').forEach(b => b.onclick = () => { const r = document.getElementById('rules'); r.open = true; r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
+
+  const panels = [0, 1, 2, 3, 4].map(i => document.getElementById('p' + i)), bars = [...document.querySelectorAll('#steps i')];
+  let st = { prize: 0, rot: 0, name: '', contact: '', consent: false, code: null };
+  const go = n => { panels.forEach((p, i) => p.hidden = i !== n); bars.forEach((b, i) => b.classList.toggle('on', i <= n)); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const pickPrize = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); let r = a[0] / 2 ** 32 * TOT; for (let i = 0; i < PRIZES.length; i++) { r -= PRIZES[i].w; if (r < 0) return i; } return 0; };
+
+  const spinBtn = document.getElementById('spin');
+  spinBtn.onclick = () => {
+    spinBtn.disabled = true; spinBtn.textContent = 'Spinning…';
+    const i = pickPrize(), seg = 360 / PRIZES.length; st.prize = i;
+    st.rot = st.rot - (st.rot % 360) + 360 * 6 + (360 - (i * seg + seg / 2)) + (Math.random() * 30 - 15);
+    wheel.style.transform = `rotate(${st.rot}deg)`;
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => {
+      const p = PRIZES[i];
+      document.getElementById('w-title').textContent = p.title;
+      document.getElementById('w-cond').textContent = p.rule.charAt(0).toUpperCase() + p.rule.slice(1) + '.';
+      document.getElementById('w-val').textContent = p.val ? `Worth ${money(p.val)} on the menu` : (p.id === 'wp-party' ? 'Great for an office or a party' : p.id === 'wp-dip' ? 'Cheese, caramel, chocolate hazelnut and more' : 'On your order today');
+      tick(); go(1); spinBtn.disabled = false; spinBtn.textContent = 'Spin';
+    }, reduce ? 300 : 4800);
+  };
+  /* Counts down to closing time today, which is when the code stops working. */
+  let ht = null;
+  function tick() {
+    clearInterval(ht); const el = document.getElementById('hold');
+    const u = () => { const now = new Date(), close = new Date(now); close.setHours(closeHour(now), 0, 0, 0); const l = Math.max(0, close - now);
+      el.textContent = l ? `${Math.floor(l / 3600e3)}:${String(Math.floor(l % 3600e3 / 60e3)).padStart(2, '0')}:${String(Math.floor(l % 60e3 / 1e3)).padStart(2, '0')}` : 'Closed'; };
+    u(); ht = setInterval(u, 1000);
+  }
+  document.getElementById('counter').onclick = () => go(2);
+
+  document.getElementById('join').addEventListener('submit', e => {
+    e.preventDefault();
+    const n = document.getElementById('f-name').value.trim(), c = document.getElementById('f-contact').value.trim(), err = document.getElementById('f-err');
+    if (!n) { err.textContent = 'Enter your first name so staff can find your prize.'; return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c) && c.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '').length !== 10) { err.textContent = 'Enter an email address or a 10-digit mobile number.'; return; }
+    err.textContent = ''; st.name = n; st.contact = c; st.consent = document.getElementById('f-consent').checked; quiz(); go(3);
+  });
+
+  /* Answers are on the Wetzel's Canada menu (wetzelspretzels.ca/menu). */
+  const QUIZ = [
+    { q: 'What is a Wetzel Dog?', a: ['A pretzel-shaped cookie', 'A hot dog wrapped in pretzel dough', 'A frozen lemonade', 'A cheese dip'], r: 1 },
+    { q: 'Which of these is a real Wetzel\'s Bitz flavour?', a: ['Maple-A-Bitz', 'Mint-A-Bitz', 'Cin-A-Bitz', 'Bacon-A-Bitz'], r: 2 },
+    { q: 'Which pretzel is coated in cinnamon sugar?', a: ['Sinful Cinnamon', 'Jalaroni', 'Pepperoni Twist', 'Cheese Meltdown'], r: 0 },
+    { q: 'Which of these dips is on the Wetzel\'s menu?', a: ['Maple butter', 'Chocolate hazelnut', 'Honey garlic', 'Hummus'], r: 1 }
+  ];
+  function quiz() {
+    const Q = QUIZ[Math.floor(Math.random() * QUIZ.length)];
+    document.getElementById('quiz-q').textContent = Q.q;
+    const box = document.getElementById('answers');
+    box.innerHTML = Q.a.map((t, i) => `<button class="answer" type="button" data-i="${i}">${t}</button>`).join('');
+    box.querySelectorAll('.answer').forEach(b => b.onclick = () => { box.querySelectorAll('.answer').forEach(x => x.disabled = true); box.children[Q.r].classList.add('right'); if (+b.dataset.i !== Q.r) b.classList.add('wrong'); setTimeout(() => claim(+b.dataset.i === Q.r), 900); });
+  }
+
+  async function claim(quizRight) {
+    const p = PRIZES[st.prize];
+    const body = { p_client: CLIENT, p_store: store, p_first_name: st.name, p_contact: st.contact, p_consent: st.consent, p_offer: p.id, p_quiz_right: quizRight, p_source: source, p_consent_wording: document.getElementById('consent-text').textContent };
+    document.getElementById('f-h').textContent = 'Saving your prize…'; document.getElementById('code').textContent = '…'; go(4);
+    const err = document.getElementById('save-err'); err.textContent = '';
+    let res = null;
+    try { res = await call('/v1/lead', body); }
+    catch (e) {
+      if (e.offline) { const q = readQ(); q.push(body); writeQ(q); }
+      else { err.textContent = e.message + (e.hint ? ' ' + e.hint : ''); }
+    }
+    const up = res ? res.upsized : quizRight;
+    const title = res ? res.title : (up ? p.bigTitle : p.title), rule = res ? res.rule : (up ? p.bigRule : p.rule);
+    st.code = res ? res.code : null;
+    document.getElementById('f-h').textContent = res && res.already ? `Welcome back, ${st.name}. Here's today's prize.` : res && res.returning ? `Welcome back, ${st.name}! Gold upgrade.` : up ? `Nailed it, ${st.name}! Upsized.` : `Here's your prize, ${st.name}`;
+    const tag = document.getElementById('up-tag'); tag.hidden = !up; tag.textContent = res && res.returning ? 'Returning customer upgrade' : 'Upsized'; tag.classList.toggle('gold', !!(res && res.returning));
+    document.getElementById('f-title').textContent = title;
+    document.getElementById('f-cond').textContent = rule.charAt(0).toUpperCase() + rule.slice(1) + '. Show this code to staff.';
+    document.getElementById('code').textContent = st.code || ('HELD · ' + st.name.toUpperCase().slice(0, 12));
+    document.getElementById('f-valid').textContent = st.code ? `Valid today until close (${closeLabel(new Date())}), Wetzel's Toronto Eaton Centre.` : 'We could not reach the store system. Show this screen at the counter today; your sign-up is sent automatically next time you open this page.';
+    if (up) confetti();
+  }
+
+  document.getElementById('copy').onclick = async e => { const t = document.getElementById('code').textContent; try { await navigator.clipboard.writeText(t); e.target.textContent = 'Copied'; } catch { const r = document.createRange(); r.selectNodeContents(document.getElementById('code')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); e.target.textContent = 'Selected'; } setTimeout(() => e.target.textContent = 'Copy', 1600); };
+
+  document.getElementById('cater').addEventListener('submit', async e => {
+    e.preventDefault();
+    const dt = document.getElementById('c-date').value, m = document.getElementById('c-msg'), pkg = document.getElementById('c-size').value;
+    if (!dt) { m.textContent = 'Pick an event date to request a quote.'; return; }
+    if (!st.code) { m.textContent = 'Quote requests need the store system, which is offline right now. Call 647-250-8200.'; return; }
+    m.textContent = 'Sending…';
+    try { await call('/v1/catering', { p_code: st.code, p_event_date: dt, p_package: pkg, p_headcount: /\(12 /.test(pkg) ? 12 : null }); m.textContent = `Sent. The store will call you about ${pkg} on ${dt}.`; }
+    catch (err) { m.textContent = err.offline ? 'The store system is offline. Call 647-250-8200.' : err.message + (err.hint ? ' ' + err.hint : ''); }
+  });
+
+  function confetti() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const cv = document.getElementById('confetti'), card = cv.parentElement; cv.width = card.clientWidth; cv.height = card.clientHeight;
+    const c = cv.getContext('2d'), cols = ['#004089', '#FFFFFF', '#B7E5F0', '#002A5C'];
+    const bits = Array.from({ length: 70 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height, v: 1.5 + Math.random() * 2.5, r: Math.random() * 6, s: 3 + Math.random() * 4, col: cols[Math.floor(Math.random() * 4)] }));
+    let f = 0; (function t() { c.clearRect(0, 0, cv.width, cv.height); bits.forEach(b => { b.y += b.v; b.r += 0.1; c.save(); c.translate(b.x, b.y); c.rotate(b.r); c.fillStyle = b.col; c.fillRect(-b.s / 2, -b.s / 2, b.s, b.s * 0.6); c.restore(); }); if (++f < 150) requestAnimationFrame(t); else c.clearRect(0, 0, cv.width, cv.height); })();
+  }
+
+  apiReady.then(() => { if (!API) { statusEl.textContent = 'Store system offline: prizes are held on this phone.'; statusEl.className = 'status warn'; } });
+  go(0);
+  window.__lead = { PRIZES, st };
+})();
+</script>
+</body>
+</html>

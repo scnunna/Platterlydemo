@@ -1,0 +1,38 @@
+{
+  "slug": "wetzels",
+  "name": "Wetzel's Pretzels (CF Toronto Eaton Centre)",
+  "brand_kit": {
+    "palette": {
+      "primary": "#004089",
+      "primary_deep": "#002A5C",
+      "logo_blue": "#003783",
+      "accent": "#FED900",
+      "sky": "#B7E5F0",
+      "sky_soft": "#E6F5FA",
+      "ink": "#0B2340",
+      "bg": "#FFFFFF",
+      "_source": "wetzels.com /assets/css/style.css (#004089 x48, #FED900 x15, #B7E5F0) and nav/logo.svg (#003783). primary_deep, sky_soft and ink are Platterly additions for shadows, washes and text.",
+      "_usage": "Blue bands with the white wordmark; yellow for buttons, prize cards and highlights; sky blue for notes."
+    },
+    "fonts": {
+      "display": "Londrina Solid",
+      "body": "Montserrat",
+      "_note": "Londrina Solid is the display face on wetzels.com (Google Fonts). The site body uses Roboto/Gotham/Montserrat via Typekit; Montserrat is the Google Fonts match."
+    },
+    "logo": {
+      "files": ["assets/logo-blue.png", "assets/logo-white.png"],
+      "source": "https://wetzelspretzels.ca/wp-content/uploads/2022/09/wetzel-logo.png (white version made from its alpha channel)"
+    },
+    "voice": {
+      "tone": "playful, warm, snack-first; short fun headlines, then one plain sentence",
+      "taglines_seen": ["Hand Held Happiness", "The best things in life are fresh."],
+      "do": ["name real menu items (Original, Sinful Cinnamon, Cin-A-Bitz, Wetzel Dog)", "say 'Taxes extra' next to any price", "mention the Eaton Centre location"],
+      "dont": ["quote delivery-app prices as walk-in prices", "promise catering until the store confirms it", "imply this is a Wetzel's head-office promotion"]
+    },
+    "compliance": {
+      "contest": "No purchase necessary. One spin per person per day. Odds and full rules in the game. Draw winners answer a skill-testing question. (Competition Act s.74.06)",
+      "casl": "Marketing consent is a separate, unticked box naming Wetzel's Pretzels Toronto Eaton Centre, 220 Yonge St, 647-250-8200. Replace with the legal operator name once known.",
+      "franchise": "Franchisor (MTY / Wetzel's Canada) and mall (Cadillac Fairview) sign-off needed for branded contests, codes and screens."
+    }
+  }
+}

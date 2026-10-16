@@ -1,0 +1,74 @@
+{
+  "client": "wetzels",
+  "researched": "2026-10-15",
+  "store": {
+    "name": "Wetzel's Toronto Eaton Centre",
+    "mall": "CF Toronto Eaton Centre",
+    "address": "220 Yonge St, Toronto, ON M5B 2H1",
+    "phone": "647-250-8200",
+    "hours": { "mon_sat": "10:00-21:00", "sun": "11:00-19:00" },
+    "unit_level": null,
+    "operator": null,
+    "_notes": "Unit and level not published: confirm on site. Operator (franchisee or corporate) unknown. Wetzel's Canada is owned by MTY Food Group (Montreal). Second Toronto store at Union Station (65 Front St W).",
+    "sources": [
+      "https://wetzels-prod.dacgroup.com/on/toronto/wetzels-toronto-eaton-centre",
+      "https://www.franchise.org/2023/12/wetzels-pretzels-expands-internationally-making-its-debut-at-toronto-union-station/"
+    ]
+  },
+  "prices_note": "No in-store CAD price list is published. Prices below are this store's delivery-app listings (DoorDash / Uber Eats, Oct 2026), which are usually marked up over walk-in prices. Confirm at the counter before quoting any price to customers.",
+  "menu": {
+    "Pretzels": [
+      { "item": "Original", "price": 6.49, "price_source": "delivery app" },
+      { "item": "Sinful Cinnamon", "price": 7.49, "price_source": "delivery app" },
+      { "item": "Almond Crunch" }, { "item": "Rainbow" }, { "item": "Cookies & Cream" }
+    ],
+    "Cheese pretzels": [ { "item": "Cheese Meltdown" }, { "item": "Pepperoni Twist" }, { "item": "Jalapeño Cheese Melt" }, { "item": "Jalaroni" } ],
+    "Bitz": [
+      { "item": "Wetzel Bitz", "price": 8.25, "price_source": "delivery app" },
+      { "item": "Cin-A-Bitz" }, { "item": "Nutella Bitz" }, { "item": "Strawberry Funnel Bitz" }, { "item": "S'mores Bitz" }, { "item": "Almond Crunch Bitz" }
+    ],
+    "Cheese Bitz": [ { "item": "Pizza Bitz" }, { "item": "Cheese Bitz" }, { "item": "Mozzarella Stickz" } ],
+    "Dogs": [
+      { "item": "Wetzel Dog" }, { "item": "Cheese Dog" }, { "item": "Dog Bites" },
+      { "item": "Cheesy Dog Bites (Cheese Dog Bitz)", "price": 11.45, "price_source": "delivery app" }
+    ],
+    "Lemonades": [
+      { "item": "Fresh Lemonade", "price": 5.59, "price_source": "delivery app (Union Station store)" },
+      { "item": "Pink Lemonade", "price": 5.59, "price_source": "delivery app (Union Station store)" },
+      { "item": "Blueberry Pomegranate" }, { "item": "Raspberry Limonade" }
+    ],
+    "Granita (frozen)": [ { "item": "Lemonade" }, { "item": "Strawberry Lemonade" }, { "item": "Blue Raspberry" }, { "item": "Raspberry" }, { "item": "Mango" }, { "item": "Peach" }, { "item": "Cappuccino" } ],
+    "Dips": [ { "item": "Cheese" }, { "item": "Jalapeño Cheese" }, { "item": "Pizza Sauce" }, { "item": "Ranch" }, { "item": "Caramel" }, { "item": "Sweet Glaze" }, { "item": "Chocolate Hazelnut" } ],
+    "_source": "https://wetzelspretzels.ca/menu/ (items); prices https://www.doordash.com/en-CA/store/wetzel's-pretzels-toronto-34326261/ and Uber Eats listings via search snippets"
+  },
+  "catering": {
+    "_status": "Listed on the US site. Not mentioned on wetzelspretzels.ca: confirm whether this store caters, lead time and prices.",
+    "packs": [
+      { "name": "Classic Pretzel Pack", "contents": "12 pretzels (plain, salted or cinnamon)" },
+      { "name": "Sweet and Salty Pack", "contents": "6 salted + 6 cinnamon pretzels" },
+      { "name": "Cheese Pretzel Pack", "contents": "12 cheese pretzels" },
+      { "name": "Bitz trays", "contents": "Classic, Sweet and Salty, or Salty and Pizza", "serves": 12 },
+      { "name": "Dog Bites Tray / Cheesy Dog Bites Tray", "serves": 12 },
+      { "name": "Pretzel Dogs", "serves": 6 },
+      { "name": "Dip Flight", "contents": "6 dips" },
+      { "name": "Party Pack", "contents": "12 pretzels, Bitz for 12, 24 dips, 2 gallons of lemonade" }
+    ],
+    "sizing": ["10-15 people", "25-40 people", "50+ people"],
+    "source": "https://www.wetzels.com/menu/catering"
+  },
+  "deals": {
+    "rewards": "Wetzel's Rewards (US terms): free, 18+. Sign-up gives 25 bonus points and a BOGO Original or Sinful Cinnamon. 1 point per dollar before tax, 50 points = $5 reward, rewards expire after 90 days, birthday reward, monthly member offers. Third-party delivery orders earn no points. Canadian loyalty login: wetzels.myloyaltyhub.com; Canadian terms unconfirmed.",
+    "other": "No Canadian or mall-specific promos found. National Pretzel Day is April 26 (worth a spring campaign).",
+    "sources": ["https://www.wetzels.com/rewards"]
+  },
+  "platterly_fit": {
+    "angle": "Mall kiosk with heavy foot traffic and office towers nearby: QR on a counter or kiosk screen turns walk-by shoppers into leads; Party Packs and Bitz trays are the corporate upsell.",
+    "wheel_draft": "wp-dip 30, wp-off 20, wp-lemon 15, wp-bogo 15, wp-bitz 15, wp-party 5 (supabase/seed.sql). Owner approves prizes and food cost.",
+    "open_questions": [
+      "Who operates the store (franchisee name, legal entity for CASL)?",
+      "Mall unit/level, and does CF (Cadillac Fairview) need to approve a QR screen or contest?",
+      "Walk-in prices, and does this store offer catering?",
+      "Does MTY / Wetzel's Canada allow store-level contests and codes alongside Wetzel's Rewards?"
+    ]
+  }
+}

@@ -2,6 +2,7 @@
 // It forwards a fixed list of calls to the local Supabase stack and nothing else.
 //   Public (QR page):   POST /v1/lead, /v1/catering, /v1/me           -> anon role
 //   Staff (admin page): POST /v1/staff/login, then /v1/staff/*        -> service role, scoped in SQL by staff id
+//                       (/v1/staff/onboarding* is super admin only)
 //   GET /v1/health
 // Database keys are added here, so the public repo and the pages never hold one. Staff sessions are random
 // tokens kept in memory (12 h); a restart signs everyone out. Node 18+, no dependencies.
@@ -32,6 +33,9 @@ const STAFF = {
   '/v1/staff/catering': { rpc: 'staff_catering', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
   '/v1/staff/catering-status': { rpc: 'staff_set_catering_status', args: (b, s) => ({ p_staff: s.id, p_id: b.id || null, p_status: b.status || null }) },
   '/v1/staff/redeem': { rpc: 'staff_redeem', args: (b, s) => ({ p_staff: s.id, p_code: b.code || null, p_store: b.store || null, p_order_total: b.total === '' || b.total == null ? null : Number(b.total) }) },
+  // Super admin only (checked in SQL): the client onboarding board.
+  '/v1/staff/onboarding': { rpc: 'staff_onboarding', args: (b, s) => ({ p_staff: s.id }) },
+  '/v1/staff/onboarding-set': { rpc: 'staff_onboarding_set', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_step: b.step || null, p_done: typeof b.done === 'boolean' ? b.done : null, p_note: typeof b.note === 'string' ? b.note : null }) },
   '/v1/staff/password': { rpc: 'staff_change_password', args: (b, s) => ({ p_staff: s.id, p_old: b.old || null, p_new: b.new || null }) }
 };
 const pick = (b, fields) => Object.fromEntries(fields.map(f => [f, b[f] === undefined ? null : b[f]]));
