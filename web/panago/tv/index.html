@@ -279,7 +279,7 @@ tr:last-child td { border-bottom: 0; }
     </div></section><figcaption><b>Page 3 · Team lunch draw.</b> Big, photo-friendly code so a colleague can scan a snapshot.</figcaption></figure>
 
     <!-- 4 -->
-    <figure><section class="stage s4" data-name="New paneer pizzas" aria-label="Page 4: New paneer pizzas, order direct"><div class="in">
+    <figure><section class="stage s4" data-name="New paneer pizzas" aria-label="Page 4: New paneer pizzas, order through Platterly"><div class="in">
       <img class="pizza spin-slow" src="../assets/pizza-top.webp" alt="">
       <div class="burst" data-burst="#FAEE23"><div>New!</div></div>
       <h2 class="hl">New paneer<br>pizzas.</h2>
@@ -289,9 +289,9 @@ tr:last-child td { border-bottom: 0; }
         <div class="item"><b>Veggie Paneer</b><span>Garlic spread, tandoori spice, paneer, caramelized onions, pineapple, mushrooms, red onions, mozzarella, cheddar</span><em>S $15 · M $19 · L $23 · XL $27</em></div>
       </div>
       <div class="cyo">Or build your own · L from $15.75</div>
-      <div class="direct"><b>Order direct</b>Same price as walk-in. No delivery fee, no surcharges, no third-party app. Call 310-0001 or order at panago.com.</div>
+      <div class="direct"><b>Order through Platterly</b>Same price as walk-in. Pickup or delivery, no delivery fee, no surcharges. Scan the code to win, then order.</div>
       <div class="legal">Veggie pizzas. Prices from the October 2026 Ontario menu. Taxes extra.</div>
-    </div></section><figcaption><b>Page 4 · New paneer + order direct.</b> All three new pizzas with every size price.</figcaption></figure>
+    </div></section><figcaption><b>Page 4 · New paneer + order through Platterly.</b> All three new pizzas with every size price.</figcaption></figure>
 
     <!-- 5 -->
     <figure><section class="stage s5" data-name="Deal of the day" aria-label="Page 5: Deal of the day"><div class="in">
@@ -311,7 +311,7 @@ tr:last-child td { border-bottom: 0; }
       <div class="eyebrow">Booking December office parties now</div>
       <h2 class="hl">Office party?<br>We've got 50.</h2>
       <div class="pk" id="packs"></div>
-      <div class="legal">Menu prices from the October 2026 Ontario menu, before 13% HST. No delivery fee when you order direct. Large = 14", 10 slices.</div>
+      <div class="legal">Menu prices from the October 2026 Ontario menu, before 13% HST. No delivery fee when you order through Platterly. Large = 14", 10 slices.</div>
     </div></section><figcaption><b>Page 6 · Holiday parties.</b> Three catering packages priced from the menu.</figcaption></figure>
 
     <div class="progress" id="progress"></div>
@@ -326,7 +326,7 @@ tr:last-child td { border-bottom: 0; }
         <tr><td>1 Hero</td><td>Fresh dough, made daily. New paneer pizzas.</td><td class="n">Create Your Own L from $15.75</td><td>Corner badge</td></tr>
         <tr><td>2 Spin</td><td>Every spin wins. Scan, spin free, come in to claim.</td><td id="n-prizes"></td><td>Large badge</td></tr>
         <tr><td>3 Team lunch</td><td>Up to 5 large pizzas for your office, drawn monthly.</td><td>None</td><td>Large badge</td></tr>
-        <tr><td>4 Paneer</td><td>New Butter, Spicy and Veggie Paneer. Order direct.</td><td class="n">S $15 · M $19 · L $23 · XL $27</td><td>Corner badge</td></tr>
+        <tr><td>4 Paneer</td><td>New Butter, Spicy and Veggie Paneer. Order through Platterly.</td><td class="n">S $15 · M $19 · L $23 · XL $27</td><td>Corner badge</td></tr>
         <tr><td>5 Deal</td><td>One deal per weekday, picked automatically.</td><td>From panago.com deals</td><td>Corner badge</td></tr>
         <tr><td>6 Parties</td><td>Booking December office parties now.</td><td id="n-packs"></td><td>Corner badge</td></tr>
       </tbody>
@@ -334,7 +334,7 @@ tr:last-child td { border-bottom: 0; }
     <h2>Before it goes on the TV</h2>
     <ul class="checks">
       <li><span><b>Franchise agreement.</b> Kiran runs the Ontario stores and can promote locally; confirm the agreement covers a branded contest and a store-held customer list.</span></li>
-      <li><span><b>Delivery promise.</b> Pages 4 and 6 say direct orders have no delivery fee and no surcharges, as Kiran described. Confirm before launch.</span></li>
+      <li><span><b>Delivery promise.</b> Pages 4 and 6 say Platterly orders have no delivery fee and no surcharges, at walk-in prices. Platterly orders reach the store in the portal (Orders tab); confirm who delivers before launch.</span></li>
       <li><span><b>Lawyer read of the contest rules</b> (no purchase necessary, published odds, skill-testing question). About 1 to 2 hours.</span></li>
       <li><span><b>Deal of the day.</b> The deals on page 5 are the ones panago.com lists for 133 Bremner Blvd. Confirm they also run at Gerrard St W.</span></li>
       <li><span><b>Package prices.</b> The owner sets the final catering price. The totals shown are menu prices with no discount.</span></li>
@@ -405,7 +405,7 @@ tr:last-child td { border-bottom: 0; }
   /* Scan to Win badge on every page, same corner */
   document.querySelectorAll('.stage .in').forEach(el => el.insertAdjacentHTML('beforeend',
     `<div class="scan"><div class="win-note"><span>Scan to win free</span><b>Cheezy Bread, wings, dips or pop!</b><small>Every spin wins · with a pizza order</small></div><div class="flag">${burstSVG('#FAEE23', 12, 38)}<span>Scan to win!</span></div><div class="card"><canvas class="qr" aria-label="QR code: scan to spin and win"></canvas><div class="cta">Spin free<small>Every spin wins</small></div></div></div>` +
-    `<div class="band"><div class="call">Panago 310-0001<small>Order online at panago.com</small></div><img src="../assets/logo-white.png" alt="Panago For It"></div>`));
+    `<div class="band"><div class="call">Panago 310-0001<small>Or scan to order through Platterly</small></div><img src="../assets/logo-white.png" alt="Panago For It"></div>`));
 
   function drawQR(cv, text) {
     if (typeof window.qrcode !== 'function') return;

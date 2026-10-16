@@ -8,7 +8,7 @@ set local role anon;
 -- 1. happy path: phone normalised, coupon issued, not upsized
 insert into r values ('a', public.submit_lead('panago','gerrard','Priya','(416) 555-0123',true,'gcb',false,'tv-2','Yes, send me deals'));
 do $$ declare x jsonb := (select v from r where k='a'); begin
-  assert x->>'code' ~ '^PG-[A-Z2-9]{6}$', 'code format ' || x::text;
+  assert x->>'code' ~ '^PL-[A-Z2-9]{6}$', 'code format ' || x::text;
   assert (x->>'upsized')::boolean = false and (x->>'returning')::boolean = false, 'first spin not upsized';
 end $$;
 

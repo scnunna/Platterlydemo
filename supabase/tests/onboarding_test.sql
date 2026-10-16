@@ -14,15 +14,15 @@ do $$ declare s uuid := (select id from public.staff where email = 'super@test.c
              w uuid := (select id from public.staff where email = 'wz@test.ca');
              x jsonb; c jsonb; begin
   -- prefixes and scoping
-  assert (select v->>'code' from t where k = 'w') ~ '^WP-[A-Z2-9]{6}$', 'Wetzel''s code has WP prefix';
-  assert (select v->>'code' from t where k = 'p') ~ '^PG-[A-Z2-9]{6}$', 'Panago code keeps PG prefix';
+  assert (select v->>'code' from t where k = 'w') ~ '^PL-[A-Z2-9]{6}$', 'Wetzel''s code is a Platterly code';
+  assert (select v->>'code' from t where k = 'p') ~ '^PL-[A-Z2-9]{6}$', 'Panago code is a Platterly code';
   assert (select v->>'title' from t where k = 'w') = 'Two free dips', 'quiz upsizes Wetzel''s prize';
   assert (select count(*) from public.leads where contact = 'maya@test.ca') = 2, 'same person is a separate lead per client';
   assert not public.staff_leads(w, null, null, false, 100) @> '[{"client_id":"panago"}]', 'Wetzel''s owner sees no Panago leads';
   assert public.staff_leads(w, null, null, false, 100) @> '[{"client_id":"wetzels"}]', 'Wetzel''s owner sees own lead';
   -- sign-in carries stores and prefix
   x := public.staff_login('wz@test.ca', 'wetzels owner pass');
-  assert x->'clients' @> '[{"id":"wetzels","code_prefix":"WP","stores":[{"id":"eaton"}]}]', 'login returns stores and prefix';
+  assert x->'clients' @> '[{"id":"wetzels","stores":[{"id":"eaton"}]}]', 'login returns stores and prefix';
   assert jsonb_array_length(x->'clients') = 1, 'client admin sees one client';
   -- customer door with no client: the code decides
   x := public.customer_history(null, 'maya@test.ca', (select v->>'code' from t where k = 'w'));
@@ -30,7 +30,7 @@ do $$ declare s uuid := (select id from public.staff where email = 'super@test.c
   assert not (public.customer_history(null, 'other@test.ca', (select v->>'code' from t where k = 'w'))->>'ok')::boolean, 'wrong contact refused';
   -- board: super admin only
   x := public.staff_onboarding(s);
-  assert jsonb_array_length(x->'stages') = 7 and jsonb_array_length(x->'steps') = 25, 'stages and steps';
+  assert jsonb_array_length(x->'stages') = 7 and jsonb_array_length(x->'steps') = 27, 'stages and steps';
   assert x->'clients' @> '[{"id":"wetzels"}]' and x->'clients' @> '[{"id":"panago"}]', 'board lists every client';
   begin perform public.staff_onboarding(w); raise exception 'client admin read the board';
   exception when insufficient_privilege then null; end;

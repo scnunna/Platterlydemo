@@ -161,8 +161,8 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
   function signin(msg) {
     app.innerHTML = `<div class="signin">
       <section class="art"><div class="mark" style="color:#fff">${MARK}platterly</div>
-        <div style="display:grid;gap:12px"><h1>Every scan, every sign-up, in one place.</h1>
-        <p class="hide-sm">Leads from the Spin &amp; Win QR codes, their prizes and redemptions, catering requests, and who said yes to deals.</p></div>
+        <div style="display:grid;gap:12px"><h1>Every scan, sign-up and order, in one place.</h1>
+        <p class="hide-sm">Platterly leads from the Spin &amp; Win QR codes, orders for pickup and delivery, prizes and redemptions, catering requests, and who said yes to deals.</p></div>
         <p class="tiny hide-sm" style="opacity:.75">Data lives on the store laptop. This page shows it only after you sign in.</p></section>
       <section class="form-side"><div>
         <h2>Sign in</h2>
@@ -177,7 +177,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
           <button class="btn primary" type="submit">Sign in</button></form>`
         : `<form id="f-cust" class="card" style="display:grid;gap:12px" novalidate>
           <div class="field"><label for="c-contact">Email or mobile</label><input id="c-contact" autocomplete="email"></div>
-          <div class="field"><label for="c-code">Any prize code you received</label><input id="c-code" placeholder="PG-XXXXXX or WP-XXXXXX" autocapitalize="characters"></div>
+          <div class="field"><label for="c-code">Any prize code you received</label><input id="c-code" placeholder="PL-XXXXXX" autocapitalize="characters"></div>
           <div class="err" id="c-err" role="alert"></div>
           <button class="btn primary" type="submit">Show my prizes</button><div id="c-out"></div></form>`}
         <p class="tiny muted">No account? Store owners get one from the Platterly team. Customers: spin for a prize at <a href="../panago/">Panago</a> or <a href="../wetzels/">Wetzel's</a>.</p>
@@ -186,7 +186,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
 
   /* ------------ console ------------ */
   let tab = 'overview', client = null, cache = {};
-  const TABS = [['overview', 'Overview'], ['leads', 'Leads'], ['redeem', 'Redeem a code'], ['catering', 'Catering'], ['onboarding', 'Onboarding', true], ['account', 'Account']];
+  const TABS = [['overview', 'Overview'], ['orders', 'Orders'], ['leads', 'Leads'], ['redeem', 'Redeem a code'], ['catering', 'Catering'], ['onboarding', 'Onboarding', true], ['account', 'Account']];
   function shell(body) {
     const supa = me.role === 'super_admin';
     app.innerHTML = `<header class="top"><div class="wrap">
@@ -228,7 +228,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
         <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" id="l-consent" ${q.consent ? 'checked' : ''}> Said yes to deals only</label>
         <button class="btn primary" type="submit" style="align-self:end">Search</button></form>
       ${rows.length ? `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Contact</th><th>Deals</th><th>First seen</th><th>Store · screen</th><th>Visits</th><th>Last prize</th><th>Code</th><th>Redeemed</th><th>Catering</th>${me.role === 'super_admin' && !client ? '<th>Client</th>' : ''}</tr></thead><tbody>
-        ${rows.map(r => `<tr><td><b>${esc(r.first_name)}</b></td><td class="small">${esc(r.contact)}</td><td>${r.consent ? '<span class="badge good">Yes</span>' : '<span class="badge">No</span>'}</td>
+        ${rows.map(r => `<tr><td><b>${esc(r.first_name)}</b></td><td class="small">${esc(r.email || '')}${r.email && r.phone ? '<br>' : ''}${esc(r.phone || '')}${!r.email && !r.phone ? esc(r.contact) : ''}${r.email && r.phone ? ' <span class="badge good">both</span>' : ''}</td><td>${r.consent ? '<span class="badge good">Yes</span>' : '<span class="badge">No</span>'}</td>
           <td class="small num">${day(r.created_at)}</td><td class="small">${esc(r.first_store ? storeName(r.first_store) : '—')} · ${esc(SOURCE(r.first_source))}</td><td class="num">${r.spins}</td>
           <td class="small">${esc(r.last_prize || '')}</td><td><code>${esc(r.last_code || '')}</code></td><td class="num small">${r.redeemed}${Number(r.redeemed_total) ? ' · ' + money(r.redeemed_total) : ''}</td>
           <td>${r.catering ? `<span class="badge warn">${r.catering}</span>` : ''}</td>${me.role === 'super_admin' && !client ? `<td class="small">${esc(r.client_id)}</td>` : ''}</tr>`).join('')}
@@ -237,8 +237,8 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
   }
   function vRedeem() {
     return `<h1>Redeem a code</h1><form id="f-redeem" class="card" style="display:grid;gap:12px;max-width:520px" novalidate>
-      <p class="small muted">Check the customer's code at the counter or on a phone order. A code works once, on the day it was won.</p>
-      <div class="field"><label for="r-code">Code</label><input id="r-code" placeholder="${esc((me.clients.find(c => c.id === client) || me.clients[0] || {}).code_prefix || 'PG')}-XXXXXX" autocapitalize="characters" style="font-family:var(--mono);font-size:18px;letter-spacing:.06em"></div>
+      <p class="small muted">Check the customer's Platterly code (PL-) at the counter or on a phone order. A code works once, until close on the day it was won. Enter the order total so the customer earns Platterly points (5 per $1).</p>
+      <div class="field"><label for="r-code">Code</label><input id="r-code" placeholder="PL-XXXXXX" autocapitalize="characters" style="font-family:var(--mono);font-size:18px;letter-spacing:.06em"></div>
       <div class="row"><div class="field" style="flex:1"><label for="r-store">Store</label><select id="r-store">${allStores().filter(st => !client || st.client === client).map(st => `<option value="${esc(st.id)}">${esc(st.name)}</option>`).join('')}</select></div>
         <div class="field" style="flex:1"><label for="r-total">Order total before tax (optional)</label><input id="r-total" inputmode="decimal" placeholder="42.50"></div></div>
       <div class="err" id="r-err" role="alert"></div><div id="r-ok" class="ok" aria-live="polite"></div>
@@ -320,7 +320,26 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
     return `<div class="row between"><div style="display:grid;gap:2px"><h1>Client onboarding</h1><span class="small muted">Platterly super admin only · ${plural(d.clients.length, 'client')}, ${live} live</span></div><button class="btn" type="button" data-act="refresh">Refresh</button></div>
       <section style="display:grid;gap:8px"><h2>Pipeline</h2><p class="small muted">Pick a client to open its checklist.</p>${pipeline}</section>${detail}`;
   }
-  const VIEWS = { onboarding: vOnboarding, overview: vOverview, leads: vLeads, redeem: vRedeem, catering: vCatering, account: vAccount };
+  /* ------------ orders placed through Platterly ------------ */
+  const ORDER_ST = { new: 'New', accepted: 'Accepted', ready: 'Ready', out_for_delivery: 'Out for delivery', completed: 'Completed', cancelled: 'Cancelled' };
+  const PAY = { pay_at_store: 'Pay at the counter', pay_on_delivery: 'Pay the driver', card_demo: 'Card (demo, not charged): collect payment' };
+  let ofilter = 'open';
+  async function vOrders() {
+    const rows = await call('/v1/staff/orders', { client }); cache.orders = rows;
+    const open = rows.filter(o => !['completed', 'cancelled'].includes(o.status)), shown = ofilter === 'open' ? open : rows;
+    const nextOf = o => o.status === 'new' ? ['accepted', 'Accept'] : o.status === 'accepted' ? ['ready', o.mode === 'delivery' ? 'Ready for the driver' : 'Ready for pickup'] : o.status === 'ready' ? (o.mode === 'delivery' ? ['out_for_delivery', 'Out for delivery'] : ['completed', 'Picked up']) : o.status === 'out_for_delivery' ? ['completed', 'Delivered'] : null;
+    return `<div class="row between"><div style="display:grid;gap:2px"><h1>Orders <span class="muted small num">${open.length} open</span></h1><span class="small muted">Orders placed through Platterly. Same price as your counter, no delivery fee. Enter each one in your till as usual.</span></div>
+        <div class="row"><label class="check"><input type="checkbox" id="o-all" ${ofilter === 'all' ? 'checked' : ''}> Show completed and cancelled</label><button class="btn" type="button" data-act="refresh">Refresh</button></div></div>
+      ${shown.length ? `<div style="display:grid;gap:10px">${shown.map(o => { const nx = nextOf(o); return `<article class="card" style="display:grid;gap:8px">
+        <div class="row between"><div class="row"><b style="font-family:var(--mono);font-size:16px">${esc(o.number)}</b><span class="badge ${o.status === 'new' ? 'warn' : o.status === 'completed' ? 'good' : ''}">${esc(ORDER_ST[o.status])}</span><span class="badge brand">${o.mode === 'delivery' ? 'Delivery' : 'Pickup'}</span>${me.role === 'super_admin' && !client ? `<span class="small muted">${esc(o.client_id)}</span>` : ''}</div><span class="small muted">${when(o.created_at)} · ${esc(storeName(o.store_id))}</span></div>
+        <div class="two" style="gap:10px"><div class="small"><b>${esc(o.name)}</b>${o.phone ? ' · ' + esc(o.phone) : ''}${o.email ? ' · ' + esc(o.email) : ''}${o.address ? `<br>${esc(o.address)}` : ''}${o.note ? `<br><i>${esc(o.note)}</i>` : ''}</div>
+          <div class="small">${(o.items || []).map(l => `${l.qty} × ${esc(l.name)}${l.size ? ' (' + l.size + ')' : ''}${l.prize ? ' <span class="badge good">prize</span>' : ''} <span class="muted num">${money(l.line)}</span>`).join('<br>')}</div></div>
+        <div class="row between small"><span>Food ${money(o.subtotal)}${Number(o.discount) ? ' · prize −' + money(o.discount) : ''} · HST ${money(o.tax)}${o.points_used ? ' · points −' + money(o.credit) : ''} · <b>Total ${money(o.total)}</b> · ${esc(PAY[o.payment])}${o.code ? ` · code <code>${esc(o.code)}</code>` : ''}</span>
+          <span class="row">${nx ? `<button class="btn primary" type="button" data-ord="${o.id}" data-st="${nx[0]}">${nx[1]}</button>` : ''}${!['completed', 'cancelled'].includes(o.status) ? `<button class="btn" type="button" data-ord="${o.id}" data-st="cancelled">Cancel</button>` : ''}</span></div></article>`; }).join('')}</div>`
+      : `<div class="empty"><b>${ofilter === 'open' ? 'No open orders.' : 'No orders yet.'}</b><span>Customers order from the prize screen after Spin &amp; Win, or from a reminder link.</span></div>`}
+      ${Number(rows.filter(o => o.points_used).reduce((a, o) => a + Number(o.credit), 0)) ? `<p class="tiny muted">Platterly points used on orders: ${money(rows.reduce((a, o) => a + Number(o.credit || 0), 0))} in total. Platterly settles these with you.</p>` : ''}`;
+  }
+  const VIEWS = { orders: vOrders, onboarding: vOnboarding, overview: vOverview, leads: vLeads, redeem: vRedeem, catering: vCatering, account: vAccount };
   async function render() {
     if (!me) return signin();
     shell('<p class="muted">Loading…</p>');
@@ -336,17 +355,23 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
     if (b.dataset.onbClient) { onb.sel = b.dataset.onbClient; onb.edit = null; return render(); }
     if (b.dataset.onbNote) { onb.edit = b.dataset.onbNote; return render(); }
     if (b.dataset.act === 'note-cancel') { onb.edit = null; return render(); }
+    if (b.dataset.ord) {
+      b.disabled = true;
+      try { const r = await call('/v1/staff/order-status', { id: b.dataset.ord, status: b.dataset.st }); toast(r.ok ? (r.points_awarded ? `Done. The customer earned ${r.points_awarded} Platterly points.` : 'Order updated.') : r.msg); } catch (x) { toast(x.message); }
+      return render();
+    }
     if (b.dataset.act === 'out') { try { await call('/v1/staff/logout', {}); } catch {} me = null; ss.set('platterly-staff', null); return signin(); }
     if (b.dataset.act === 'csv') {
       const rows = (await call('/v1/staff/leads', { client, consent_only: true, limit: 2000 }));
       const cell = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-      const csv = ['first_name,contact,contact_kind,first_seen,store,screen,visits,last_prize,client'].concat(rows.map(r => [r.first_name, r.contact, r.contact_kind, r.created_at, r.first_store, SOURCE(r.first_source), r.spins, r.last_prize, r.client_id].map(cell).join(','))).join('\n');
+      const csv = ['first_name,email,phone,first_seen,store,screen,visits,last_prize,client'].concat(rows.map(r => [r.first_name, r.email || (r.contact_kind === 'email' ? r.contact : ''), r.phone || (r.contact_kind === 'phone' ? r.contact : ''), r.created_at, r.first_store, SOURCE(r.first_source), r.spins, r.last_prize, r.client_id].map(cell).join(','))).join('\n');
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `platterly-consented-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
       toast(`${rows.length} consented contacts downloaded.`);
     }
   });
   app.addEventListener('change', async e => {
     if (e.target.id === 'client') { client = e.target.value || null; return render(); }
+    if (e.target.id === 'o-all') { ofilter = e.target.checked ? 'all' : 'open'; return render(); }
     if (e.target.dataset.onbStep) {
       const box = e.target; box.disabled = true;
       try { const r = await call('/v1/staff/onboarding-set', { client: onb.sel, step: box.dataset.onbStep, done: box.checked }); if (!r.ok) toast(r.msg); return render(); }
@@ -368,7 +393,9 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
       try {
         const r = await call('/v1/me', { p_client: null, p_contact: v('c-contact'), p_code: v('c-code') }, false);
         if (!r.ok) { err.textContent = r.msg; return; }
-        out.innerHTML = `<h3 style="margin-top:6px">Hi ${esc(r.name)}, your prizes</h3><div style="display:grid;gap:8px;margin-top:8px">${r.spins.map(s => `<div class="card" style="padding:10px 12px"><div class="row between"><b>${esc(s.prize)}</b>${s.redeemed ? '<span class="badge">Used</span>' : new Date(s.expires_at) < new Date() ? '<span class="badge">Expired</span>' : '<span class="badge good">Valid today</span>'}</div><div class="small muted">${esc(s.rule)} · ${day(s.day + 'T12:00')} · <code>${esc(s.code)}</code></div></div>`).join('')}</div>`;
+        out.innerHTML = `<h3 style="margin-top:6px">Hi ${esc(r.name)}</h3><div class="card kpi" style="padding:10px 12px;margin-top:8px"><b class="num">${r.points || 0}</b><span>Platterly points · 100 = $1 off a Platterly order</span></div>
+          ${(r.orders || []).length ? `<h3 style="margin-top:10px">Your orders</h3><div style="display:grid;gap:6px;margin-top:6px">${r.orders.map(o => `<div class="card" style="padding:8px 12px"><div class="row between"><b><code>${esc(o.number)}</code></b><span class="badge">${esc(ORDER_ST[o.status] || o.status)}</span></div><div class="small muted">${esc(o.client)} · ${esc(o.mode)} · ${money(o.total)} · ${day(o.created_at)}</div></div>`).join('')}</div>` : ''}
+          <h3 style="margin-top:10px">Your prizes</h3><div style="display:grid;gap:8px;margin-top:8px">${r.spins.map(s => `<div class="card" style="padding:10px 12px"><div class="row between"><b>${esc(s.prize)}</b>${s.redeemed ? '<span class="badge">Used</span>' : new Date(s.expires_at) < new Date() ? '<span class="badge">Expired</span>' : '<span class="badge good">Valid today</span>'}</div><div class="small muted">${esc(s.client || '')} · ${esc(s.rule)} · ${day(s.day + 'T12:00')} · <code>${esc(s.code)}</code></div></div>`).join('')}</div>`;
       } catch (x) { err.textContent = x.message; }
     }
     if (f.classList.contains('f-note')) {
@@ -378,8 +405,8 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
     if (f.id === 'f-search') { q = { search: v('l-q').trim(), consent: document.getElementById('l-consent').checked }; return render(); }
     if (f.id === 'f-redeem') {
       const err = document.getElementById('r-err'), ok = document.getElementById('r-ok'); err.textContent = ''; ok.textContent = '';
-      const code = v('r-code').trim(); if (!/^[A-Z]{2}-[A-Z2-9]{6}$/i.test(code)) { err.textContent = 'Codes look like PG-7KQ2MD or WP-7KQ2MD.'; return; }
-      try { const r = await call('/v1/staff/redeem', { code, store: v('r-store'), total: v('r-total') }); if (r.ok) { ok.textContent = `Valid. ${r.name}: ${r.prize}, ${r.rule}. Marked used.`; document.getElementById('r-code').value = ''; } else err.textContent = r.msg; }
+      const code = v('r-code').trim(); if (!/^[A-Z]{2}-[A-Z2-9]{6}$/i.test(code)) { err.textContent = 'Codes look like PL-7KQ2MD.'; return; }
+      try { const r = await call('/v1/staff/redeem', { code, store: v('r-store'), total: v('r-total') }); if (r.ok) { ok.textContent = `Valid. ${r.name}: ${r.prize}, ${r.rule}. Marked used.${r.points_awarded ? ` ${r.name} earned ${r.points_awarded} Platterly points.` : ''}`; document.getElementById('r-code').value = ''; } else err.textContent = r.msg; }
       catch (x) { err.textContent = x.message; }
     }
     if (f.id === 'f-pass') {

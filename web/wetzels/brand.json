@@ -20,19 +20,39 @@
       "_note": "Londrina Solid is the display face on wetzels.com (Google Fonts). The site body uses Roboto/Gotham/Montserrat via Typekit; Montserrat is the Google Fonts match."
     },
     "logo": {
-      "files": ["assets/logo-blue.png", "assets/logo-white.png"],
+      "files": [
+        "assets/logo-blue.png",
+        "assets/logo-white.png"
+      ],
       "source": "https://wetzelspretzels.ca/wp-content/uploads/2022/09/wetzel-logo.png (white version made from its alpha channel)"
     },
     "voice": {
       "tone": "playful, warm, snack-first; short fun headlines, then one plain sentence",
-      "taglines_seen": ["Hand Held Happiness", "The best things in life are fresh."],
-      "do": ["name real menu items (Original, Sinful Cinnamon, Cin-A-Bitz, Wetzel Dog)", "say 'Taxes extra' next to any price", "mention the Eaton Centre location"],
-      "dont": ["quote delivery-app prices as walk-in prices", "promise catering until the store confirms it", "imply this is a Wetzel's head-office promotion"]
+      "taglines_seen": [
+        "Hand Held Happiness",
+        "The best things in life are fresh."
+      ],
+      "do": [
+        "name real menu items (Original, Sinful Cinnamon, Cin-A-Bitz, Wetzel Dog)",
+        "say 'Taxes extra' next to any price",
+        "mention the Eaton Centre location"
+      ],
+      "dont": [
+        "quote delivery-app prices as walk-in prices",
+        "promise catering until the store confirms it",
+        "imply this is a Wetzel's head-office promotion"
+      ]
     },
     "compliance": {
       "contest": "No purchase necessary. One spin per person per day. Odds and full rules in the game. Draw winners answer a skill-testing question. (Competition Act s.74.06)",
       "casl": "Marketing consent is a separate, unticked box naming Wetzel's Pretzels Toronto Eaton Centre, 220 Yonge St, 647-250-8200. Replace with the legal operator name once known.",
       "franchise": "Franchisor (MTY / Wetzel's Canada) and mall (Cadillac Fairview) sign-off needed for branded contests, codes and screens."
+    },
+    "partnership": "Wetzel's Toronto Eaton Centre partners with Platterly for marketing. QR scans open Platterly's Spin & Win; prize codes (PL-) and credit points are Platterly's.",
+    "cta": {
+      "order": "Order through Platterly: pickup at the Eaton Centre, same price as the counter",
+      "scan": "Scan to win! Spin free, every spin wins",
+      "catering": "Party Packs and Bitz trays for your office"
     }
   }
 }

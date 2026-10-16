@@ -47,6 +47,9 @@ if (-not $anon -or -not $service) { Say 'ERROR: database did not start (no keys 
 # 2. Lead proxy (localhost only)
 if ($restartProxy -and (Alive "$State\proxy.pid")) { Stop-Process -Id ([int](Get-Content "$State\proxy.pid")) -Force; Start-Sleep 1 }
 if (-not (Alive "$State\proxy.pid")) {
+  # Optional reminder senders, one KEY=VALUE per line, kept outside the repo: PLATTERLY_MAIL=resend, RESEND_API_KEY,
+  # PLATTERLY_MAIL_FROM, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM. Without it reminders go to the test inbox.
+  if (Test-Path "$State\mail.env") { Get-Content "$State\mail.env" | Where-Object { $_ -match '^\s*([A-Z_]+)\s*=\s*(.+?)\s*$' } | ForEach-Object { Set-Item "Env:$($Matches[1])" $Matches[2] } }
   $env:PLATTERLY_ANON_KEY = $anon; $env:PLATTERLY_SERVICE_KEY = $service; $env:PORT = "$ProxyPort"
   $p = Start-Process node -ArgumentList "`"$Repo\server\lead-proxy.mjs`"" -WindowStyle Hidden -PassThru `
        -RedirectStandardOutput "$State\proxy.log" -RedirectStandardError "$State\proxy.err"

@@ -11,7 +11,8 @@ object Destinations {
         Dest("platterly", "Platterly catering", "Order for your team, track orders, rewards. Client and admin views.", "index.html"),
         Dest("spin", "Panago Spin & Win", "The customer game the QR code opens. Spin, join, get a coupon.", "panago/index.html"),
         Dest("wetzels-spin", "Wetzel's Spin & Win", "Wetzel's Pretzels, CF Toronto Eaton Centre. Spin, join, get a WP- coupon.", "wetzels/index.html"),
-        Dest("admin", "Leads portal (staff)", "Leads, redemptions, catering. Super admin also gets the client onboarding board.", "admin/index.html"),
+        Dest("order", "Platterly order", "Order with a Platterly code: pickup or delivery, same price as the store.", "order/index.html"),
+        Dest("admin", "Leads portal (staff)", "Orders, leads, redemptions, catering. Super admin also gets the client onboarding board.", "admin/index.html"),
         Dest("tv-gerrard", "TV screens · Gerrard", "Six-page window loop for 44 Gerrard St W. Full screen.", "panago/tv/index.html?s=g#tv", isTv = true),
         Dest("tv-bremner", "TV screens · Bremner", "Six-page window loop for 133 Bremner Blvd. Full screen.", "panago/tv/index.html?s=b#tv", isTv = true),
     )

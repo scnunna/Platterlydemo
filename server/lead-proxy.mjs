@@ -1,12 +1,16 @@
 // Platterly lead proxy: the only part of the laptop stack that faces the internet.
 // It forwards a fixed list of calls to the local Supabase stack and nothing else.
-//   Public (QR page):   POST /v1/lead, /v1/catering, /v1/me           -> anon role
+//   Public (QR page):   POST /v1/claim, /v1/lead (old pages), /v1/catering, /v1/me  -> anon role
+//   Public (ordering):  POST /v1/code, /v1/menu, /v1/quote, /v1/order, /v1/order-status -> anon role
 //   Staff (admin page): POST /v1/staff/login, then /v1/staff/*        -> service role, scoped in SQL by staff id
 //                       (/v1/staff/onboarding* is super admin only)
 //   GET /v1/health
 // Database keys are added here, so the public repo and the pages never hold one. Staff sessions are random
 // tokens kept in memory (12 h); a restart signs everyone out. Node 18+, no dependencies.
-// Env: PLATTERLY_API, PLATTERLY_ANON_KEY, PLATTERLY_SERVICE_KEY, PORT (default 56380), PLATTERLY_ORIGINS.
+// It also sends the 2-hour claim reminders (see sendReminders below).
+// Env: PLATTERLY_API, PLATTERLY_ANON_KEY, PLATTERLY_SERVICE_KEY, PORT (default 56380), PLATTERLY_ORIGINS,
+//      PLATTERLY_MAIL (test | resend), RESEND_API_KEY, PLATTERLY_MAIL_FROM, PLATTERLY_MAILPIT,
+//      TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM, PLATTERLY_SITE.
 import http from 'node:http';
 import crypto from 'node:crypto';
 
@@ -16,13 +20,19 @@ const SERVICE = process.env.PLATTERLY_SERVICE_KEY || '';
 const PORT = Number(process.env.PORT || 56380);
 const ORIGINS = new Set((process.env.PLATTERLY_ORIGINS ||
   'https://godsmustb.github.io,https://appassets.androidplatform.net,http://127.0.0.1:8099,http://localhost:8099').split(','));
-const MAX_BODY = 4096;
+const MAX_BODY = 8192; // an order of 40 lines fits
 const SESSION_MS = 12 * 3600e3;
 
 if (!ANON || !SERVICE) { console.error('PLATTERLY_ANON_KEY and PLATTERLY_SERVICE_KEY must be set. Start with server/start.ps1.'); process.exit(1); }
 
 // route -> rpc, the role key to use, how to build its arguments, per-IP limit per minute
 const PUBLIC = {
+  '/v1/claim': { rpc: 'submit_claim', perMin: 20, args: b => pick(b, ['p_client', 'p_store', 'p_first_name', 'p_email', 'p_phone', 'p_consent', 'p_remind', 'p_offer', 'p_quiz_right', 'p_source', 'p_consent_wording']) },
+  '/v1/code': { rpc: 'code_info', perMin: 30, args: b => pick(b, ['p_code']) },
+  '/v1/menu': { rpc: 'menu_for', perMin: 60, args: b => pick(b, ['p_client']) },
+  '/v1/quote': { rpc: 'quote_order', perMin: 90, args: b => pick(b, ['p_code', 'p_items', 'p_use_prize', 'p_points']) },
+  '/v1/order': { rpc: 'place_order', perMin: 10, args: b => pick(b, ['p_code', 'p_store', 'p_mode', 'p_name', 'p_phone', 'p_address', 'p_note', 'p_items', 'p_use_prize', 'p_points', 'p_payment']) },
+  '/v1/order-status': { rpc: 'order_status', perMin: 30, args: b => pick(b, ['p_number', 'p_code']) },
   '/v1/lead': { rpc: 'submit_lead', perMin: 20, args: b => pick(b, ['p_client', 'p_store', 'p_first_name', 'p_contact', 'p_consent', 'p_offer', 'p_quiz_right', 'p_source', 'p_consent_wording']) },
   '/v1/catering': { rpc: 'request_catering', perMin: 10, args: b => pick(b, ['p_code', 'p_event_date', 'p_package', 'p_headcount']) },
   '/v1/me': { rpc: 'customer_history', perMin: 10, args: b => pick(b, ['p_client', 'p_contact', 'p_code']) }
@@ -33,6 +43,8 @@ const STAFF = {
   '/v1/staff/catering': { rpc: 'staff_catering', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
   '/v1/staff/catering-status': { rpc: 'staff_set_catering_status', args: (b, s) => ({ p_staff: s.id, p_id: b.id || null, p_status: b.status || null }) },
   '/v1/staff/redeem': { rpc: 'staff_redeem', args: (b, s) => ({ p_staff: s.id, p_code: b.code || null, p_store: b.store || null, p_order_total: b.total === '' || b.total == null ? null : Number(b.total) }) },
+  '/v1/staff/orders': { rpc: 'staff_orders', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
+  '/v1/staff/order-status': { rpc: 'staff_set_order_status', args: (b, s) => ({ p_staff: s.id, p_id: b.id || null, p_status: b.status || null }) },
   // Super admin only (checked in SQL): the client onboarding board.
   '/v1/staff/onboarding': { rpc: 'staff_onboarding', args: (b, s) => ({ p_staff: s.id }) },
   '/v1/staff/onboarding-set': { rpc: 'staff_onboarding_set', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_step: b.step || null, p_done: typeof b.done === 'boolean' ? b.done : null, p_note: typeof b.note === 'string' ? b.note : null }) },
@@ -130,4 +142,67 @@ const server = http.createServer((req, res) => {
     }
   });
 });
-server.listen(PORT, '127.0.0.1', () => console.log(`lead proxy on http://127.0.0.1:${PORT} -> ${API}`));
+// ---------- claim reminders ----------
+// Two hours after a claim the fast-claim bonus ends; the code stays valid until the store closes. The customer chose
+// to get one reminder (email when they gave one, else a text). It is a service message about the code they asked
+// for, not marketing: no other offers in it.
+// Email: PLATTERLY_MAIL=resend sends through Resend (RESEND_API_KEY, PLATTERLY_MAIL_FROM on a verified domain).
+//        Otherwise it goes to the local test inbox (Mailpit, http://127.0.0.1:56324) and is marked test_inbox:
+//        it does NOT reach the customer until a real sender is set.
+// Text:  TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM. Without them a text reminder is marked skipped.
+const MAIL = process.env.PLATTERLY_MAIL || 'test';
+const MAILPIT = process.env.PLATTERLY_MAILPIT || 'http://127.0.0.1:56324';
+const FROM = process.env.PLATTERLY_MAIL_FROM || 'Platterly <codes@platterly.local>';
+const SITE = process.env.PLATTERLY_SITE || 'https://godsmustb.github.io/platterlycatering';
+const closeText = iso => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Toronto' }).replace(':00', '');
+function reminderText(r) {
+  const link = `${SITE}/order/?code=${encodeURIComponent(r.code)}`, ways = r.delivery ? 'pickup or delivery' : 'pickup';
+  return {
+    subject: `Your Platterly code is still good until ${closeText(r.expires_at)} today`,
+    sms: `Platterly: Hi ${r.first_name}, your prize (${r.prize}) is still yours until ${closeText(r.expires_at)} today at ${r.store}. Code ${r.code}. Order for ${ways}: ${link} Reply STOP to opt out.`,
+    text: `Hi ${r.first_name},\n\nYour 2-hour fast-claim bonus has ended, but your prize is still yours:\n\n  ${r.prize}, ${r.rule}\n  Code: ${r.code}\n  Valid until ${closeText(r.expires_at)} today at ${r.store}${r.address ? ', ' + r.address : ''}\n\n` +
+          `Show the code at the counter, or order through Platterly for ${ways} at the same price as the store: ${link}\n\n` +
+          `You are getting this one reminder because you asked for it when you claimed your prize. It is not a marketing message.\n` +
+          `Platterly, marketing partner of ${r.client}. ${SITE}/`
+  };
+}
+async function sendEmail(to, m) {
+  if (MAIL === 'resend') {
+    const r = await fetch('https://api.resend.com/emails', { method: 'POST', signal: AbortSignal.timeout(10000),
+      headers: { authorization: `Bearer ${process.env.RESEND_API_KEY || ''}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ from: FROM, to: [to], subject: m.subject, text: m.text }) });
+    if (!r.ok) throw new Error(`Resend ${r.status}`);
+    return 'sent';
+  }
+  const r = await fetch(`${MAILPIT}/api/v1/send`, { method: 'POST', signal: AbortSignal.timeout(10000), headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ From: { Email: 'codes@platterly.local', Name: 'Platterly' }, To: [{ Email: to }], Subject: m.subject, Text: m.text }) });
+  if (!r.ok) throw new Error(`test inbox ${r.status}`);
+  return 'test_inbox';
+}
+async function sendSms(to, m) {
+  const sid = process.env.TWILIO_ACCOUNT_SID, tok = process.env.TWILIO_AUTH_TOKEN, from = process.env.TWILIO_FROM;
+  if (!sid || !tok || !from) return 'skipped';
+  const r = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, { method: 'POST', signal: AbortSignal.timeout(10000),
+    headers: { authorization: 'Basic ' + Buffer.from(`${sid}:${tok}`).toString('base64'), 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ To: to, From: from, Body: m.sms }) });
+  if (!r.ok) throw new Error(`Twilio ${r.status}`);
+  return 'sent';
+}
+let sending = false;
+async function sendReminders() {
+  if (sending) return; sending = true;
+  try {
+    const due = await rpc('reminders_claim', { p_limit: 20 }, SERVICE);
+    for (const r of (due.ok && Array.isArray(due.data) ? due.data : [])) {
+      let status = 'failed', error = null;
+      try { const m = reminderText(r); status = r.channel === 'email' ? await sendEmail(r.to, m) : await sendSms(r.to, m); if (status === 'skipped') error = 'No SMS sender configured'; }
+      catch (e) { error = String(e.message || e).slice(0, 200); }
+      await rpc('reminder_done', { p_id: r.id, p_status: status, p_error: error }, SERVICE);
+      console.log(`reminder ${r.id} ${r.channel} ${status}${error ? ' (' + error + ')' : ''}`); // no addresses in the log
+    }
+  } catch (e) { console.error('reminders:', e.message); } finally { sending = false; }
+}
+setInterval(sendReminders, 60e3);
+setTimeout(sendReminders, 5e3);
+
+server.listen(PORT, '127.0.0.1', () => console.log(`lead proxy on http://127.0.0.1:${PORT} -> ${API} · reminders: email ${MAIL === 'resend' ? 'Resend' : 'test inbox only'}, SMS ${process.env.TWILIO_ACCOUNT_SID ? 'Twilio' : 'off'}`));

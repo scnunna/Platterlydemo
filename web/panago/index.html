@@ -16,6 +16,7 @@
   --display: 'Bowlby One', 'Arial Black', Impact, sans-serif;
   --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --hand: 'Permanent Marker', 'Comic Sans MS', cursive;
+  --brand: var(--purple); --brand-deep: var(--purple-deep); --brand-hi: var(--yellow); --brand-soft: var(--mint);
   color-scheme: light;
 }
 * { box-sizing: border-box; }
@@ -85,12 +86,34 @@ button { cursor: pointer; }
 .confetti { position: absolute; inset: 0; pointer-events: none; }
 .foot { margin-top: auto; padding: 14px 18px calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--purple); color: var(--paper); font-size: 12px; display: grid; gap: 2px; }
 .foot b { font-family: var(--display); font-weight: 400; font-size: 18px; }
+.plbar { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 7px max(18px, env(safe-area-inset-right, 0px)) 7px max(18px, env(safe-area-inset-left, 0px)); font-size: 11.5px; font-weight: 700; color: var(--muted); background: #F4F6F5; text-align: center; }
+.plbar b { color: #0E4D4A; }
+.plbar svg { width: 15px; height: 15px; flex: none; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg button { border: 2px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 12px; padding: 9px 6px; font-weight: 800; font-size: 14px; display: grid; gap: 1px; }
+.seg button small { font-weight: 600; font-size: 11px; color: var(--muted); }
+.seg button[aria-pressed="true"] { border-color: var(--brand); background: var(--brand); color: var(--brand-hi); }
+.seg button[aria-pressed="true"] small { color: var(--paper); opacity: 0.85; }
+.pick { border: 0; padding: 0; margin: 0; display: grid; gap: 7px; }
+.pick legend { font-size: 13px; font-weight: 800; color: var(--brand); padding: 0; margin-bottom: 6px; }
+.timer.late { background: var(--brand-deep); }
+.timer small { display: block; font-size: 11.5px; font-weight: 600; opacity: 0.85; }
+.flip { background: var(--brand-hi); color: var(--ink); border-radius: 12px; padding: 10px 12px; font-size: 13px; font-weight: 600; }
+.order { border: 3px solid var(--brand); border-radius: 16px; padding: 14px; display: grid; gap: 8px; }
+.order h2 { margin: 0; font-family: var(--display); font-weight: 400; color: var(--brand); font-size: 22px; line-height: 1.05; text-transform: uppercase; }
+.order p { margin: 0; font-size: 13.5px; color: var(--ink); }
+.order a.go { display: block; text-align: center; text-decoration: none; background: var(--brand); color: var(--brand-hi); font-family: var(--display); font-size: 20px; padding: 12px; border-radius: 12px; text-transform: uppercase; }
+.order a.go[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+.order .alt { border: 2px solid var(--brand); background: var(--paper); color: var(--brand); font-weight: 800; padding: 9px; border-radius: 12px; font-size: 14px; }
+.points { display: flex; justify-content: space-between; gap: 10px; align-items: center; background: #F4F6F5; border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+.points b { font-size: 18px; color: #0E4D4A; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .wheel-box svg.wheel { transition-duration: 1ms; } }
 </style>
 </head>
 <body>
 <div class="app">
   <header class="ghead"><img src="assets/logo-white.png" alt="Panago For It"><span id="store-name">Gerrard St W · Bremner Blvd</span></header>
+  <div class="plbar"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="#0E4D4A" stroke-width="3"/><path d="M20 20 L20 6 A14 14 0 0 1 32.1 27 Z" fill="#E89A2C"/><path d="M20 20 L32.1 27 A14 14 0 0 1 7.9 27 Z" fill="#0E4D4A" opacity="0.85"/><path d="M20 20 L7.9 27 A14 14 0 0 1 20 6 Z" fill="#0E4D4A" opacity="0.5"/></svg><span>Prizes, codes and points by <b>Platterly</b>, marketing partner of Panago Ontario</span></div>
   <div class="steps" id="steps"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="slabels"><span>Spin</span><span>Come in</span><span>Join</span><span>Quiz</span><span>Prize</span></div>
 
@@ -108,7 +131,7 @@ button { cursor: pointer; }
   <section class="panel" id="p1" hidden>
     <h1>You <em>won!</em></h1>
     <div class="prize"><div class="lab">Held for you</div><div class="ttl" id="w-title"></div><div class="cond" id="w-cond"></div><div class="val" id="w-val"></div></div>
-    <div class="timer"><span>Come inside before it expires.<br>Show this screen at the counter.</span><b id="hold">2:00:00</b></div>
+    <div class="timer"><span>Fast-claim bonus: use your code within 2 hours for +100 Platterly points.<small>Your prize stays valid until the store closes today.</small></span><b id="hold">2:00:00</b></div>
     <div class="note"><b>Make it bigger.</b> Join free and answer one Panago question. A right answer upsizes your prize. Been here before? Returning customers get the upsized prize automatically.</div>
     <button class="big" id="counter" type="button">Claim my prize</button>
     <p class="fine">Open 11 AM to 11 PM, Fri and Sat to midnight.</p>
@@ -116,11 +139,15 @@ button { cursor: pointer; }
 
   <section class="panel" id="p2" hidden>
     <h1>Join in <em>10 seconds</em></h1>
-    <p>We hold your prize under your name and send your code here.</p>
+    <p>You choose how we reach you. We hold your prize under your name.</p>
     <form id="join" novalidate style="display:grid;gap:11px">
       <div class="field"><label for="f-name">First name</label><input id="f-name" autocomplete="given-name" maxlength="60" placeholder="Priya"></div>
-      <div class="field"><label for="f-contact">Email or mobile</label><input id="f-contact" autocomplete="email" maxlength="120" placeholder="you@email.com or 416 555 0123"></div>
-      <label class="consent" for="f-consent"><input type="checkbox" id="f-consent"><span id="consent-text">Yes, send me deals and catering offers by email or text from Panago Gerrard St W and Bremner Blvd (44 Gerrard St W, Toronto ON M5G 2K2 · 310-0001). I can unsubscribe at any time.</span></label>
+      <fieldset class="pick"><legend>Where should we send your code?</legend>
+        <div class="seg" role="group" aria-label="Send my code by"><button type="button" data-via="email" aria-pressed="true">Email<small>one inbox</small></button><button type="button" data-via="phone" aria-pressed="false">Text<small>to my mobile</small></button><button type="button" data-via="both" aria-pressed="false">Both<small>either works</small></button></div></fieldset>
+      <div class="field" id="fe"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" maxlength="120" placeholder="you@email.com"></div>
+      <div class="field" id="fp" hidden><label for="f-phone">Mobile</label><input id="f-phone" type="tel" autocomplete="tel" maxlength="20" placeholder="416 555 0123"></div>
+      <label class="consent" for="f-remind"><input type="checkbox" id="f-remind" checked><span id="f-remind-text">Email me one reminder when my 2-hour bonus ends. No marketing.</span></label>
+      <label class="consent" for="f-consent"><input type="checkbox" id="f-consent"><span id="consent-text">Yes, send me deals and catering offers by email or text from Platterly and its partner Panago Gerrard St W and Bremner Blvd. Platterly, Toronto ON · godsmustb.github.io/platterlycatering. I can unsubscribe at any time.</span></label>
       <div class="err" id="f-err" role="alert"></div>
       <button class="big" type="submit">Join and continue</button>
     </form>
@@ -141,11 +168,19 @@ button { cursor: pointer; }
       <span class="tag" id="up-tag" hidden>Upsized</span>
       <div class="ttl" id="f-title"></div>
       <div class="cond" id="f-cond"></div>
+      <div class="lab">Your Platterly code</div>
       <div class="coupon"><code id="code">…</code><button type="button" id="copy">Copy</button></div>
       <div class="val" id="f-valid"></div>
     </div>
+    <div class="timer" id="f-timer"><span id="f-tlabel"></span><b id="f-hold">–</b></div>
+    <div class="flip" id="f-flip" hidden></div>
+    <p class="fine" id="f-remind-line"></p>
     <div class="err" id="save-err" role="alert"></div>
-    <div class="direct"><b>Order direct next time</b>Same price as walk-in. No delivery fee, no surcharges, no third-party app. Call Panago 310-0001 or order at panago.com.</div>
+    <section class="order" aria-labelledby="order-h"><h2 id="order-h">Order now through Platterly</h2><p>Pickup or delivery at the same price as the store. No delivery fee, no surcharges. Your prize and points apply automatically.</p>
+      <a class="go" id="order-go" href="../order/" aria-disabled="true">Order now</a>
+      <button class="alt" type="button" id="walk">I'll come in</button><p class="fine" id="walk-note" hidden>Show your code at the counter: 44 Gerrard St W or 133 Bremner Blvd. Phone orders: Panago 310-0001.</p></section>
+    <div class="points"><span>Your Platterly points<br><small class="fine">100 points = $1 off a Platterly order. You earn 5 per $1.</small></span><b id="pts">0</b></div>
+
     <div class="note"><b>You're in the Team Lunch Draw.</b> Up to 5 large pizzas for your office, drawn monthly. Winners answer a skill-testing question.</div>
     <div class="note wash">
       <b>Ordering for a team?</b> Get a catering quote for 10 to 50 people. The store calls you back within one business day.
@@ -160,7 +195,7 @@ button { cursor: pointer; }
 
   <details class="rules" id="rules"><summary>Rules and odds</summary><ul id="rules-list"></ul></details>
   <p class="status" id="status"></p>
-  <footer class="foot"><b>Panago 310-0001</b><span>Order online at panago.com · Prices from the Ontario menu, Oct 2026. Taxes extra.</span></footer>
+  <footer class="foot"><b>Platterly × Panago</b><span>Spin &amp; Win, codes and points by Platterly, marketing partner of Panago Ontario. Store phone: Panago 310-0001. Prices from the Ontario menu, Oct 2026. Taxes extra.</span></footer>
 </div>
 
 <script>
@@ -208,7 +243,7 @@ button { cursor: pointer; }
   apiReady.then(async () => {
     const q = readQ(); if (!q.length || !API) return;
     const left = [];
-    for (const item of q) { try { await call('/v1/lead', item); } catch (e) { if (e.offline) left.push(item); } }
+    for (const item of q) { try { await call(item.path || '/v1/lead', item.body || item); } catch (e) { if (e.offline) left.push(item); } }
     writeQ(left);
   });
 
@@ -232,14 +267,16 @@ button { cursor: pointer; }
     'One spin per person per day. Open to Ontario residents 18+.',
     'Odds per spin: ' + PRIZES.map(p => `${p.title} ${Math.round(p.w / TOT * 100)}%`).join(', ') + '.',
     'A right quiz answer, or having spun with us on an earlier day, upsizes the prize.',
-    'Instant prizes are single-use codes, valid until close on the day you spin with the qualifying order, at Panago Gerrard St W and Bremner Blvd only.',
+    'Instant prizes are single-use Platterly codes, valid until close on the day you claim, with the qualifying order, at Panago Gerrard St W and Bremner Blvd, in store or on a Platterly order.',
+    'Fast-claim bonus: use your code within 2 hours of claiming it for 100 Platterly points. Points: 100 = $1 off a Platterly order, 5 points per $1 on completed orders, no cash value.',
+    'Run by Platterly as marketing partner of Panago Ontario. Not a promotion of the brand\'s head office.',
     'Team Lunch Draw: up to 5 large recipe pizzas, drawn monthly. Winners must answer a skill-testing question.',
     'Prices are October 2026 Ontario menu prices before tax and may change. Full rules in store.'
   ].map(x => `<li>${x}</li>`).join('');
   document.querySelectorAll('[data-rules]').forEach(b => b.onclick = () => { const r = document.getElementById('rules'); r.open = true; r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
 
   const panels = [0, 1, 2, 3, 4].map(i => document.getElementById('p' + i)), bars = [...document.querySelectorAll('#steps i')];
-  let st = { prize: 0, at: 0, rot: 0, name: '', contact: '', consent: false, code: null };
+  let st = { hold: 0, expires: 0, email: '', phone: '', remind: true, prize: 0, at: 0, rot: 0, name: '', contact: '', consent: false, code: null };
   const go = n => { panels.forEach((p, i) => p.hidden = i !== n); bars.forEach((b, i) => b.classList.toggle('on', i <= n)); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const pickPrize = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); let r = a[0] / 2 ** 32 * TOT; for (let i = 0; i < PRIZES.length; i++) { r -= PRIZES[i].w; if (r < 0) return i; } return 0; };
 
@@ -262,12 +299,27 @@ button { cursor: pointer; }
   function tick() { clearInterval(ht); const el = document.getElementById('hold'); const u = () => { const l = Math.max(0, st.at + 7200e3 - Date.now()); el.textContent = `${Math.floor(l / 3600e3)}:${String(Math.floor(l % 3600e3 / 60e3)).padStart(2, '0')}:${String(Math.floor(l % 60e3 / 1e3)).padStart(2, '0')}`; }; u(); ht = setInterval(u, 1000); }
   document.getElementById('counter').onclick = () => go(2);
 
+  /* The customer picks how we reach them. Both is welcome (a fuller Platterly profile) but never required. */
+  let via = 'email';
+  const REMIND = { email: 'Email me one reminder when my 2-hour bonus ends. No marketing.', phone: 'Text me one reminder when my 2-hour bonus ends. No marketing.', both: 'Send me one reminder (by email) when my 2-hour bonus ends. No marketing.' };
+  const viaBtns = [...document.querySelectorAll('[data-via]')];
+  function showVia() {
+    viaBtns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.via === via)));
+    document.getElementById('fe').hidden = via === 'phone'; document.getElementById('fp').hidden = via === 'email';
+    document.getElementById('f-remind-text').textContent = REMIND[via];
+  }
+  viaBtns.forEach(b => b.onclick = () => { via = b.dataset.via; showVia(); document.getElementById(via === 'phone' ? 'f-phone' : 'f-email').focus(); });
+  showVia();
+  const okEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v), okPhone = v => v.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '').length === 10;
   document.getElementById('join').addEventListener('submit', e => {
     e.preventDefault();
-    const n = document.getElementById('f-name').value.trim(), c = document.getElementById('f-contact').value.trim(), err = document.getElementById('f-err');
+    const n = document.getElementById('f-name').value.trim(), err = document.getElementById('f-err');
+    const em = via === 'phone' ? '' : document.getElementById('f-email').value.trim(), ph = via === 'email' ? '' : document.getElementById('f-phone').value.trim();
     if (!n) { err.textContent = 'Enter your first name so staff can find your prize.'; return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(c) && c.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '').length !== 10) { err.textContent = 'Enter an email address or a 10-digit mobile number.'; return; }
-    err.textContent = ''; st.name = n; st.contact = c; st.consent = document.getElementById('f-consent').checked; quiz(); go(3);
+    if (via !== 'phone' && !okEmail(em)) { err.textContent = 'Check the email address (like name@example.com)' + (via === 'both' ? ', or switch to Text only.' : '.'); return; }
+    if (via !== 'email' && !okPhone(ph)) { err.textContent = 'Enter a 10-digit mobile number' + (via === 'both' ? ', or switch to Email only.' : '.'); return; }
+    err.textContent = ''; st.name = n; st.email = em; st.phone = ph; st.remind = document.getElementById('f-remind').checked;
+    st.consent = document.getElementById('f-consent').checked; quiz(); go(3);
   });
 
   const QUIZ = [
@@ -286,13 +338,13 @@ button { cursor: pointer; }
 
   async function claim(quizRight) {
     const p = PRIZES[st.prize];
-    const body = { p_client: CLIENT, p_store: store, p_first_name: st.name, p_contact: st.contact, p_consent: st.consent, p_offer: p.id, p_quiz_right: quizRight, p_source: source, p_consent_wording: document.getElementById('consent-text').textContent };
+    const body = { p_client: CLIENT, p_store: store, p_first_name: st.name, p_email: st.email || null, p_phone: st.phone || null, p_consent: st.consent, p_remind: st.remind, p_offer: p.id, p_quiz_right: quizRight, p_source: source, p_consent_wording: document.getElementById('consent-text').textContent };
     document.getElementById('f-h').textContent = 'Saving your prize…'; document.getElementById('code').textContent = '…'; go(4);
     const err = document.getElementById('save-err'); err.textContent = '';
     let res = null;
-    try { res = await call('/v1/lead', body); }
+    try { res = await call('/v1/claim', body); }
     catch (e) {
-      if (e.offline) { const q = readQ(); q.push(body); writeQ(q); }
+      if (e.offline) { const q = readQ(); q.push({ path: '/v1/claim', body }); writeQ(q); }
       else { err.textContent = e.message + (e.hint ? ' ' + e.hint : ''); }
     }
     const up = res ? res.upsized : quizRight;
@@ -303,8 +355,18 @@ button { cursor: pointer; }
     document.getElementById('f-title').textContent = title;
     document.getElementById('f-cond').textContent = rule.charAt(0).toUpperCase() + rule.slice(1) + '. Show this code to staff.';
     document.getElementById('code').textContent = st.code || ('HELD · ' + st.name.toUpperCase().slice(0, 12));
-    const d = new Date().getDay();
-    document.getElementById('f-valid').textContent = st.code ? `Valid today until close (${d === 5 || d === 6 ? 'midnight' : '11 PM'}), Gerrard St W or Bremner Blvd.` : 'We could not reach the store system. Show this screen at the counter today; your sign-up is sent automatically next time you open this page.';
+    st.hold = res && res.hold_until ? Date.parse(res.hold_until) : Date.now() + 7200e3;
+    st.expires = res && res.expires_at ? Date.parse(res.expires_at) : CLOSE_AT(new Date());
+    document.getElementById('f-valid').textContent = st.code ? `Valid today until close (${CLOSE_LABEL(new Date(st.expires))}), Gerrard St W or Bremner Blvd.` : 'We could not reach the store system. Show this screen at the counter today; your sign-up is sent automatically next time you open this page.';
+    const hm = t => new Date(t).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' });
+    document.getElementById('f-remind-line').textContent = res && res.reminder ? `We'll ${res.reminder === 'email' ? 'email' : 'text'} you one reminder at ${hm(st.hold)}, when the bonus window ends.` : '';
+    document.getElementById('pts').textContent = res ? String(res.points || 0) : '0';
+    const ogo = document.getElementById('order-go');
+    if (st.code) {
+      ogo.href = '../order/?code=' + encodeURIComponent(st.code); ogo.setAttribute('aria-disabled', 'false');
+      try { sessionStorage.setItem('platterly-claim', JSON.stringify({ code: st.code, client: CLIENT, store: res.store || store, name: st.name, email: st.email, phone: st.phone, title, rule })); } catch {}
+    } else { ogo.textContent = 'Ordering opens when the store system is back'; }
+    fTick();
     if (up) confetti();
   }
 
@@ -319,6 +381,27 @@ button { cursor: pointer; }
     try { await call('/v1/catering', { p_code: st.code, p_event_date: dt, p_package: pkg, p_headcount: { 'Team 10': 10, 'Office 25': 25, 'Party 50': 50 }[pkg] || null }); m.textContent = `Sent. The store will call you about ${pkg} on ${dt}.`; }
     catch (err) { m.textContent = err.offline ? 'The store system is offline. Call 310-0001 to book.' : err.message + (err.hint ? ' ' + err.hint : ''); }
   });
+
+  /* Two phases: the 2-hour fast-claim window (real: claiming in time earns bonus points), then the time left until
+     the store closes, which is when the code stops working. */
+  const CLOSE_AT = d => { const c = new Date(d); const late = c.getDay() === 5 || c.getDay() === 6; c.setHours(late ? 24 : 23, 0, 0, 0); return c.getTime(); }, CLOSE_LABEL = d => (d.getDay() === 5 || d.getDay() === 6) ? 'midnight' : '11 PM';
+  const fmt = l => `${Math.floor(l / 3600e3)}:${String(Math.floor(l % 3600e3 / 60e3)).padStart(2, '0')}:${String(Math.floor(l % 60e3 / 1e3)).padStart(2, '0')}`;
+  let ft = null;
+  function fTick() {
+    clearInterval(ft);
+    const box = document.getElementById('f-timer'), lab = document.getElementById('f-tlabel'), el = document.getElementById('f-hold'), flip = document.getElementById('f-flip');
+    const startedLate = Date.now() >= st.hold;
+    const u = () => {
+      const now = Date.now();
+      if (now < st.hold) { box.classList.remove('late'); lab.innerHTML = 'Fast-claim bonus ends in<small>Use your code in time for +100 Platterly points</small>'; el.textContent = fmt(st.hold - now); }
+      else if (now < st.expires) {
+        box.classList.add('late'); lab.innerHTML = `Still valid until close<small>${CLOSE_LABEL(new Date(st.expires))} today</small>`; el.textContent = fmt(st.expires - now);
+        if (!startedLate && flip.hidden) { flip.hidden = false; flip.textContent = `Your 2-hour bonus window has ended. Your prize is still yours until ${CLOSE_LABEL(new Date(st.expires))} today.`; }
+      } else { box.classList.add('late'); lab.textContent = 'This code has expired'; el.textContent = '0:00:00'; clearInterval(ft); }
+    };
+    u(); ft = setInterval(u, 1000);
+  }
+  document.getElementById('walk').onclick = () => { const w = document.getElementById('walk-note'); w.hidden = !w.hidden; };
 
   function confetti() {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;

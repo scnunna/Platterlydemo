@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Platterly Order</title>
+<meta name="description" content="Order through Platterly for pickup or delivery, at the same price as the store.">
+<meta name="theme-color" content="#0E4D4A">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: Platterly ordering. Teal bar with the partner chip (the partner's own colour), menu on the left, the order
+   summary on the right (stacked on phones, summary last). Same tokens as the Platterly app and the leads portal. */
+:root {
+  --bg: #F3F5F2; --surface: #FFFFFF; --surface-2: #E9EEEB; --ink: #13201F; --muted: #56645F; --line: #D3DBD6;
+  --teal: #0E4D4A; --teal-ink: #FFFFFF; --saffron: #E89A2C; --saffron-ink: #2B1A02; --good: #23784A; --bad: #B3261E; --warn: #A86A06;
+  --brand: #0E4D4A;
+  --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg: #0E1615; --surface: #162120; --surface-2: #1E2C2A; --ink: #E6EEEB; --muted: #9AACA6; --line: #2C3D3A;
+  --teal: #5FC2B8; --teal-ink: #0B2321; --saffron: #F2B65A; --good: #6FCB92; --bad: #F28B82; --warn: #E3B35A; color-scheme: dark; } }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body { font-family: var(--body); font-size: 15px; line-height: 1.5; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.15; letter-spacing: -0.015em; text-wrap: balance; }
+h1 { font-size: 26px; } h2 { font-size: 19px; } h3 { font-size: 15px; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--saffron); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); } .small { font-size: 13px; } .tiny { font-size: 12px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top { background: var(--teal); color: var(--teal-ink); position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 0px); }
+.top .wrap { display: flex; gap: 10px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
+.mark { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800; font-size: 20px; letter-spacing: -0.03em; color: inherit; text-decoration: none; }
+.mark svg { width: 26px; height: 26px; }
+.chip { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 99px; background: var(--brand); color: #fff; border: 1px solid rgba(255,255,255,0.35); }
+.spacer { flex: 1; }
+main { display: grid; gap: 16px; padding-block: 16px 48px; }
+.layout { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(300px, 380px); align-items: start; }
+@media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.prizebar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--line); border-left: 6px solid var(--saffron); border-radius: 14px; padding: 12px 14px; }
+.prizebar code { font-family: ui-monospace, Menlo, monospace; font-weight: 800; letter-spacing: 0.06em; }
+.timer { font-weight: 800; font-variant-numeric: tabular-nums; }
+.cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.cats button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-weight: 700; white-space: nowrap; font-size: 14px; }
+.cats button[aria-pressed="true"] { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); }
+.items { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
+.item .d { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-size: 10.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; padding: 1px 7px; border-radius: 99px; background: var(--surface-2); color: var(--muted); }
+.sizes { display: flex; gap: 6px; flex-wrap: wrap; }
+.sizes button, .add { border: 1px solid var(--teal); background: var(--surface); color: var(--teal); border-radius: 10px; padding: 6px 9px; font-weight: 800; font-size: 13px; display: grid; line-height: 1.15; text-align: center; }
+.sizes button small { font-weight: 600; font-size: 11.5px; }
+.sizes button:hover, .add:hover { background: var(--teal); color: var(--teal-ink); }
+.sum { position: sticky; top: 72px; display: grid; gap: 12px; }
+@media (max-width: 860px) { .sum { position: static; } }
+.seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.seg button { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 9px; font-weight: 800; display: grid; gap: 1px; }
+.seg button small { font-weight: 600; font-size: 11.5px; color: var(--muted); }
+.seg button[aria-pressed="true"] { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal); }
+.seg button[disabled] { opacity: 0.5; cursor: not-allowed; }
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: 13px; font-weight: 700; }
+.field input, .field select, .field textarea { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 9px 11px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; }
+.check input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--teal); flex: none; }
+.lines { display: grid; gap: 6px; }
+.line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; font-size: 14px; }
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.qty button { border: 0; background: var(--surface-2); width: 28px; height: 28px; font-weight: 800; }
+.qty span { min-width: 26px; text-align: center; font-weight: 700; }
+.tot { display: grid; gap: 3px; font-size: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
+.tot div { display: flex; justify-content: space-between; gap: 10px; }
+.tot .big { font-family: var(--display); font-size: 21px; font-weight: 800; }
+.good { color: var(--good); } .bad { color: var(--bad); }
+.note { background: var(--surface-2); border-radius: 10px; padding: 9px 11px; font-size: 13px; }
+.note.warn { background: color-mix(in srgb, var(--saffron) 20%, transparent); }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 12px; padding: 10px 14px; font-weight: 800; }
+.btn.primary { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); font-size: 17px; padding: 12px; }
+.btn[disabled] { opacity: 0.55; cursor: default; }
+.err { color: var(--bad); font-size: 13px; font-weight: 600; min-height: 1em; }
+.demo { border: 1px dashed var(--warn); border-radius: 12px; padding: 10px; display: grid; gap: 8px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; } .row > * { flex: 1; min-width: 90px; }
+.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.steps div { border-radius: 10px; padding: 8px; background: var(--surface-2); font-size: 12.5px; font-weight: 700; color: var(--muted); text-align: center; }
+.steps div.on { background: var(--teal); color: var(--teal-ink); }
+.empty { padding: 22px; border: 1px dashed var(--line); border-radius: 14px; color: var(--muted); display: grid; gap: 8px; }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="mark" href="../"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18" fill="none" stroke="currentColor" stroke-width="3"/><path d="M20 20 L20 6 A14 14 0 0 1 32.1 27 Z" fill="#E89A2C"/><path d="M20 20 L32.1 27 A14 14 0 0 1 7.9 27 Z" fill="currentColor" opacity="0.85"/><path d="M20 20 L7.9 27 A14 14 0 0 1 20 6 Z" fill="currentColor" opacity="0.5"/></svg>platterly</a>
+  <span class="chip" id="partner" hidden></span><span class="spacer"></span><span class="small">Same price as the store · no delivery fee</span>
+</div></header>
+<div class="wrap"><main id="main"><p class="muted">Loading…</p></main></div>
+
+<script>
+(() => {
+  const main = document.getElementById('main');
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const money = n => '$' + Number(n || 0).toFixed(2);
+  const hm = iso => new Date(iso).toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' });
+  const fmt = l => `${Math.floor(l / 3600e3)}:${String(Math.floor(l % 3600e3 / 60e3)).padStart(2, '0')}:${String(Math.floor(l % 60e3 / 1e3)).padStart(2, '0')}`;
+  const ss = { get: k => { try { return JSON.parse(sessionStorage.getItem(k)); } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+  /* The store laptop publishes its address into the Panago page's api.json (one Platterly server for every partner). */
+  let API = null;
+  const apiReady = fetch('../panago/api.json?t=' + Date.now(), { cache: 'no-store' }).then(r => r.json()).then(j => { API = j.leadApi || null; }).catch(() => {});
+  async function call(path, body) {
+    await apiReady;
+    if (!API) throw new Error('Platterly is offline right now (the store system is down). Show your code at the counter instead.');
+    let r;
+    try { r = await fetch(API + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(12000) }); }
+    catch { throw new Error('Could not reach Platterly. Check your connection and try again.'); }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error((j.error || 'Something went wrong.') + (j.hint ? ' ' + j.hint : ''));
+    return j;
+  }
+
+  const qs = new URLSearchParams(location.search);
+  const claim = ss.get('platterly-claim') || {};
+  let code = (qs.get('code') || claim.code || '').toUpperCase();
+  let info = null, menu = null, cat = null, cart = [], mode = 'pickup', storeId = null, usePrize = true, points = 0, pay = 'pay_at_store', quote = null, qerr = '', placed = null;
+  const det = { name: claim.name || '', phone: claim.phone || '', address: '', note: '' };
+  const CATS = { pizza: 'Pizzas', breads: 'Breads', wings: 'Wings & bites', salads: 'Salads', desserts: 'Desserts', dips: 'Dips', pretzels: 'Pretzels', bitz: 'Bitz', dogs: 'Dogs', lemonade: 'Lemonades' };
+
+  function askCode(msg) {
+    main.innerHTML = `<section class="card" style="max-width:460px;display:grid;gap:12px"><h1>Order with your Platterly code</h1>
+      <p class="muted">Spin &amp; Win at a Platterly partner gives you a code like PL-7KQ2MD. Your prize and points apply to the order.</p>
+      <form id="f-code" style="display:grid;gap:10px" novalidate><div class="field"><label for="c">Platterly code</label><input id="c" value="${esc(code)}" autocapitalize="characters" placeholder="PL-XXXXXX" style="font-family:ui-monospace,Menlo,monospace;font-size:18px;letter-spacing:.06em"></div>
+      <div class="err" role="alert">${esc(msg || '')}</div><button class="btn primary" type="submit">Start my order</button></form>
+      <p class="tiny muted">No code yet? Spin at <a href="../panago/">Panago</a> or <a href="../wetzels/">Wetzel's</a>.</p></section>`;
+  }
+
+  async function start() {
+    if (!/^[A-Z]{2}-[A-Z2-9]{6}$/.test(code)) return askCode(code ? 'Codes look like PL-7KQ2MD.' : '');
+    try {
+      info = await call('/v1/code', { p_code: code });
+      if (!info.ok) return askCode(info.msg);
+      menu = await call('/v1/menu', { p_client: info.client });
+    } catch (e) { return askCode(e.message); }
+    const chip = document.getElementById('partner'); chip.hidden = false; chip.textContent = 'with ' + menu.client.name; chip.style.background = menu.client.brand_color;
+    document.title = 'Platterly Order · ' + menu.client.name;
+    storeId = menu.stores.some(s => s.id === (claim.store || info.store)) ? (claim.store || info.store) : menu.stores[0].id;
+    usePrize = !info.used && !info.expired;
+    if (!det.name) det.name = info.first_name || '';
+    cat = menu.items[0] ? menu.items[0].cat : null;
+    render(); tick();
+  }
+
+  const store = () => menu.stores.find(s => s.id === storeId);
+  function prizeBar() {
+    const now = Date.now(), hold = Date.parse(info.hold_until || 0), exp = Date.parse(info.expires_at);
+    const state = info.used ? '<span class="muted">Already used</span>' : info.expired ? '<span class="bad">Expired</span>'
+      : now < hold ? `<span>Fast-claim bonus: <span class="timer" data-t="hold">${fmt(hold - now)}</span> left for +100 points</span>`
+      : `<span>Valid until close: <span class="timer" data-t="exp">${fmt(exp - now)}</span></span>`;
+    return `<div class="prizebar"><div style="display:grid;gap:2px;min-width:0"><b>${esc(info.prize)}</b><span class="small muted">${esc(info.rule)} · <code>${esc(info.code)}</code></span></div><div class="small">${state}</div></div>`;
+  }
+  function itemCard(m) {
+    const tags = (m.tags || []).filter(t => ['veg', 'plant', 'new', 'value'].includes(t)).map(t => `<span class="tag">${{ veg: 'Vegetarian', plant: 'Plant-based', new: 'New', value: 'Value' }[t]}</span>`).join('');
+    const buy = m.sizes ? `<div class="sizes">${Object.entries(m.sizes).map(([sz, pr]) => `<button type="button" data-add="${esc(m.id)}" data-size="${sz}" aria-label="Add ${esc(m.name)}, size ${sz}, ${money(pr)}">${sz}<small>${money(pr)}</small></button>`).join('')}</div>`
+      : `<div><button class="add" type="button" data-add="${esc(m.id)}" aria-label="Add ${esc(m.name)}, ${money(m.price)}">Add · ${money(m.price)}</button></div>`;
+    return `<article class="item"><h3>${esc(m.name)}</h3>${m.descr ? `<p class="d">${esc(m.descr)}</p>` : ''}${tags ? `<div class="tags">${tags}</div>` : ''}${buy}</article>`;
+  }
+  function summary() {
+    const st = store(), name = id => (menu.items.find(m => m.id === id) || {}).name || id;
+    const lines = cart.length ? `<div class="lines">${cart.map((l, i) => `<div class="line"><span>${esc(name(l.id))}${l.size ? ' · ' + l.size : ''}</span><span class="qty"><button type="button" data-q="${i}" data-d="-1" aria-label="One less">−</button><span>${l.qty}</span><button type="button" data-q="${i}" data-d="1" aria-label="One more">+</button></span><b class="num">${quote ? money((quote.lines[i] || {}).line) : ''}</b></div>`).join('')}
+      ${quote ? quote.lines.filter(l => l.prize).map(l => `<div class="line good"><span>Prize: ${esc(l.name)}${l.qty > 1 ? ' × ' + l.qty : ''}</span><span></span><b>$0.00</b></div>`).join('') : ''}</div>`
+      : '<p class="muted small">Your order is empty. Add something from the menu.</p>';
+    const canPrize = !info.used && !info.expired;
+    const maxPts = quote ? Math.min(quote.points_balance, Math.floor((Number(quote.total) + Number(quote.credit)) * 100)) : 0;
+    const payOpts = mode === 'pickup' ? [['pay_at_store', 'Pay at the counter', 'Cash, debit or card at pickup'], ['card_demo', 'Card now', 'Demo only: nothing is charged']]
+      : [['pay_on_delivery', 'Pay the driver', 'Debit, card or cash at the door'], ['card_demo', 'Card now', 'Demo only: nothing is charged']];
+    if (!payOpts.some(p => p[0] === pay)) pay = payOpts[0][0];
+    return `<section class="card sum" aria-label="Your order">
+      <h2>Your order</h2>${lines}
+      ${quote && quote.prize_note && usePrize ? `<p class="note warn">${esc(quote.prize_note)}</p>` : ''}
+      ${quote ? `<div class="tot"><div><span>Food (store prices)</span><b class="num">${money(quote.subtotal)}</b></div>
+        ${Number(quote.discount) ? `<div class="good"><span>Prize</span><b class="num">−${money(quote.discount)}</b></div>` : ''}
+        <div><span>${mode === 'delivery' ? 'Delivery fee' : 'Service fee'}</span><b class="num">$0.00</b></div>
+        <div><span>HST 13%</span><b class="num">${money(quote.tax)}</b></div>
+        ${quote.points_used ? `<div class="good"><span>Platterly points (${quote.points_used})</span><b class="num">−${money(quote.credit)}</b></div>` : ''}
+        <div class="big"><span>Total</span><span class="num">${money(quote.total)}</span></div></div>` : qerr ? `<p class="err">${esc(qerr)}</p>` : ''}
+      <label class="check"><input type="checkbox" id="use-prize" ${usePrize && canPrize ? 'checked' : ''} ${canPrize ? '' : 'disabled'}><span>Use my prize on this order${canPrize ? '' : ' (' + (info.used ? 'already used' : 'expired') + ')'}<br><span class="tiny muted">${esc(info.prize)}, ${esc(info.rule)}</span></span></label>
+      ${quote && quote.points_balance ? `<div class="field"><label for="pts">Use Platterly points: <span class="num">${Math.min(points, maxPts)}</span> of ${quote.points_balance} (100 = $1)</label><input id="pts" type="range" min="0" max="${maxPts}" step="50" value="${Math.min(points, maxPts)}"></div>` : `<p class="tiny muted">You have no Platterly points yet. This order earns about ${quote ? Math.floor((quote.subtotal - quote.discount) * 5) : 0}${quote && quote.fast_claim && usePrize ? ' + 100 fast-claim bonus' : ''} when it is completed.</p>`}
+      <h3>Pickup or delivery</h3>
+      <div class="seg" role="group" aria-label="Pickup or delivery">
+        <button type="button" data-mode="pickup" aria-pressed="${mode === 'pickup'}" ${st.pickup ? '' : 'disabled'}>Pickup<small>Ready at the counter</small></button>
+        <button type="button" data-mode="delivery" aria-pressed="${mode === 'delivery'}" ${st.delivery ? '' : 'disabled'}>Delivery<small>${st.delivery ? 'Same price, no fee' : 'Not offered here yet'}</small></button></div>
+      ${menu.stores.length > 1 ? `<div class="field"><label for="store">Store</label><select id="store">${menu.stores.map(s => `<option value="${esc(s.id)}" ${s.id === storeId ? 'selected' : ''}>${esc(s.name)} · ${esc(s.address || '')}</option>`).join('')}</select></div>` : `<p class="small muted">${esc(st.name)} · ${esc(st.address || '')}</p>`}
+      <form id="f-order" style="display:grid;gap:10px" novalidate>
+        <div class="field"><label for="o-name">Name for the order</label><input id="o-name" maxlength="60" autocomplete="given-name" value="${esc(det.name)}"></div>
+        <div class="field"><label for="o-phone">Mobile ${mode === 'delivery' ? '(the driver calls it)' : '(optional, for "your order is ready")'}</label><input id="o-phone" type="tel" maxlength="20" autocomplete="tel" value="${esc(det.phone)}" placeholder="416 555 0123"></div>
+        ${mode === 'delivery' ? `<div class="field"><label for="o-addr">Delivery address</label><input id="o-addr" maxlength="200" autocomplete="street-address" value="${esc(det.address)}" placeholder="100 Bay St, 12th floor, buzzer 1200"></div>` : ''}
+        <div class="field"><label for="o-note">Note for the store (optional)</label><input id="o-note" maxlength="300" value="${esc(det.note)}" placeholder="Extra napkins, well done…"></div>
+        <h3>Payment</h3>
+        <div class="seg" role="group" aria-label="Payment">${payOpts.map(([k, l, sub]) => `<button type="button" data-pay="${k}" aria-pressed="${pay === k}">${l}<small>${sub}</small></button>`).join('')}</div>
+        ${pay === 'card_demo' ? `<div class="demo"><p class="tiny"><b>Demo checkout.</b> Platterly does not take payments yet: nothing is charged and no card details leave this page. You pay the store ${mode === 'pickup' ? 'at pickup' : 'on delivery'}.</p>
+          <div class="field"><label for="cc">Card number</label><input id="cc" inputmode="numeric" autocomplete="off" placeholder="4242 4242 4242 4242"></div>
+          <div class="row"><div class="field"><label for="ce">Expiry</label><input id="ce" placeholder="MM/YY" autocomplete="off"></div><div class="field"><label for="cv">CVC</label><input id="cv" inputmode="numeric" placeholder="123" autocomplete="off"></div></div></div>` : ''}
+        <div class="err" id="o-err" role="alert"></div>
+        <button class="btn primary" type="submit" ${cart.length && quote ? '' : 'disabled'}>Place ${mode} order${quote ? ' · ' + money(quote.total) : ''}</button>
+        <p class="tiny muted">Same price as ordering at the store. ${mode === 'delivery' ? 'No delivery fee, no surcharges. ' : ''}The store confirms your order here and by ${det.phone ? 'text' : 'this page'}.</p>
+      </form></section>`;
+  }
+  function render() {
+    if (placed) return renderPlaced();
+    const cats = [...new Set(menu.items.map(m => m.cat))];
+    const shown = menu.items.filter(m => m.cat === cat);
+    main.innerHTML = `${prizeBar()}<div class="layout"><section style="display:grid;gap:12px;min-width:0"><div><h1>Order from ${esc(menu.client.name)}</h1><p class="muted small">Through Platterly · menu prices as in store, before tax</p></div>
+      <nav class="cats" aria-label="Menu sections">${cats.map(c => `<button type="button" data-cat="${esc(c)}" aria-pressed="${c === cat}">${esc(CATS[c] || c)}</button>`).join('')}</nav>
+      <div class="items">${shown.map(itemCard).join('')}</div></section>${summary()}</div>`;
+  }
+  function renderPlaced() {
+    const S = ['new', 'accepted', 'ready', placed.mode === 'delivery' ? 'out_for_delivery' : 'completed'], L = { new: 'Sent', accepted: 'Accepted', ready: 'Ready', out_for_delivery: 'On the way', completed: 'Picked up' };
+    const at = placed.status === 'completed' ? S.length - 1 : Math.max(0, S.indexOf(placed.status));
+    main.innerHTML = `<section class="card" style="max-width:560px;display:grid;gap:12px;justify-self:center;width:100%">
+      <p class="small muted">Platterly order</p><h1>${placed.status === 'cancelled' ? 'This order was cancelled' : 'Order sent to ' + esc(placed.store)}</h1>
+      <p style="font-family:ui-monospace,Menlo,monospace;font-size:22px;font-weight:800;letter-spacing:.06em">${esc(placed.number)}</p>
+      ${placed.status === 'cancelled' ? '<p class="muted">Any points you used are back in your balance, and an unexpired prize code works again.</p>' :
+        `<div class="steps">${S.map((s, i) => `<div class="${i <= at ? 'on' : ''}">${L[s]}</div>`).join('')}</div>
+        <p>${placed.mode === 'delivery' ? 'Delivery at the same price as the store, no delivery fee.' : 'Pickup at the counter: give your name or order number.'} Total <b>${money(placed.total)}</b>, paid ${placed.payment === 'pay_on_delivery' ? 'to the driver' : 'at the store'}.</p>
+        <p class="note">This page updates by itself. ${placed.prize_used ? 'Your prize is on this order. ' : ''}You'll earn about <b>${placed.earn}</b> Platterly points when the store completes it.</p>`}
+      <p class="tiny muted">Questions about the order? Call the store. Keep this page open, or come back with the same link.</p></section>`;
+  }
+
+  let qt = null, qseq = 0;
+  function requote() {
+    clearTimeout(qt);
+    if (!cart.length) { quote = null; qerr = ''; return render(); }
+    qt = setTimeout(async () => {
+      const n = ++qseq;
+      try { const q = await call('/v1/quote', { p_code: code, p_items: cart, p_use_prize: usePrize, p_points: points }); if (n === qseq) { quote = q; qerr = ''; } }
+      catch (e) { if (n === qseq) { quote = null; qerr = e.message; } }
+      if (n === qseq) render();
+    }, 150);
+  }
+  function keepDetails() { const v = id => (document.getElementById(id) || {}).value; ['name', 'phone', 'address', 'note'].forEach(k => { const x = v({ name: 'o-name', phone: 'o-phone', address: 'o-addr', note: 'o-note' }[k]); if (x != null) det[k] = x; }); }
+
+  main.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || b.type === 'submit') return;
+    keepDetails();
+    if (b.dataset.cat) { cat = b.dataset.cat; return render(); }
+    if (b.dataset.add) { const l = cart.find(x => x.id === b.dataset.add && (x.size || null) === (b.dataset.size || null)); if (l) l.qty = Math.min(50, l.qty + 1); else cart.push({ id: b.dataset.add, size: b.dataset.size || null, qty: 1 }); return requote(); }
+    if (b.dataset.q != null) { const l = cart[+b.dataset.q]; l.qty += +b.dataset.d; if (l.qty < 1) cart.splice(+b.dataset.q, 1); return requote(); }
+    if (b.dataset.mode && !b.disabled) { mode = b.dataset.mode; return render(); }
+    if (b.dataset.pay) { pay = b.dataset.pay; return render(); }
+  });
+  main.addEventListener('change', e => {
+    keepDetails();
+    if (e.target.id === 'use-prize') { usePrize = e.target.checked; return requote(); }
+    if (e.target.id === 'store') { storeId = e.target.value; if (!store()[mode]) mode = 'pickup'; return render(); }
+    if (e.target.id === 'pts') { points = +e.target.value; return requote(); }
+  });
+  main.addEventListener('input', e => { if (e.target.id === 'pts') { const lab = e.target.previousElementSibling.querySelector('.num'); if (lab) lab.textContent = e.target.value; } });
+  const luhn = n => { const d = n.replace(/\D/g, ''); if (d.length < 13) return false; let s = 0; for (let i = 0; i < d.length; i++) { let x = +d[d.length - 1 - i]; if (i % 2) { x *= 2; if (x > 9) x -= 9; } s += x; } return s % 10 === 0; };
+  main.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (e.target.id === 'f-code') { code = (document.getElementById('c').value || '').trim().toUpperCase(); history.replaceState(null, '', '?code=' + encodeURIComponent(code)); return start(); }
+    if (e.target.id !== 'f-order') return;
+    keepDetails(); const err = document.getElementById('o-err'); err.textContent = '';
+    if (!det.name.trim()) { err.textContent = 'Add a name for the order.'; return; }
+    if (mode === 'delivery' && det.phone.replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '').length !== 10) { err.textContent = 'Delivery needs a 10-digit mobile number for the driver.'; return; }
+    if (mode === 'delivery' && det.address.trim().length < 5) { err.textContent = 'Add the delivery address (street, unit or floor, buzzer).'; return; }
+    if (pay === 'card_demo') { const v = id => document.getElementById(id).value; if (!luhn(v('cc'))) { err.textContent = 'That card number does not look right (demo: try 4242 4242 4242 4242).'; return; } if (!/^(0[1-9]|1[0-2])\/\d\d$/.test(v('ce').trim()) || !/^\d{3,4}$/.test(v('cv').trim())) { err.textContent = 'Check the expiry (MM/YY) and CVC.'; return; } }
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await call('/v1/order', { p_code: code, p_store: storeId, p_mode: mode, p_name: det.name, p_phone: det.phone || null, p_address: mode === 'delivery' ? det.address : null, p_note: det.note || null, p_items: cart, p_use_prize: usePrize, p_points: quote ? quote.points_used : 0, p_payment: pay });
+      placed = Object.assign(r, { payment: pay }); ss.set('platterly-last-order', { number: r.number, code }); history.replaceState(null, '', '?code=' + encodeURIComponent(code) + '&order=' + encodeURIComponent(r.number)); renderPlaced(); poll();
+    } catch (x) { err.textContent = x.message; btn.disabled = false; btn.textContent = 'Try again'; }
+  });
+  let pt = null;
+  function poll() { clearInterval(pt); pt = setInterval(async () => { try { const s = await call('/v1/order-status', { p_number: placed.number, p_code: code }); if (s.ok && s.status !== placed.status) { placed.status = s.status; renderPlaced(); } if (['completed', 'cancelled'].includes(placed.status)) clearInterval(pt); } catch {} }, 15000); }
+  function tick() { setInterval(() => { if (placed || !info) return; const now = Date.now(); document.querySelectorAll('.timer').forEach(t => { const end = Date.parse(t.dataset.t === 'hold' ? info.hold_until : info.expires_at); if (end - now <= 0 && t.dataset.t === 'hold') { keepDetails(); render(); } else t.textContent = fmt(Math.max(0, end - now)); }); }, 1000); }
+
+  /* Coming back to an order link: show its status. */
+  (async () => {
+    const on = qs.get('order');
+    if (on && code) {
+      try { const s = await call('/v1/order-status', { p_number: on, p_code: code }); if (s.ok) { const sv = ss.get('platterly-last-order') || {}; placed = Object.assign(s, { store: 'the store', earn: '…', prize_used: false, payment: s.mode === 'delivery' ? 'pay_on_delivery' : 'pay_at_store' }); renderPlaced(); return poll(); } } catch {}
+    }
+    start();
+  })();
+  window.__order = { get cart() { return cart; }, get quote() { return quote; } };
+})();
+</script>
+</body>
+</html>

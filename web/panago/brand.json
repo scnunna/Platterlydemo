@@ -1,7 +1,11 @@
 {
   "slug": "panago",
   "name": "Panago (Gerrard St W + Bremner Blvd)",
-  "platforms": ["instagram", "facebook", "tiktok"],
+  "platforms": [
+    "instagram",
+    "facebook",
+    "tiktok"
+  ],
   "brand_kit": {
     "palette": {
       "primary": "#522171",
@@ -27,7 +31,11 @@
     "voice": {
       "tone": "upbeat, plain, food-first; short punchy headlines in caps, then one plain sentence",
       "tagline": "Panago For It",
-      "proof_points": ["Fresh dough made daily", "We believe in real food", "Plant-based options marked with a leaf"],
+      "proof_points": [
+        "Fresh dough made daily",
+        "We believe in real food",
+        "Plant-based options marked with a leaf"
+      ],
       "do": [
         "use real menu prices from the current Ontario menu, sizes as S 10\" / M 12\" / L 14\" / XL 16\"",
         "say 'Taxes extra' or 'before 13% HST' wherever a price appears",
@@ -41,9 +49,15 @@
         "show a pepperoni pizza as a veggie or paneer item"
       ]
     },
-    "hashtags": ["#Panago", "#PanagoForIt", "#TorontoPizza", "#TorontoEats", "#PaneerPizza"],
+    "hashtags": [
+      "#Panago",
+      "#PanagoForIt",
+      "#TorontoPizza",
+      "#TorontoEats",
+      "#PaneerPizza"
+    ],
     "cta": {
-      "order": "Panago 310-0001 · Order online at panago.com",
+      "order": "Order through Platterly: pickup or delivery, same price as in store · Panago 310-0001",
       "scan": "Scan to win! Spin free, every spin wins",
       "catering": "Booking December office parties now"
     },
@@ -52,7 +66,12 @@
       "contest": "No purchase necessary. One spin per person per day. Odds and full rules in the game. Draw winners answer a skill-testing question. (Competition Act s.74.06 + Criminal Code s.206)",
       "casl": "Marketing consent is a separate, unticked box naming Panago Gerrard & Bremner, Toronto, with unsubscribe in every message. Keep consent records 3 years.",
       "franchise": "Franchisee-run locally; head-office sign-off required for branded contests, store promo codes and the customer list.",
-      "forbidden_words": ["guaranteed", "cheapest in Toronto", "50% cheaper than Uber"]
-    }
+      "forbidden_words": [
+        "guaranteed",
+        "cheapest in Toronto",
+        "50% cheaper than Uber"
+      ]
+    },
+    "partnership": "Panago Ontario (franchisee Kiran Varma) partners with Platterly for marketing. QR scans open Platterly's Spin & Win; prize codes (PL-) and credit points are Platterly's, not Panago store codes."
   }
 }

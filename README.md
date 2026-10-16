@@ -7,6 +7,7 @@ Catering and lead capture for local franchise kitchens. Clients: **Panago** (Ger
 |---|---|
 | Panago Spin & Win (the page every QR code opens) | https://godsmustb.github.io/platterlycatering/panago/ |
 | Wetzel's Spin & Win (Eaton Centre) | https://godsmustb.github.io/platterlycatering/wetzels/ |
+| Platterly ordering (with a PL- code) | https://godsmustb.github.io/platterlycatering/order/ |
 | Leads portal: super admin, client admin, customer | https://godsmustb.github.io/platterlycatering/admin/ |
 | Panago TV screens, six pages, window loop | https://godsmustb.github.io/platterlycatering/panago/tv/?s=g#tv (Gerrard) · `?s=b#tv` (Bremner) |
 | Platterly catering app (demo mode) | https://godsmustb.github.io/platterlycatering/ |
@@ -18,25 +19,51 @@ that changes the app or the pages builds a signed APK and publishes a release; O
 The app opens on a start screen: Platterly, Spin & Win, or the TV loop for one store. On a store TV box, tick
 "Open the TV screens automatically" once and it boots straight into the loop.
 
-## How a lead is captured
+## How a lead is captured (Platterly codes and points)
+Platterly is the platform: Panago Ontario and Wetzel's Toronto Eaton Centre partner with Platterly for marketing.
+Codes (`PL-XXXXXX`) and credit points are Platterly's, not the stores'.
 1. A customer scans the code on the TV (each code carries the store and the page, e.g. `?s=g&c=2`).
-2. They spin free on their phone. Every spin wins a menu item that unlocks with a pizza order.
-3. They join with a first name and an email or mobile number. Marketing consent is a separate, unticked box (CASL).
-4. One quiz question: a right answer upsizes the prize. A returning customer (spun on an earlier day) is upsized automatically.
-5. The store database issues a single-use code with the client's prefix (`PG-XXXXXX` Panago, `WP-XXXXXX` Wetzel's), valid until close that day, and enters them in the monthly draw.
-6. Optional: a catering quote request tied to that code.
+2. They spin free on their phone. Every spin wins a menu item that unlocks with a purchase.
+3. They join with a first name and choose how we reach them: **email, text, or both** (both makes a fuller profile;
+   one is enough). Marketing consent is a separate, unticked box naming Platterly and the partner store (CASL).
+   A second box (on by default) asks for **one reminder** when the 2-hour bonus window ends. That one is a service
+   message about their code, not marketing.
+4. One quiz question: a right answer upsizes the prize. Anyone who spun with Platterly on an earlier day, at any
+   partner, is upsized automatically.
+5. The database issues a single-use Platterly code, valid **until the store closes** that day. The first **2 hours**
+   are the fast-claim window: using the code in time earns **+100 Platterly points**. When the 2 hours end, the page
+   switches to a countdown to closing time and the reminder goes out.
+6. From the prize screen they can **order now through Platterly** (`web/order/`): pickup, or delivery where the store
+   offers it, at the same price as the counter, no delivery fee. The prize applies automatically when the order
+   qualifies; points pay part or all of it (100 points = $1). Payment is not taken online: pay at the store or the
+   driver (a card form is shown as a demo only). The order appears in the store's **Orders** tab in the portal.
+7. Points: 5 per $1 of food on a completed order or a counter redemption with the order total entered, plus the
+   fast-claim bonus. One Platterly member per person across partners (matched by email or phone).
+
+## Reminders
+`server/lead-proxy.mjs` sends due reminders every minute. Without a sender configured, emails go to the local test
+inbox (Mailpit, http://127.0.0.1:56324) and are marked `test_inbox`: **they do not reach customers**. To send for
+real, create `%LOCALAPPDATA%\platterly\mail.env` (never commit it) and restart with `server\start.ps1 -RestartProxy`:
+```
+PLATTERLY_MAIL=resend
+RESEND_API_KEY=re_...
+PLATTERLY_MAIL_FROM=Platterly <codes@your-domain>
+TWILIO_ACCOUNT_SID=AC...
+TWILIO_AUTH_TOKEN=...
+TWILIO_FROM=+1...
+```
 
 ## Lead database (runs on the store laptop)
 `supabase/` is a self-hosted Supabase CLI stack (`project_id = platterly`, ports 563xx) in Docker Desktop.
-Tables are locked; the public can only call `submit_lead` and `request_catering`. Staff redemption
-(`redeem_code`) is service-role only. Tests: `supabase/tests/leads_test.sql`, `staff_test.sql`, `onboarding_test.sql`.
+Tables are locked; the public can only call `submit_claim` (and the older `submit_lead`), `request_catering`, `customer_history`, `code_info`, `menu_for`, `quote_order`, `place_order` and `order_status`. Prices are always computed in the database. Staff redemption
+(`redeem_code`) is service-role only. Tests: `supabase/tests/leads_test.sql`, `staff_test.sql`, `onboarding_test.sql`, `orders_test.sql`.
 
 ```
 docker exec -i supabase_db_platterly psql -U postgres -v ON_ERROR_STOP=1 -q < supabase/tests/leads_test.sql
 ```
 
-`server/lead-proxy.mjs` is the only thing exposed to the internet: two POST routes, an origin allow-list,
-a 4 KB body cap and per-IP limits. It adds the database key itself, so no key is in this repo.
+`server/lead-proxy.mjs` is the only thing exposed to the internet: a fixed list of POST routes, an origin allow-list,
+an 8 KB body cap and per-IP limits. It adds the database key itself, so no key is in this repo.
 `server/start.ps1` starts Docker, the database, the proxy and a Cloudflare tunnel, then publishes the tunnel
 address to `web/panago/api.json` (a commit) so the QR page can find it. Safe to re-run; it exits when healthy.
 
