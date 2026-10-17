@@ -24,7 +24,7 @@ class DestinationsTest {
     }
 
     @Test fun onlyOwnPagesStayInTheApp() {
-        assertTrue(Destinations.staysInApp("https://godsmustb.github.io/platterlycatering/panago/index.html"))
+        assertTrue(Destinations.staysInApp(Destinations.ONLINE_BASE + "panago/index.html"))
         assertTrue(Destinations.staysInApp("https://appassets.androidplatform.net/assets/web/index.html"))
         assertFalse(Destinations.staysInApp("https://www.panago.com/"))
         assertFalse(Destinations.staysInApp("tel:3100001"))

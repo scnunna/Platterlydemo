@@ -14,6 +14,8 @@
 //      TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM (texts, optional).
 import http from 'node:http';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const API = process.env.PLATTERLY_API || 'http://127.0.0.1:56321';
 const ANON = process.env.PLATTERLY_ANON_KEY || '';
@@ -23,6 +25,28 @@ const ORIGINS = new Set((process.env.PLATTERLY_ORIGINS ||
   'https://godsmustb.github.io,https://appassets.androidplatform.net,http://127.0.0.1:8099,http://localhost:8099').split(','));
 const MAX_BODY = 8192; // an order of 40 lines fits
 const SESSION_MS = 12 * 3600e3;
+
+// The site itself (web/) is served here too, so the tunnel address alone runs every page (GitHub Pages is not needed).
+const WEB = fileURLToPath(new URL('../web/', import.meta.url));
+const TYPES = { html: 'text/html; charset=utf-8', js: 'text/javascript', css: 'text/css', json: 'application/json', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', svg: 'image/svg+xml', ico: 'image/x-icon', webmanifest: 'application/manifest+json', woff2: 'font/woff2', apk: 'application/vnd.android.package-archive' };
+function serveStatic(req, res, path) {
+  // Pages find the API through panago/api.json; served from here it is this same address.
+  if (path === '/panago/api.json') {
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '');
+    const proto = req.headers['cf-visitor']?.includes('https') || req.headers['x-forwarded-proto'] === 'https' ? 'https' : 'http';
+    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+    return res.end(JSON.stringify({ leadApi: `${proto}://${host}`, updated: new Date().toISOString() }));
+  }
+  let rel; try { rel = decodeURIComponent(path).replace(/^\/+/, ''); } catch { res.writeHead(400); return res.end(); }
+  if (rel.split(/[\/]/).includes('..')) { res.writeHead(403); return res.end(); }
+  let file = WEB + rel;
+  try { if (!rel || fs.statSync(file).isDirectory()) { if (rel && !rel.endsWith('/')) { res.writeHead(301, { location: path + '/' }); return res.end(); } file += 'index.html'; } } catch {}
+  fs.readFile(file, (err, data) => {
+    if (err) { res.writeHead(404, { 'content-type': 'text/plain' }); return res.end('Not found'); }
+    res.writeHead(200, { 'content-type': TYPES[file.split('.').pop().toLowerCase()] || 'application/octet-stream', 'cache-control': 'no-cache', 'x-content-type-options': 'nosniff' });
+    res.end(data);
+  });
+}
 
 if (!ANON || !SERVICE) { console.error('PLATTERLY_ANON_KEY and PLATTERLY_SERVICE_KEY must be set. Start with server/start.ps1.'); process.exit(1); }
 
@@ -100,6 +124,10 @@ const server = http.createServer((req, res) => {
   const path = new URL(req.url, 'http://x').pathname;
   const ip = String(req.headers['cf-connecting-ip'] || req.socket.remoteAddress || '?');
   const known = PUBLIC[path] || STAFF[path] || path === '/v1/staff/login' || path === '/v1/staff/logout';
+  // Pages served from this address call it same-origin; allow that origin like the listed ones.
+  const host = String(req.headers.host || '');
+  if (origin && (origin === `https://${host}` || origin === `http://${host}`)) ORIGINS.add(origin);
+  if ((req.method === 'GET' || req.method === 'HEAD') && !path.startsWith('/v1/')) return serveStatic(req, res, path);
 
   if (req.method === 'OPTIONS') {
     if (!origin || !ORIGINS.has(origin) || !known) { res.writeHead(403); return res.end(); }

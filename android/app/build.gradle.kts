@@ -13,10 +13,12 @@ val signingProps = Properties().apply {
 }
 fun signing(env: String, prop: String): String? = System.getenv(env) ?: signingProps.getProperty(prop)
 val buildNumber = (System.getenv("PL_BUILD_NUMBER") ?: "0").toInt()
+// Where the live site is. GitHub Pages by default; a laptop build passes its tunnel address (PL_ONLINE_BASE).
+val onlineBase = (System.getenv("PL_ONLINE_BASE") ?: "https://godsmustb.github.io/platterlycatering/").trimEnd('/') + "/"
 
 // The web app (../web) ships inside the APK as the offline fallback.
 val copyWeb by tasks.registering(Sync::class) {
-    from(rootProject.file("../web"))
+    from(rootProject.file("../web")) { exclude("download/**") }
     into(layout.buildDirectory.dir("generated/webassets/web"))
 }
 
@@ -29,6 +31,7 @@ android {
         targetSdk = 36
         versionCode = 1000 + buildNumber
         versionName = "0.1.$buildNumber"
+        buildConfigField("String", "ONLINE_BASE", "\"$onlineBase\"")
     }
     signingConfigs {
         create("release") {
@@ -47,6 +50,7 @@ android {
             signingConfig = signingConfigs.getByName("release").takeIf { it.storeFile != null }
         }
     }
+    buildFeatures { buildConfig = true }
     sourceSets["main"].assets.srcDir(layout.buildDirectory.dir("generated/webassets"))
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     lint { checkReleaseBuilds = false }

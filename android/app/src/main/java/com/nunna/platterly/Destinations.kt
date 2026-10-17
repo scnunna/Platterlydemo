@@ -1,8 +1,8 @@
 package com.nunna.platterly
 
-/** Where each start-screen button goes. Online first (GitHub Pages, always the latest push), bundled copy offline. */
+/** Where each start-screen button goes. Online first (the live site: GitHub Pages, or the store laptop's tunnel when built with PL_ONLINE_BASE), bundled copy offline. */
 object Destinations {
-    const val ONLINE_BASE = "https://godsmustb.github.io/platterlycatering/"
+    val ONLINE_BASE = BuildConfig.ONLINE_BASE
     const val OFFLINE_BASE = "https://appassets.androidplatform.net/assets/web/"
 
     data class Dest(val id: String, val title: String, val subtitle: String, val path: String, val isTv: Boolean = false)
