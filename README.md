@@ -91,7 +91,20 @@ per browser session, tagged with the store and the TV page (the QR's `c=` number
 the **Analytics** tab shows the funnel per store and per screen, the best-converting screen, and codes per day. The
 TV's live strip (spins today, next lunch draw, recent winners by first name) comes from `/v1/stats`.
 
-## Lead database (runs on the store laptop)
+## Production: the VPS
+Since 22 Oct 2026 the live system runs on the VPS (Windows Server, no Docker), not the store laptop:
+own PostgreSQL 16 cluster (service `PlatterlyPG`, 127.0.0.1:56322), PostgREST (56331, under `server/vps/postgrest-run.mjs`),
+three Listmonk instances (56390-56392), the lead proxy (56380), and the public address
+**https://contentgen.tail7451cd.ts.net:10000** through Tailscale Funnel. `web/panago/api.json` points the pages there.
+- Install or repair (safe to re-run, as Administrator): `C:\platterlypp\serverps\setup-vps.ps1`.
+- The scheduled task **Platterly** runs `server/vps/start-vps.ps1` at boot and every 5 minutes; it starts only what is down.
+- Secrets and logs: `C:\platterly\state` (`platterly.env`, `postgrest.conf`: Administrators and SYSTEM only).
+- Listmonk restarts itself after a settings change, which Windows does not support, so it exits; the task brings it back
+  within 5 minutes.
+- Code updates: copy the repo's `server`, `supabase` and `web` to `C:\platterlypp`, then run `setup-vps.ps1`
+  (it applies new migrations, tracked in `platterly_meta.migrations`).
+
+## Lead database (development copy on the laptop)
 `supabase/` is a self-hosted Supabase CLI stack (`project_id = platterly`, ports 563xx) in Docker Desktop.
 Tables are locked; the public can only call `submit_claim` (and the older `submit_lead`), `request_catering`, `customer_history`, `code_info`, `menu_for`, `quote_order`, `place_order` and `order_status`. Prices are always computed in the database. Staff redemption
 (`redeem_code`) is service-role only. Tests: `supabase/tests/leads_test.sql`, `staff_test.sql`, `onboarding_test.sql`, `orders_test.sql`.

@@ -1,4 +1,5 @@
 # Platterly lead stack on the store laptop: Supabase (Docker) + lead proxy + public tunnel.
+# Since 2026-10-22 the live system runs on the VPS (server/vps); this is the local development and test copy.
 # Safe to run any time: if everything is already healthy it does nothing.
 # To run it automatically, register it as a scheduled task (see README: Platterly-Leads, at logon + every 30 min).
 # 'Continue': native tools (supabase CLI, git) write normal progress to stderr, which PowerShell 5.1 would
@@ -78,7 +79,9 @@ else {
 if (-not $url) { Say 'ERROR: tunnel gave no address (see tunnel.log)'; exit 1 }
 Say "tunnel: $url"
 
-# 4. Publish the address for the QR page (GitHub Pages redeploys in about a minute)
+# 4. Publish the address for the QR page (GitHub Pages redeploys in about a minute).
+#    Not when the pages point at the VPS (server/vps): then this laptop is only a test copy and must not take over.
+if ($current -and $current -notmatch 'trycloudflare\.com') { Say "api.json points at $current (the VPS); laptop tunnel not published"; exit 0 }
 if ($url -ne $current) {
   $json = @{ leadApi = $url; updated = (Get-Date).ToUniversalTime().ToString('s') + 'Z' } | ConvertTo-Json -Compress
   [IO.File]::WriteAllText($ApiJson, $json + "`n")
