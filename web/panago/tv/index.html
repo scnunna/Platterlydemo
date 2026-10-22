@@ -347,7 +347,7 @@ tr:last-child td { border-bottom: 0; }
 <script>
 (() => {
   /* The QR points at whichever web address serves this TV page (the store laptop's tunnel now that GitHub Pages is gone). */
-  const PLAY_BASE = /^https?:$/.test(location.protocol) ? new URL('../', location.href).href : 'https://godsmustb.github.io/platterlycatering/panago/';
+  const PLAY_BASE = /^https?:$/.test(location.protocol) ? new URL('../', location.href).href : 'https://scnunna.github.io/Platterlydemo/panago/';
   const STORE = ({ g: 'g', gerrard: 'g', b: 'b', bremner: 'b' })[(new URLSearchParams(location.search).get('s') || '').toLowerCase()] || '';
   /* Each page's code carries the store and the page, so every scan is counted per store and per screen. */
   const playUrl = n => PLAY_BASE + '?' + (STORE ? 's=' + STORE + '&' : '') + 'c=' + n;

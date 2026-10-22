@@ -22,7 +22,7 @@ const ANON = process.env.PLATTERLY_ANON_KEY || '';
 const SERVICE = process.env.PLATTERLY_SERVICE_KEY || '';
 const PORT = Number(process.env.PORT || 56380);
 const ORIGINS = new Set((process.env.PLATTERLY_ORIGINS ||
-  'https://godsmustb.github.io,https://appassets.androidplatform.net,http://127.0.0.1:8099,http://localhost:8099').split(','));
+  'https://scnunna.github.io,https://godsmustb.github.io,https://appassets.androidplatform.net,http://127.0.0.1:8099,http://localhost:8099').split(','));
 const MAX_BODY = 8192; // an order of 40 lines fits
 const SESSION_MS = 12 * 3600e3;
 
@@ -179,7 +179,7 @@ const server = http.createServer((req, res) => {
 // One Listmonk per sender (server/listmonk/docker-compose.yml): 'platterly' for partner mail, one per client for that
 // client's customers. Each has its own SMTP setting; while it points at the local test inbox (Mailpit) a message is
 // recorded as test_inbox, meaning it did not leave this laptop.
-const SITE = process.env.PLATTERLY_SITE || 'https://godsmustb.github.io/platterlycatering';
+const SITE = process.env.PLATTERLY_SITE || 'https://scnunna.github.io/Platterlydemo';
 const LM = { platterly: 56390, panago: 56391, wetzels: 56392 };
 const lmTemplate = {}, lmTest = {};
 const instanceFor = client => (LM[client] && process.env[`LM_${client.toUpperCase()}_API_TOKEN`]) ? client : 'platterly';

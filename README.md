@@ -5,16 +5,16 @@ Catering and lead capture for local franchise kitchens. Clients: **Panago** (Ger
 
 | What | Where |
 |---|---|
-| Panago Spin & Win (the page every QR code opens) | https://godsmustb.github.io/platterlycatering/panago/ |
-| Wetzel's Spin & Win (Eaton Centre) | https://godsmustb.github.io/platterlycatering/wetzels/ |
-| Platterly ordering (with a PL- code) | https://godsmustb.github.io/platterlycatering/order/ |
-| Leads portal: super admin, client admin, customer | https://godsmustb.github.io/platterlycatering/admin/ |
-| Panago TV screens, six pages, window loop | https://godsmustb.github.io/platterlycatering/panago/tv/?s=g#tv (Gerrard) · `?s=b#tv` (Bremner) |
-| Platterly catering app (demo mode) | https://godsmustb.github.io/platterlycatering/ |
+| Panago Spin & Win (the page every QR code opens) | https://scnunna.github.io/Platterlydemo/panago/ |
+| Wetzel's Spin & Win (Eaton Centre) | https://scnunna.github.io/Platterlydemo/wetzels/ |
+| Platterly ordering (with a PL- code) | https://scnunna.github.io/Platterlydemo/order/ |
+| Leads portal: super admin, client admin, customer | https://scnunna.github.io/Platterlydemo/admin/ |
+| Panago TV screens, six pages, window loop | https://scnunna.github.io/Platterlydemo/panago/tv/?s=g#tv (Gerrard) · `?s=b#tv` (Bremner) |
+| Platterly catering app (demo mode) | https://scnunna.github.io/Platterlydemo/ |
 | Android app (Obtainium) | GitHub Releases of this repo |
 
 ## Install on Android with Obtainium
-Obtainium → **Add app** → paste `https://github.com/godsmustb/platterlycatering` → **Add**. Every push to `main`
+Obtainium → **Add app** → paste `https://github.com/scnunna/Platterlydemo` → **Add**. Every push to `main`
 that changes the app or the pages builds a signed APK and publishes a release; Obtainium picks it up.
 The app opens on a start screen: Platterly, Spin & Win, or the TV loop for one store. On a store TV box, tick
 "Open the TV screens automatically" once and it boots straight into the loop.

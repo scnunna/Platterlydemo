@@ -12,10 +12,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    env:
-      PL_BUILD_NUMBER: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
+      # Numbering continues above the old repo's builds and the laptop build (0.1.900), so installed apps update.
+      - run: echo "PL_BUILD_NUMBER=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: "17" }
       - uses: gradle/actions/setup-gradle@v4
@@ -38,7 +38,7 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.${{ github.run_number }}
-          name: Platterly 0.1.${{ github.run_number }}
+          tag_name: v0.1.${{ env.PL_BUILD_NUMBER }}
+          name: Platterly 0.1.${{ env.PL_BUILD_NUMBER }}
           body: ${{ github.event.head_commit.message }}
-          files: Platterly-0.1.${{ github.run_number }}.apk
+          files: Platterly-0.1.${{ env.PL_BUILD_NUMBER }}.apk

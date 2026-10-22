@@ -14,7 +14,7 @@ val signingProps = Properties().apply {
 fun signing(env: String, prop: String): String? = System.getenv(env) ?: signingProps.getProperty(prop)
 val buildNumber = (System.getenv("PL_BUILD_NUMBER") ?: "0").toInt()
 // Where the live site is. GitHub Pages by default; a laptop build passes its tunnel address (PL_ONLINE_BASE).
-val onlineBase = (System.getenv("PL_ONLINE_BASE") ?: "https://godsmustb.github.io/platterlycatering/").trimEnd('/') + "/"
+val onlineBase = (System.getenv("PL_ONLINE_BASE") ?: "https://scnunna.github.io/Platterlydemo/").trimEnd('/') + "/"
 
 // The web app (../web) ships inside the APK as the offline fallback.
 val copyWeb by tasks.registering(Sync::class) {

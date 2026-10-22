@@ -1,4 +1,4 @@
-# Publishes web/ to GitHub Pages: https://godsmustb.github.io/platterlycatering/
+# Publishes web/ to GitHub Pages: https://scnunna.github.io/Platterlydemo/
 # The Panago QR codes point at /panago/, so this must stay on.
 name: pages
 on:

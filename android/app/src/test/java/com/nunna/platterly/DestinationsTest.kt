@@ -28,7 +28,7 @@ class DestinationsTest {
         assertTrue(Destinations.staysInApp("https://appassets.androidplatform.net/assets/web/index.html"))
         assertFalse(Destinations.staysInApp("https://www.panago.com/"))
         assertFalse(Destinations.staysInApp("tel:3100001"))
-        assertFalse(Destinations.staysInApp("https://godsmustb.github.io/other-repo/"))
+        assertFalse(Destinations.staysInApp("https://scnunna.github.io/other-repo/"))
     }
 
     @Test fun idsAreUnique() {
