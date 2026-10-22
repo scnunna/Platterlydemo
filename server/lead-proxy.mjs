@@ -11,13 +11,15 @@
 // Listmonk deals-list sync. Email goes out through the self-hosted Listmonk instances (server/listmonk).
 // Env: PLATTERLY_API, PLATTERLY_ANON_KEY, PLATTERLY_SERVICE_KEY, PORT (default 56380), PLATTERLY_ORIGINS,
 //      LM_PLATTERLY_API_TOKEN, LM_PANAGO_API_TOKEN, LM_WETZELS_API_TOKEN (listmonk.env), PLATTERLY_SITE,
-//      TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM (texts, optional).
+//      PLATTERLY_REST, TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM (texts, optional).
 import http from 'node:http';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const API = process.env.PLATTERLY_API || 'http://127.0.0.1:56321';
+// Supabase serves PostgREST under /rest/v1; a bare PostgREST (the VPS) serves it at the root: PLATTERLY_REST=http://127.0.0.1:56331
+const REST = process.env.PLATTERLY_REST || `${API}/rest/v1`;
 const ANON = process.env.PLATTERLY_ANON_KEY || '';
 const SERVICE = process.env.PLATTERLY_SERVICE_KEY || '';
 const PORT = Number(process.env.PORT || 56380);
@@ -60,7 +62,9 @@ const PUBLIC = {
   '/v1/order-status': { rpc: 'order_status', perMin: 30, args: b => pick(b, ['p_number', 'p_code']) },
   '/v1/lead': { rpc: 'submit_lead', perMin: 20, args: b => pick(b, ['p_client', 'p_store', 'p_first_name', 'p_contact', 'p_consent', 'p_offer', 'p_quiz_right', 'p_source', 'p_consent_wording']) },
   '/v1/catering': { rpc: 'request_catering', perMin: 10, args: b => pick(b, ['p_code', 'p_event_date', 'p_package', 'p_headcount']) },
-  '/v1/me': { rpc: 'customer_history', perMin: 10, args: b => pick(b, ['p_client', 'p_contact', 'p_code']) }
+  '/v1/me': { rpc: 'customer_history', perMin: 10, args: b => pick(b, ['p_client', 'p_contact', 'p_code']) },
+  '/v1/event': { rpc: 'track_event', perMin: 60, args: b => pick(b, ['p_client', 'p_store', 'p_screen', 'p_step', 'p_sid']) },
+  '/v1/stats': { rpc: 'public_stats', perMin: 30, args: b => pick(b, ['p_client', 'p_store']) }
 };
 const STAFF = {
   '/v1/staff/leads': { rpc: 'staff_leads', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_search: b.search || null, p_consent_only: !!b.consent_only, p_limit: Number(b.limit) || 500 }) },
@@ -72,6 +76,10 @@ const STAFF = {
   '/v1/staff/order-status': { rpc: 'staff_set_order_status', args: (b, s) => ({ p_staff: s.id, p_id: b.id || null, p_status: b.status || null }) },
   '/v1/staff/billing': { rpc: 'staff_billing', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null }) },
   '/v1/staff/billing-rate': { rpc: 'staff_billing_rate', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_pct: b.pct === '' || b.pct == null ? null : Number(b.pct) }) },
+  '/v1/staff/analytics': { rpc: 'staff_analytics', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_days: Number(b.days) || 30 }) },
+  '/v1/staff/commissions': { rpc: 'staff_commissions', args: (b, s) => ({ p_staff: s.id }) },
+  '/v1/staff/commission-set': { rpc: 'staff_commission_set', args: (b, s) => ({ p_staff: s.id, p_client: b.client || null, p_pct: b.pct === '' || b.pct == null ? null : Number(b.pct),
+    p_from: b.from || null, p_billing_email: b.billing_email || null, p_note: b.note || null }) },
   '/v1/staff/billing-action': { rpc: 'staff_billing_action', args: (b, s) => ({ p_staff: s.id, p_action: b.action || null, p_id: b.id || null }), after: () => setTimeout(sendOutbox, 500) },
   // Super admin only (checked in SQL): the client onboarding board.
   '/v1/staff/onboarding': { rpc: 'staff_onboarding', args: (b, s) => ({ p_staff: s.id }) },
@@ -104,7 +112,7 @@ function send(res, status, body, origin) {
 }
 
 async function rpc(name, args, key) {
-  const r = await fetch(`${API}/rest/v1/rpc/${name}`, {
+  const r = await fetch(`${REST}/rpc/${name}`, {
     method: 'POST', headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
     body: JSON.stringify(args), signal: AbortSignal.timeout(8000)
   });
@@ -180,6 +188,7 @@ const server = http.createServer((req, res) => {
 // client's customers. Each has its own SMTP setting; while it points at the local test inbox (Mailpit) a message is
 // recorded as test_inbox, meaning it did not leave this laptop.
 const SITE = process.env.PLATTERLY_SITE || 'https://scnunna.github.io/Platterlydemo';
+const CONTACT = process.env.PLATTERLY_FROM_EMAIL || 'marketing@platterly.com';
 const LM = { platterly: 56390, panago: 56391, wetzels: 56392 };
 const lmTemplate = {}, lmTest = {};
 const instanceFor = client => (LM[client] && process.env[`LM_${client.toUpperCase()}_API_TOKEN`]) ? client : 'platterly';
@@ -229,7 +238,7 @@ function shell(title, inner, foot) {
   return `<div style="font-family:Segoe UI,Helvetica,Arial,sans-serif;color:#13201F;max-width:640px;margin:0 auto">
   <div style="background:#0E4D4A;color:#fff;padding:16px 20px;border-radius:12px 12px 0 0"><div style="font-size:20px;font-weight:800;letter-spacing:-.02em">platterly</div><div style="font-size:15px;opacity:.9">${H(title)}</div></div>
   <div style="border:1px solid #D3DBD6;border-top:0;border-radius:0 0 12px 12px;padding:18px 20px;font-size:14px;line-height:1.5">${inner}
-  <p style="color:#56645F;font-size:12px;margin-top:18px">${foot || ''} Platterly · ${H(SITE)}/</p></div></div>`;
+  <p style="color:#56645F;font-size:12px;margin-top:18px">${foot || ''} Platterly, Toronto ON · ${H(CONTACT)} · ${H(SITE)}/</p></div></div>`;
 }
 const table = (head, rows, right = []) => `<table style="border-collapse:collapse;width:100%;font-size:13px;margin:8px 0"><tr>${head.map((h, k) => `<th style="text-align:${right.includes(k) ? 'right' : 'left'};padding:6px 8px;background:#E9EEEB;border-bottom:1px solid #D3DBD6">${H(h)}</th>`).join('')}</tr>${rows.map(r => `<tr>${r.map((c, k) => `<td style="text-align:${right.includes(k) ? 'right' : 'left'};padding:6px 8px;border-bottom:1px solid #E9EEEB">${c}</td>`).join('')}</tr>`).join('')}</table>`;
 const kv = pairs => `<table style="border-collapse:collapse;width:100%;font-size:14px;margin:8px 0">${pairs.map(([k, v, b]) => `<tr><td style="padding:5px 0;color:#56645F">${H(k)}</td><td style="padding:5px 0;text-align:right;${b ? 'font-weight:800;font-size:16px' : ''}">${v}</td></tr>`).join('')}</table>`;

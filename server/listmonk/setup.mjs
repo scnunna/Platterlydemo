@@ -11,10 +11,12 @@ import path from 'node:path';
 const envFile = path.join(process.env.LOCALAPPDATA || '.', 'platterly', 'listmonk.env');
 if (fs.existsSync(envFile)) for (const l of fs.readFileSync(envFile, 'utf8').split(/\r?\n/)) { const m = /^([A-Z_]+)=(.*)$/.exec(l.trim()); if (m && !process.env[m[1]]) process.env[m[1]] = m[2]; }
 
+// Every sender uses Platterly's one mailbox (PLATTERLY_FROM_EMAIL); the name says which partner it is for.
+const FROM = process.env.PLATTERLY_FROM_EMAIL || 'marketing@platterly.com';
 export const INSTANCES = {
-  platterly: { port: 56390, site: 'Platterly', from: 'Platterly <hello@platterly.local>', list: 'Partners' },
-  panago: { port: 56391, site: 'Platterly × Panago', from: 'Platterly for Panago <panago@platterly.local>', list: 'Deals and catering offers' },
-  wetzels: { port: 56392, site: "Platterly × Wetzel's", from: "Platterly for Wetzel's <wetzels@platterly.local>", list: 'Deals and party-pack offers' }
+  platterly: { port: 56390, site: 'Platterly', from: `Platterly <${FROM}>`, list: 'Partners' },
+  panago: { port: 56391, site: 'Platterly × Panago', from: `Platterly for Panago <${FROM}>`, list: 'Deals and catering offers' },
+  wetzels: { port: 56392, site: "Platterly × Wetzel's", from: `Platterly for Wetzel's <${FROM}>`, list: 'Deals and party-pack offers' }
 };
 const TEST_SMTP = { enabled: true, host: 'supabase_inbucket_platterly', port: 1025, auth_protocol: 'none', username: '', password: '', tls_type: 'none',
   tls_skip_verify: false, max_conns: 5, idle_timeout: '15s', wait_timeout: '5s', max_msg_retries: 2, email_headers: [], hello_hostname: '' };

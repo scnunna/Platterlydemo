@@ -9,7 +9,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <style>
 body{margin:0}img{max-width:100%}[hidden]{display:none!important}
-/* Layout: six 16:9 TV pages in the Panago Q4 2026 Ontario counter-menu system: purple slanted band, yellow display headlines, mint and yellow bursts, terrazzo photography. One "Scan to win" QR badge sits in the same corner of every page. Single committed brand look, no dark variant. */
+/* Layout: six 16:9 TV pages in the Panago Q4 2026 Ontario counter-menu system: purple slanted band, yellow display headlines, mint and yellow bursts, terrazzo photography. One QR badge sits in the same corner of every page; the "Scan to win" sticker shows on pages 1 and 2 only. Single committed brand look, no dark variant. */
 :root {
   --purple: #522171;
   --purple-deep: #3A1553;
@@ -103,6 +103,14 @@ body.kiosk { background: var(--tv); overflow: hidden; }
 .win-note b { font-family: var(--display); font-weight: 400; font-size: 1.45cqw; line-height: 1.02; text-transform: uppercase; }
 .win-note small { font-size: 0.8cqw; font-weight: 800; color: var(--ink); }
 .s2 .win-note { background: var(--paper); }
+.plat-note { position: absolute; z-index: 3; right: 0.4cqw; bottom: calc(100% + 1.4cqw); width: 17cqw; margin: 0; background: var(--mint); color: var(--purple); border: 0.3cqw solid var(--purple); border-radius: 1cqw; padding: 0.6cqw 1cqw 0.7cqw; transform: rotate(-3deg); box-shadow: 0.35cqw 0.35cqw 0 var(--purple); font-size: 1cqw; font-weight: 800; line-height: 1.25; }
+.plat-note b { display: block; font-family: var(--display); font-weight: 400; font-size: 1.3cqw; line-height: 1.05; text-transform: uppercase; margin-bottom: 0.2cqw; }
+.live { position: absolute; z-index: 3; left: 5cqw; bottom: 15.4cqw; display: flex; gap: 0.7cqw; align-items: center; flex-wrap: wrap; font-size: 1.2cqw; font-weight: 800; color: var(--purple); }
+.live > span { display: inline-flex; align-items: center; gap: 0.5cqw; background: var(--paper); border-radius: 99px; padding: 0.35cqw 1.1cqw; box-shadow: 0 0.3cqw 0.8cqw rgba(13,7,17,0.18); }
+.live > span::before { content: ""; width: 0.7cqw; height: 0.7cqw; border-radius: 50%; background: #2BB673; animation: blink 1.8s ease-in-out infinite; }
+.s2 .live { bottom: 13.2cqw; }
+.live b { font-weight: 900; }
+@keyframes blink { 50% { opacity: 0.35; } }
 .stage.big-qr .win-note { width: 23cqw; }
 @keyframes wiggle { 0%, 86%, 100% { transform: rotate(-5deg) scale(1); } 90% { transform: rotate(-2deg) scale(1.06); } 94% { transform: rotate(-7deg) scale(1.03); } }
 .s2 .scan .flag polygon { fill: var(--purple); }
@@ -126,11 +134,9 @@ body.kiosk { background: var(--tv); overflow: hidden; }
 .s1 { background: var(--stone); }
 .s1 .photo { position: absolute; inset: 0; background: url(../assets/hero-wide.jpg) center / cover no-repeat; }
 .s1 .hl { left: 4.6cqw; top: 6.2cqw; color: var(--yellow); font-size: 7.6cqw; text-shadow: 0.35cqw 0.35cqw 0 var(--purple); }
-.s1 .sub { position: absolute; left: 5.2cqw; top: 24.6cqw; background: var(--purple); color: var(--paper); font-weight: 800; font-size: 1.85cqw; padding: 0.8cqw 1.6cqw; border-radius: 0.8cqw; transform: rotate(-3deg); }
 .s1 .burst { right: 4cqw; top: 1.2cqw; width: 15.5cqw; height: 15.5cqw; color: var(--purple); }
 .s1 .burst > div { font-size: 1.3cqw; }
 .s1 .burst .price { font-size: 3.8cqw; display: block; margin: 0.25cqw 0; }
-.s1 .new { position: absolute; left: 5.6cqw; top: 30.2cqw; background: var(--mint); color: var(--purple); border-radius: 99px; font-weight: 900; font-size: 1.4cqw; padding: 0.5cqw 1.3cqw; transform: rotate(-4deg); letter-spacing: 0.03em; text-transform: uppercase; }
 
 /* 2 spin */
 .s2 { background: var(--yellow); color: var(--purple); }
@@ -158,11 +164,12 @@ body.kiosk { background: var(--tv); overflow: hidden; }
 
 /* 4 new paneer + order direct */
 .s4 { background: var(--mint); color: var(--purple); }
-.s4 .pizza { position: absolute; right: -7cqw; top: -9cqw; width: 42cqw; height: auto; }
+.s4 .pizza { position: absolute; right: -6cqw; top: -8cqw; width: 42cqw; height: 42cqw; }
+.s4 .pizza svg { width: 100%; height: 100%; display: block; }
 .s4 .burst { left: 4cqw; top: 3.2cqw; width: 10.5cqw; height: 10.5cqw; color: var(--purple); }
 .s4 .burst > div { font-size: 2cqw; }
 .s4 .hl { left: 15cqw; top: 5cqw; font-size: 5.6cqw; }
-.s4 .list { position: absolute; left: 5cqw; top: 19.4cqw; width: 46cqw; display: grid; gap: 1cqw; }
+.s4 .list { position: absolute; left: 5cqw; top: 18.2cqw; width: 46cqw; display: grid; gap: 1cqw; }
 .s4 .item b { display: block; font-weight: 900; font-size: 1.7cqw; text-transform: uppercase; letter-spacing: 0.02em; }
 .s4 .item span { display: block; font-size: 1.2cqw; color: var(--ink); }
 .s4 .item em { font-style: normal; font-weight: 900; font-size: 1.35cqw; color: var(--purple); display: block; font-variant-numeric: tabular-nums; }
@@ -172,8 +179,8 @@ body.kiosk { background: var(--tv); overflow: hidden; }
 /* 5 deal of the day */
 .s5 { background: var(--purple); color: var(--paper); }
 .s5 .photo { position: absolute; right: 0; top: 0; bottom: 0; width: 46%; background: url(../assets/table-wide.jpg) 70% 60% / cover no-repeat; clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%); }
-.s5 .photo.wings { background-image: url(../assets/wings.jpg); background-position: center; }
-.s5 .photo.churro { background-image: url(../assets/churro-bites.jpg); background-position: center; }
+.s5 .photo.gfx { background: var(--purple-deep); display: grid; place-items: center start; padding-left: 4cqw; }
+.s5 .photo.gfx svg { width: 22cqw; height: auto; display: block; }
 .s5 .eyebrow { left: 5cqw; top: 5cqw; color: var(--mint); }
 .s5 .hl { left: 4.8cqw; top: 9.2cqw; width: 50cqw; color: var(--yellow); font-size: 5.4cqw; }
 .s5 .copy { position: absolute; left: 5.2cqw; top: 26cqw; width: 34cqw; font-size: 1.8cqw; font-weight: 600; line-height: 1.32; }
@@ -199,7 +206,7 @@ body.kiosk { background: var(--tv); overflow: hidden; }
 .s6 .pk span { font-size: 1.15cqw; font-weight: 600; line-height: 1.3; }
 .s6 .salad { position: absolute; right: 4cqw; top: 2.6cqw; width: 17cqw; height: auto; transform: rotate(-5deg); }
 .s6 .veg { position: absolute; right: 22cqw; top: 13cqw; background: var(--mint); color: var(--purple); font-weight: 900; font-size: 1.1cqw; padding: 0.4cqw 1cqw; border-radius: 99px; transform: rotate(-4deg); }
-.s6 .legal { color: var(--muted); }
+.s6 .legal { color: var(--muted); bottom: 12.6cqw; max-width: 62cqw; }
 
 /* owner notes */
 .notes { display: grid; gap: 14px; }
@@ -222,7 +229,7 @@ tr:last-child td { border-bottom: 0; }
   .now { margin-left: 0; width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spin-slow, .progress i.cur::after, .scan .card::after, .win-note { animation: none; }
+  .spin-slow, .progress i.cur::after, .scan .card::after, .win-note, .live > span::before { animation: none; }
   .deck .stage { transition: none; }
 }
 </style>
@@ -252,8 +259,6 @@ tr:last-child td { border-bottom: 0; }
     <figure><section class="stage s1" data-name="Fresh dough, made daily" aria-label="Page 1: Fresh dough, made daily"><div class="in">
       <div class="photo" role="img" aria-label="Two large Panago pizzas, wings and churro bites on a terrazzo table"></div>
       <h2 class="hl">Fresh dough.<br>Made daily.</h2>
-      <div class="sub">Hot pizza, ready right here.</div>
-      <div class="new">New! Paneer pizzas</div>
       <div class="burst" data-burst="#FAEE23"><div>Build your own<span class="price">$15.75</span>Large · 10 slices</div></div>
       <div class="legal" style="color:var(--purple)">Create Your Own large 14" starting price. Toppings extra. Taxes extra.</div>
     </div></section><figcaption><b>Page 1 · Hero.</b> Fresh dough made daily, Create Your Own large from $15.75.</figcaption></figure>
@@ -264,6 +269,7 @@ tr:last-child td { border-bottom: 0; }
       <div class="copy">Scan the code, spin free on your phone, then come inside to claim your prize.</div>
       <div class="prizes" id="prize-chips"></div>
       <div class="wheel"><svg class="pointer" viewBox="0 0 36 42" aria-hidden="true"><path d="M18 42 L2 9 Q18 -4 34 9 Z" fill="#FFFFFF" stroke="#522171" stroke-width="3"/></svg><div id="tv-wheel"></div></div>
+      <div class="live" hidden><span class="live-count" hidden></span><span class="live-win" hidden></span></div>
       <div class="legal">No purchase necessary to play. One spin per person per day. Prizes need a qualifying order. Odds and full rules in the game.</div>
     </div></section><figcaption><b>Page 2 · Spin to win.</b> The wheel, the six prizes and their menu values.</figcaption></figure>
 
@@ -275,12 +281,13 @@ tr:last-child td { border-bottom: 0; }
       <h2 class="hl">Win your<br>team's<br>lunch.</h2>
       <div class="copy">Up to <b>5 large pizzas</b> for your office, drawn every month. Every player is entered.</div>
       <div class="note">Snap this. Send it to whoever orders lunch!</div>
+      <div class="live" hidden><span class="live-draw" hidden></span></div>
       <div class="legal">No purchase necessary. One draw per store per month. Winners answer a skill-testing question. Full rules in the game.</div>
     </div></section><figcaption><b>Page 3 · Team lunch draw.</b> Big, photo-friendly code so a colleague can scan a snapshot.</figcaption></figure>
 
     <!-- 4 -->
     <figure><section class="stage s4" data-name="New paneer pizzas" aria-label="Page 4: New paneer pizzas, order through Platterly"><div class="in">
-      <img class="pizza spin-slow" src="../assets/pizza-top.webp" alt="">
+      <div class="pizza spin-slow" id="veg-pizza" role="img" aria-label="Illustration of a veggie paneer pizza"></div>
       <div class="burst" data-burst="#FAEE23"><div>New!</div></div>
       <h2 class="hl">New paneer<br>pizzas.</h2>
       <div class="list">
@@ -301,7 +308,7 @@ tr:last-child td { border-bottom: 0; }
       <div class="copy" id="dotd-copy"></div>
       <div class="week" id="dotd-week"></div>
       <div class="burst" data-burst="#FAEE23"><div id="dotd-burst"></div></div>
-      <div class="legal">Online deals as listed on panago.com. Delivery fees and taxes extra.</div>
+      <div class="legal">Panago online deal, ordered on panago.com. Not a Platterly offer. Taxes extra.</div>
     </div></section><figcaption><b>Page 5 · Deal of the day.</b> Changes by itself each day of the week.</figcaption></figure>
 
     <!-- 6 -->
@@ -311,7 +318,7 @@ tr:last-child td { border-bottom: 0; }
       <div class="eyebrow">Booking December office parties now</div>
       <h2 class="hl">Office party?<br>We've got 50.</h2>
       <div class="pk" id="packs"></div>
-      <div class="legal">Menu prices from the October 2026 Ontario menu, before 13% HST. No delivery fee when you order through Platterly. Large = 14", 10 slices.</div>
+      <div class="legal">Menu prices from the October 2026 Ontario menu, before 13% HST. Large = 14", 10 slices.</div>
     </div></section><figcaption><b>Page 6 · Holiday parties.</b> Three catering packages priced from the menu.</figcaption></figure>
 
     <div class="progress" id="progress"></div>
@@ -404,9 +411,9 @@ tr:last-child td { border-bottom: 0; }
   document.querySelectorAll('[data-burst]').forEach(b => b.insertAdjacentHTML('afterbegin', burstSVG(b.dataset.burst)));
 
   /* Scan to Win badge on every page, same corner */
-  document.querySelectorAll('.stage .in').forEach(el => el.insertAdjacentHTML('beforeend',
-    `<div class="scan"><div class="win-note"><span>Scan to win free</span><b>Cheezy Bread, wings, dips or pop!</b><small>Every spin wins · with a pizza order</small></div><div class="flag">${burstSVG('#FAEE23', 12, 38)}<span>Scan to win!</span></div><div class="card"><canvas class="qr" aria-label="QR code: scan to spin and win"></canvas><div class="cta">Spin free<small>Every spin wins</small></div></div></div>` +
-    `<div class="band"><div class="call">Panago 310-0001<small>Or scan to order through Platterly</small></div><img src="../assets/logo-white.png" alt="Panago For It"></div>`));
+  document.querySelectorAll('.stage .in').forEach((el, i) => el.insertAdjacentHTML('beforeend',
+    `<div class="scan">${i < 2 ? '<div class="win-note"><span>Scan to win free</span><b>Cheezy Bread, wings, dips or pop!</b><small>Every spin wins · with a pizza order</small></div>' : i > 3 ? '<div class="plat-note"><b>Order through Platterly</b>Same price as walk-in · no delivery fee · no surcharges</div>' : ''}<div class="flag">${burstSVG('#FAEE23', 12, 38)}<span>Scan to win!</span></div><div class="card"><canvas class="qr" aria-label="QR code: scan to spin and win"></canvas><div class="cta">Spin free<small>Every spin wins</small></div></div></div>` +
+    `<div class="band"><div class="call">Panago 310-0001<small>Scan to spin · order with your code through Platterly</small></div><img src="../assets/logo-white.png" alt="Panago For It"></div>`));
 
   function drawQR(cv, text) {
     if (typeof window.qrcode !== 'function') return;
@@ -425,18 +432,77 @@ tr:last-child td { border-bottom: 0; }
     { d: 'Sun', title: 'Larges for less', copy: 'Five large recipe pizzas at $19.95 each with a code: Deluxe, Hawaiian, Spicy Paneer, Tropical Chicken, Plant-based Mediterranean.', burst: 'Large<span class="price">$19.95</span>with code', photo: 'table' },
     { d: 'Mon', title: 'Cheezy Bread for $2.75', copy: 'Buy any two 12" medium recipe pizzas and add 8 pc Garlic Cheezy Bread, dip included, for $2.75.', burst: 'Add for<span class="price">$2.75</span>with 2 M', photo: 'table' },
     { d: 'Tue', title: 'Larges for less', copy: 'Team Tuesday: five large recipe pizzas at $19.95 each with a code. Feeds the whole office.', burst: 'Large<span class="price">$19.95</span>with code', photo: 'table' },
-    { d: 'Wed', title: 'Free dip with a large', copy: 'Buy any 14" large recipe pizza and get one 44 ml dip free.', burst: 'Dip<span class="price">Free</span>with any L', photo: 'wings' },
-    { d: 'Thu', title: 'Pop Duo for $5', copy: 'Two 591 ml pops for $5 with your order.', burst: '2 pops<span class="price">$5</span>', photo: 'wings' },
-    { d: 'Fri', title: 'Dip lovers', copy: 'Buy four 44 ml dips and get one free. Every dip is $1.30.', burst: 'Buy 4<span class="price">+1</span>free', photo: 'churro' },
+    { d: 'Wed', title: 'Free dip with a large', copy: 'Buy any 14" large recipe pizza and get one 44 ml dip free.', burst: 'Dip<span class="price">Free</span>with any L', photo: 'table' },
+    { d: 'Thu', title: 'Pop Duo for $5', copy: 'Two 591 ml pops for $5 with your order.', burst: '2 pops<span class="price">$5</span>', gfx: 'pop' },
+    { d: 'Fri', title: 'Dip lovers', copy: 'Buy four 44 ml dips and get one free. Every dip is $1.30.', burst: 'Buy 4<span class="price">+1</span>free', gfx: 'dip' },
     { d: 'Sat', title: 'Everyday value', copy: 'Everyday Pep and Everyday Veggie from $10 small, $18 large. Great for game night.', burst: 'Large from<span class="price">$18</span>', photo: 'table' }
   ];
   const today = new Date().getDay(), D = DEALS[today];
-  document.getElementById('dotd-eyebrow').textContent = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today] + "'s deal";
+  document.getElementById('dotd-eyebrow').textContent = 'Panago.com deal · ' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][today];
   document.getElementById('dotd-title').textContent = D.title;
   document.getElementById('dotd-copy').textContent = D.copy;
   document.getElementById('dotd-burst').innerHTML = D.burst;
-  document.getElementById('dotd-photo').className = 'photo ' + (D.photo === 'table' ? '' : D.photo);
+  /* per-deal art: a photo that matches the deal, else a drawn graphic, else no panel */
+  const GFX = {
+    pop: `<svg viewBox="0 0 200 150" aria-hidden="true"><g stroke="#522171" stroke-width="3" stroke-linejoin="round"><path d="M38 40h54l-6 100H44z" fill="#FAEE23"/><path d="M34 28h62v14H34z" fill="#FFFFFF"/><path d="M108 40h54l-6 100h-42z" fill="#DEF3E0"/><path d="M104 28h62v14h-62z" fill="#FFFFFF"/></g><path d="M62 28V8l22-6" stroke="#FAEE23" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M132 28V8l22-6" stroke="#DEF3E0" stroke-width="5" fill="none" stroke-linecap="round"/><text x="65" y="98" text-anchor="middle" font-family="'Bowlby One', Impact, sans-serif" font-size="15" fill="#522171">POP</text><text x="135" y="98" text-anchor="middle" font-family="'Bowlby One', Impact, sans-serif" font-size="15" fill="#522171">POP</text></svg>`,
+    dip: `<svg viewBox="0 0 200 150" aria-hidden="true"><g stroke="#522171" stroke-width="3" stroke-linejoin="round"><path d="M20 70h50l-6 50H26z" fill="#FFFFFF"/><path d="M75 50h50l-6 70H81z" fill="#FAEE23"/><path d="M130 70h50l-6 50h-38z" fill="#DEF3E0"/></g><g fill="#522171"><ellipse cx="45" cy="70" rx="25" ry="6"/><ellipse cx="100" cy="50" rx="25" ry="6"/><ellipse cx="155" cy="70" rx="25" ry="6"/></g><text x="100" y="100" text-anchor="middle" font-family="'Bowlby One', Impact, sans-serif" font-size="16" fill="#522171">DIP</text></svg>`
+  };
+  const ph = document.getElementById('dotd-photo');
+  if (D.gfx) { ph.className = 'photo gfx'; ph.innerHTML = GFX[D.gfx]; ph.setAttribute('aria-label', 'Illustration for the deal'); }
+  else if (D.photo) { ph.className = 'photo'; ph.setAttribute('aria-label', 'Panago pizzas on a terrazzo table'); }
+  else ph.hidden = true;
   document.getElementById('dotd-week').innerHTML = DEALS.map((x, i) => `<span class="${i === today ? 'today' : ''}">${x.d}</span>`).join('');
+
+  /* veggie paneer pizza, drawn (no meat on page 4) */
+  (() => {
+    const a = (i, n, off = 0) => (i / n) * 2 * Math.PI + off, P = (r, t) => [100 + r * Math.cos(t), 100 + r * Math.sin(t)];
+    let v = '<svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="98" fill="#E2A857"/><circle cx="100" cy="100" r="88" fill="#F3C969"/><circle cx="100" cy="100" r="84" fill="#F9E3A0"/>';
+    for (let i = 0; i < 12; i++) { const [x, y] = P(58, a(i, 12, 0.2)); v += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="none" stroke="#3E9B55" stroke-width="4"/>`; }
+    for (let i = 0; i < 8; i++) { const [x, y] = P(36, a(i, 8, 0.5)); v += `<path d="M${(x - 7).toFixed(1)} ${y.toFixed(1)}a7 6 0 0 1 14 0z" fill="#EDE0CF"/><rect x="${(x - 2).toFixed(1)}" y="${y.toFixed(1)}" width="4" height="6" fill="#D8C6AE"/>`; }
+    for (let i = 0; i < 10; i++) { const [x, y] = P(72, a(i, 10, 0.1)); v += `<rect x="${(x - 6).toFixed(1)}" y="${(y - 6).toFixed(1)}" width="12" height="12" rx="2" fill="#FFFDF4" stroke="#E7D9B0" stroke-width="1.5" transform="rotate(${i * 37} ${x.toFixed(1)} ${y.toFixed(1)})"/>`; }
+    for (let i = 0; i < 7; i++) { const [x, y] = P(46, a(i, 7, 0.9)); v += `<path d="M${(x - 8).toFixed(1)} ${y.toFixed(1)}q8 -9 16 0" fill="none" stroke="#B2487E" stroke-width="3"/>`; }
+    for (let i = 0; i < 6; i++) { const [x, y] = P(20 + (i % 2) * 8, a(i, 6)); v += `<path d="M${x.toFixed(1)} ${y.toFixed(1)}l6 -4l-1 7z" fill="#2F8A4A"/>`; }
+    document.getElementById('veg-pizza').innerHTML = v + '</svg>';
+  })();
+
+  /* live strip: spins today, next draw, recent winners (pages 2 and 3). Any failure just hides it. */
+  (() => {
+    const q = (st, sel) => document.querySelector('.' + st + ' ' + sel);
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const cnt = q('s2', '.live-count'), win = q('s2', '.live-win'), draw = q('s3', '.live-draw');
+    let recent = [], ri = 0, api = null;
+    const setEl = (el, html) => { if (!el) return; if (html) el.innerHTML = html; el.hidden = !html; el.parentElement.hidden = [...el.parentElement.children].every(c => c.hidden); };
+    function showWin() {
+      const r = recent.length ? recent[ri++ % recent.length] : null;
+      setEl(win, r ? `<b>${esc(r.name)}</b> just won ${esc(r.prize)}` : '');
+    }
+    function apply(d) {
+      const n = Math.floor(Number(d && d.spins_today));
+      setEl(cnt, n > 0 ? `<b>${n.toLocaleString('en-CA')}</b> spin${n === 1 ? '' : 's'} today` : '');
+      let txt = '';
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(d && d.next_draw || '');
+      if (m) {
+        const t = new Date(), days = Math.round((Date.UTC(+m[1], +m[2] - 1, +m[3]) - Date.UTC(t.getFullYear(), t.getMonth(), t.getDate())) / 864e5);
+        txt = days === 0 ? 'Lunch draw <b>today</b>' : days === 1 ? 'Next lunch draw <b>tomorrow</b>' : days > 1 && days < 400 ? `Next lunch draw in <b>${days} days</b>` : '';
+      }
+      setEl(draw, txt);
+      recent = Array.isArray(d && d.recent) ? d.recent.filter(r => r && r.name && r.prize).slice(0, 5) : [];
+      ri = 0; showWin();
+    }
+    async function poll() {
+      try {
+        if (!/^https?:$/.test(location.protocol)) throw 0;
+        if (!api) { const j = await (await fetch('../api.json?t=' + Date.now(), { cache: 'no-store' })).json(); api = j && j.leadApi ? String(j.leadApi).replace(/\/+$/, '') : ''; }
+        if (!api) throw 0;
+        const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+        const r = await fetch(api + '/v1/stats', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ p_client: 'panago', p_store: ({ g: 'gerrard', b: 'bremner' })[STORE] || null }), signal: ctl.signal });
+        clearTimeout(to);
+        if (!r.ok) throw 0;
+        apply(await r.json());
+      } catch (e) { apply(null); }
+    }
+    poll(); setInterval(poll, 60000); setInterval(showWin, 5000);
+  })();
 
   /* loop */
   const deck = document.getElementById('deck'), stages = [...deck.querySelectorAll('.stage')];

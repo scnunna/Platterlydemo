@@ -73,6 +73,7 @@ button { cursor: pointer; }
 .answer:hover { border-color: var(--purple); }
 .answer.right { background: var(--mint-strong); border-color: var(--good); }
 .answer.wrong { background: #FBE3E1; border-color: var(--bad); }
+.code-qr { display: block; margin: 10px auto 2px; width: 168px; height: 168px; image-rendering: pixelated; background: #fff; border-radius: 10px; padding: 8px; }
 .coupon { border: 2px dashed var(--purple); border-radius: 12px; padding: 9px 10px; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--paper); }
 .coupon code { font-family: ui-monospace, Menlo, monospace; font-weight: 800; font-size: 20px; letter-spacing: 0.08em; color: var(--purple); }
 .coupon button { border: 0; background: var(--purple); color: var(--yellow); border-radius: 8px; padding: 7px 10px; font-weight: 800; font-size: 12px; }
@@ -109,6 +110,7 @@ button { cursor: pointer; }
 .points b { font-size: 18px; color: #0E4D4A; font-variant-numeric: tabular-nums; }
 @media (prefers-reduced-motion: reduce) { .wheel-box svg.wheel { transition-duration: 1ms; } }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </head>
 <body>
 <div class="app">
@@ -147,7 +149,7 @@ button { cursor: pointer; }
       <div class="field" id="fe"><label for="f-email">Email</label><input id="f-email" type="email" autocomplete="email" maxlength="120" placeholder="you@email.com"></div>
       <div class="field" id="fp" hidden><label for="f-phone">Mobile</label><input id="f-phone" type="tel" autocomplete="tel" maxlength="20" placeholder="416 555 0123"></div>
       <label class="consent" for="f-remind"><input type="checkbox" id="f-remind" checked><span id="f-remind-text">Email me one reminder when my 2-hour bonus ends. No marketing.</span></label>
-      <label class="consent" for="f-consent"><input type="checkbox" id="f-consent"><span id="consent-text">Yes, send me deals and catering offers by email or text from Platterly and its partner Panago Gerrard St W and Bremner Blvd. Platterly, Toronto ON · scnunna.github.io/Platterlydemo. I can unsubscribe at any time.</span></label>
+      <label class="consent" for="f-consent"><input type="checkbox" id="f-consent"><span id="consent-text">Yes, send me deals and catering offers by email or text from Platterly and its partner Panago Gerrard St W and Bremner Blvd. Platterly, Toronto ON · marketing@platterly.com · scnunna.github.io/Platterlydemo. I can unsubscribe at any time.</span></label>
       <div class="err" id="f-err" role="alert"></div>
       <button class="big" type="submit">Join and continue</button>
     </form>
@@ -170,6 +172,7 @@ button { cursor: pointer; }
       <div class="cond" id="f-cond"></div>
       <div class="lab">Your Platterly code</div>
       <div class="coupon"><code id="code">…</code><button type="button" id="copy">Copy</button></div>
+      <canvas class="code-qr" id="code-qr" hidden aria-label="QR code of your Platterly code. Show it at the counter."></canvas>
       <div class="val" id="f-valid"></div>
     </div>
     <div class="timer" id="f-timer"><span id="f-tlabel"></span><b id="f-hold">–</b></div>
@@ -280,8 +283,22 @@ button { cursor: pointer; }
   const go = n => { panels.forEach((p, i) => p.hidden = i !== n); bars.forEach((b, i) => b.classList.toggle('on', i <= n)); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   const pickPrize = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); let r = a[0] / 2 ** 32 * TOT; for (let i = 0; i < PRIZES.length; i++) { r -= PRIZES[i].w; if (r < 0) return i; } return 0; };
 
+  /* Funnel steps for the portal's Analytics tab. Never blocks the page; failures are ignored. */
+  let sid = null; try { sid = sessionStorage.getItem('pl-sid') || Math.random().toString(36).slice(2) + Date.now().toString(36); sessionStorage.setItem('pl-sid', sid); } catch {}
+  const track = step => call('/v1/event', { p_client: CLIENT, p_store: store, p_screen: qs.get('c') || null, p_step: step, p_sid: sid }).catch(() => {});
+  track('view');
+  function drawCodeQR(code) {
+    const cv = document.getElementById('code-qr');
+    if (!code || typeof window.qrcode !== 'function') { cv.hidden = true; return; }
+    const q = window.qrcode(0, 'M'); q.addData(code); q.make();
+    const n = q.getModuleCount(), px = Math.floor(152 / n); cv.width = cv.height = n * px; const cx = cv.getContext('2d');
+    cx.fillStyle = '#fff'; cx.fillRect(0, 0, cv.width, cv.height); cx.fillStyle = '#111';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) cx.fillRect(c * px, r * px, px, px);
+    cv.hidden = false;
+  }
   const spinBtn = document.getElementById('spin');
   spinBtn.onclick = () => {
+    track('spin');
     spinBtn.disabled = true; spinBtn.textContent = 'Spinning…';
     const i = pickPrize(), seg = 360 / PRIZES.length; st.prize = i;
     st.rot = st.rot - (st.rot % 360) + 360 * 6 + (360 - (i * seg + seg / 2)) + (Math.random() * 30 - 15);
@@ -297,7 +314,7 @@ button { cursor: pointer; }
   };
   let ht = null;
   function tick() { clearInterval(ht); const el = document.getElementById('hold'); const u = () => { const l = Math.max(0, st.at + 7200e3 - Date.now()); el.textContent = `${Math.floor(l / 3600e3)}:${String(Math.floor(l % 3600e3 / 60e3)).padStart(2, '0')}:${String(Math.floor(l % 60e3 / 1e3)).padStart(2, '0')}`; }; u(); ht = setInterval(u, 1000); }
-  document.getElementById('counter').onclick = () => go(2);
+  document.getElementById('counter').onclick = () => { track('join'); go(2); };
 
   /* The customer picks how we reach them. Both is welcome (a fuller Platterly profile) but never required. */
   let via = 'email';
@@ -355,6 +372,7 @@ button { cursor: pointer; }
     document.getElementById('f-title').textContent = title;
     document.getElementById('f-cond').textContent = rule.charAt(0).toUpperCase() + rule.slice(1) + '. Show this code to staff.';
     document.getElementById('code').textContent = st.code || ('HELD · ' + st.name.toUpperCase().slice(0, 12));
+    drawCodeQR(st.code);
     st.hold = res && res.hold_until ? Date.parse(res.hold_until) : Date.now() + 7200e3;
     st.expires = res && res.expires_at ? Date.parse(res.expires_at) : CLOSE_AT(new Date());
     document.getElementById('f-valid').textContent = st.code ? `Valid today until close (${CLOSE_LABEL(new Date(st.expires))}), Gerrard St W or Bremner Blvd.` : 'We could not reach the store system. Show this screen at the counter today; your sign-up is sent automatically next time you open this page.';

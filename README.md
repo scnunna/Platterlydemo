@@ -41,6 +41,8 @@ Codes (`PL-XXXXXX`) and credit points are Platterly's, not the stores'.
    fast-claim bonus. One Platterly member per person across partners (matched by email or phone).
 
 ## Email: self-hosted Listmonk, one per sender
+Every sender uses Platterly's mailbox **marketing@platterly.com** (`PLATTERLY_FROM_EMAIL`), also the contact named in
+the consent text and email footers. It needs a working mailbox and SMTP login on that domain before mail can leave.
 `server/listmonk/docker-compose.yml` runs three Listmonk instances on the Platterly Postgres (databases
 `listmonk_platterly`, `listmonk_panago`, `listmonk_wetzels`), local only:
 
@@ -72,6 +74,22 @@ Text reminders (optional): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FR
 - **Weekly report every Monday**, 9 AM: orders, sales, points earned and used, leads, balance.
 - A missed day (laptop off) is caught up on the next run. The proxy runs billing every 5 minutes; super admin can
   run it from the portal. Tests: `supabase/tests/billing_test.sql`.
+
+## Commissions (portal, super admin)
+The **Commissions** tab sets each client's rate (0 to 50% of food), the date it applies from, an extra invoice email
+and an agreement note. Every change is kept in a history. Draft invoices from the start date are re-rated; sent ones
+never change. Weeks before the start date stay drafts. Tests: `supabase/tests/analytics_test.sql`.
+
+## Redeeming at the counter
+The customer's prize screen shows their code as a QR. Staff open **Redeem a code**, tap **Scan code** and point the
+phone at it (or type the code). The portal shows the prize and whether it is valid, used or expired before anything
+is marked; one tap marks it used. The store choice is remembered on that device.
+
+## Analytics
+The spin pages record three steps the database cannot see on its own (page opened, wheel spun, join form opened), once
+per browser session, tagged with the store and the TV page (the QR's `c=` number). With codes, redemptions and orders
+the **Analytics** tab shows the funnel per store and per screen, the best-converting screen, and codes per day. The
+TV's live strip (spins today, next lunch draw, recent winners by first name) comes from `/v1/stats`.
 
 ## Lead database (runs on the store laptop)
 `supabase/` is a self-hosted Supabase CLI stack (`project_id = platterly`, ports 563xx) in Docker Desktop.

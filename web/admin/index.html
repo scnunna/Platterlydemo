@@ -186,7 +186,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
 
   /* ------------ console ------------ */
   let tab = 'overview', client = null, cache = {};
-  const TABS = [['overview', 'Overview'], ['orders', 'Orders'], ['leads', 'Leads'], ['redeem', 'Redeem a code'], ['catering', 'Catering'], ['billing', 'Billing'], ['onboarding', 'Onboarding', true], ['account', 'Account']];
+  const TABS = [['overview', 'Overview'], ['orders', 'Orders'], ['leads', 'Leads'], ['redeem', 'Redeem a code'], ['analytics', 'Analytics'], ['catering', 'Catering'], ['billing', 'Billing'], ['commissions', 'Commissions', true], ['onboarding', 'Onboarding', true], ['account', 'Account']];
   function shell(body) {
     const supa = me.role === 'super_admin';
     app.innerHTML = `<header class="top"><div class="wrap">
@@ -236,13 +236,20 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
       : `<div class="empty"><b>No leads ${q.search || q.consent ? 'match this search' : 'yet'}.</b><span>Leads appear here as soon as someone spins and joins from a QR code.</span></div>`}`;
   }
   function vRedeem() {
+    let saved = null; try { saved = localStorage.getItem('platterly-store'); } catch {}
+    const stores = allStores().filter(st => !client || st.client === client);
     return `<h1>Redeem a code</h1><form id="f-redeem" class="card" style="display:grid;gap:12px;max-width:520px" novalidate>
-      <p class="small muted">Check the customer's Platterly code (PL-) at the counter or on a phone order. A code works once, until close on the day it was won. Enter the order total so the customer earns Platterly points (5 per $1).</p>
-      <div class="field"><label for="r-code">Code</label><input id="r-code" placeholder="PL-XXXXXX" autocapitalize="characters" style="font-family:var(--mono);font-size:18px;letter-spacing:.06em"></div>
-      <div class="row"><div class="field" style="flex:1"><label for="r-store">Store</label><select id="r-store">${allStores().filter(st => !client || st.client === client).map(st => `<option value="${esc(st.id)}">${esc(st.name)}</option>`).join('')}</select></div>
+      <p class="small muted">Scan the QR on the customer's prize screen, or type their Platterly code (PL-). A code works once, until close on the day it was won. Add the order total so the customer earns Platterly points (5 per $1).</p>
+      <button class="btn primary" type="button" data-act="scan" id="r-scan" style="font-size:17px;padding:14px">Scan code</button>
+      <div id="r-cam" hidden style="position:relative;border-radius:12px;overflow:hidden;background:#000"><video id="r-video" playsinline muted style="width:100%;display:block;max-height:340px;object-fit:cover"></video>
+        <div style="position:absolute;inset:18% 22%;border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 999px rgba(0,0,0,.35)"></div>
+        <button class="btn" type="button" data-act="scan-stop" style="position:absolute;right:8px;bottom:8px">Cancel</button></div>
+      <div class="field"><label for="r-code">Code</label><input id="r-code" placeholder="PL-XXXXXX" autocapitalize="characters" autocomplete="off" style="font-family:var(--mono);font-size:18px;letter-spacing:.06em"></div>
+      <div id="r-preview" aria-live="polite"></div>
+      <div class="row"><div class="field" style="flex:1"><label for="r-store">Store</label><select id="r-store">${stores.map(st => `<option value="${esc(st.id)}" ${st.id === saved ? 'selected' : ''}>${esc(st.name)}</option>`).join('')}</select></div>
         <div class="field" style="flex:1"><label for="r-total">Order total before tax (optional)</label><input id="r-total" inputmode="decimal" placeholder="42.50"></div></div>
       <div class="err" id="r-err" role="alert"></div><div id="r-ok" class="ok" aria-live="polite"></div>
-      <button class="btn accent" type="submit">Check and mark used</button></form>`;
+      <button class="btn accent" type="submit">Mark used</button></form>`;
   }
   async function vCatering() {
     const rows = await call('/v1/staff/catering', { client });
@@ -347,7 +354,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
     const d = await call('/v1/staff/billing', { client }); cache.billing = d; const supa = me.role === 'super_admin';
     const cname = id => (d.clients.find(c => c.id === id) || {}).name || id;
     const cards = d.clients.map(c => `<section class="card" style="display:grid;gap:10px">
-      <div class="row between"><h2>${esc(c.name)}</h2>${supa ? `<form class="row f-rate" data-client="${esc(c.id)}" novalidate><label class="small" for="rate-${esc(c.id)}">Commission</label><input id="rate-${esc(c.id)}" inputmode="decimal" value="${c.commission_pct == null ? '' : esc(c.commission_pct)}" placeholder="not set" style="width:80px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--surface)"><span class="small">%</span><button class="btn" type="submit">Save</button></form>` : `<span class="small muted">${c.commission_pct == null ? 'Commission: not set yet' : 'Commission: ' + esc(c.commission_pct) + '% of food on Platterly orders'}</span>`}</div>
+      <div class="row between"><h2>${esc(c.name)}</h2><span class="row"><span class="small muted">${c.commission_pct == null ? 'Commission: not set yet' : 'Commission: ' + esc(c.commission_pct) + '% of food on Platterly orders'}</span>${supa ? '<button class="btn" type="button" data-tab="commissions">Change</button>' : ''}</span></div>
       <div class="grid">${kpi(money(c.unsettled_credit), 'Platterly owes, not yet settled')}${kpi(money(c.clearing), 'Of that, still clearing (under 3 days)')}${kpi(day(c.next_settlement), 'Next settlement')}${kpi(money(c.statements_unpaid), 'Settled, transfer pending')}${kpi(money(c.invoices_open), 'Open Platterly invoices')}</div></section>`).join('');
     const sts = d.settlements.length ? `<div class="table-wrap"><table><thead><tr><th>Settlement</th><th>Date</th>${!client && supa ? '<th>Client</th>' : ''}<th>Orders</th><th>Points used</th><th>Platterly pays</th><th>Status</th>${supa ? '<th></th>' : ''}</tr></thead><tbody>
       ${d.settlements.map(x => `<tr><td><code>${esc(x.number)}</code></td><td class="small">${day(x.created_at)}<br><span class="muted">orders to ${day(x.cutoff)}</span></td>${!client && supa ? `<td class="small">${esc(cname(x.client_id))}</td>` : ''}<td class="num">${x.orders}</td><td class="num">${money(x.points_credit)}</td><td class="num"><b>${money(x.amount)}</b></td><td><span class="badge ${x.status === 'paid' ? 'good' : 'warn'}">${ST_LABEL[x.status]}</span></td>${supa ? `<td>${x.status === 'statement_sent' ? `<button class="btn" type="button" data-bill="settlement_paid" data-id="${x.id}">Mark paid</button>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div>`
@@ -367,9 +374,91 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
       ${cards}<section style="display:grid;gap:8px"><h2>Settlements</h2>${sts}</section><section style="display:grid;gap:8px"><h2>Invoices</h2>${inv}</section>
       <section style="display:grid;gap:8px"><h2>Weekly reports</h2>${reps}</section><section style="display:grid;gap:8px"><h2>Billing emails</h2>${mail}</section>`;
   }
-  const VIEWS = { billing: vBilling, orders: vOrders, onboarding: vOnboarding, overview: vOverview, leads: vLeads, redeem: vRedeem, catering: vCatering, account: vAccount };
+  /* ------------ counter: scan the customer's QR, preview the prize, one tap to mark it used ------------ */
+  const CODE_RE = /\b([A-Z]{2}-[A-Z2-9]{6})\b/i;
+  let cam = null;
+  function stopScan() { if (cam) { cam.stream.getTracks().forEach(t => t.stop()); cancelAnimationFrame(cam.raf); cam = null; } const w = document.getElementById('r-cam'); if (w) w.hidden = true; }
+  async function startScan() {
+    const err = document.getElementById('r-err'); err.textContent = '';
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { err.textContent = 'This browser cannot use the camera here. Type the code instead.'; return; }
+    let detect;
+    if ('BarcodeDetector' in window) { const bd = new BarcodeDetector({ formats: ['qr_code'] }); detect = async v => ((await bd.detect(v))[0] || {}).rawValue; }
+    else {
+      if (!window.jsQR) await new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); }).catch(() => {});
+      if (!window.jsQR) { err.textContent = 'Could not load the scanner. Type the code instead.'; return; }
+      const cv = document.createElement('canvas'), cx = cv.getContext('2d', { willReadFrequently: true });
+      detect = async v => { cv.width = v.videoWidth; cv.height = v.videoHeight; if (!cv.width) return null; cx.drawImage(v, 0, 0); const r = window.jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height); return r && r.data; };
+    }
+    let stream;
+    try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false }); }
+    catch { err.textContent = 'Camera blocked. Allow the camera for this page, or type the code.'; return; }
+    const v = document.getElementById('r-video'); v.srcObject = stream; await v.play().catch(() => {});
+    document.getElementById('r-cam').hidden = false; cam = { stream, raf: 0 };
+    const tick = async () => {
+      if (!cam) return;
+      try { const m = CODE_RE.exec((await detect(v)) || ''); if (m) { stopScan(); if (navigator.vibrate) navigator.vibrate(60); document.getElementById('r-code').value = m[1].toUpperCase(); return previewCode(m[1]); } } catch {}
+      cam.raf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+  async function previewCode(code) {
+    const box = document.getElementById('r-preview'); if (!box) return;
+    box.innerHTML = '<p class="small muted">Checking…</p>';
+    try {
+      const r = await call('/v1/code', { p_code: code }, false);
+      if (!r.ok) { box.innerHTML = `<div class="card" style="border-left:4px solid #C0392B"><b>${esc(r.msg)}</b></div>`; return; }
+      const bad = r.used ? 'Already used' : r.expired ? 'Expired' : null;
+      box.innerHTML = `<div class="card" style="display:grid;gap:4px;border-left:4px solid ${bad ? '#C0392B' : '#1E8E5A'}"><div class="row between"><b style="font-size:18px">${esc(r.prize)}</b><span class="badge ${bad ? 'warn' : 'good'}">${bad || 'Valid'}</span></div>
+        <span class="small">${esc(r.first_name)} · ${esc(r.rule)}</span>${bad ? '' : `<span class="tiny muted">Valid until ${when(r.expires_at)}${r.hold_until && new Date(r.hold_until) > new Date() ? ' · fast-claim bonus (+100 points) if used now' : ''}</span>`}</div>`;
+      let chosen = null; try { chosen = localStorage.getItem('platterly-store'); } catch {}
+      const sel = document.getElementById('r-store'); if (!chosen && r.store && sel && [...sel.options].some(o => o.value === r.store)) sel.value = r.store;
+      if (!bad) document.getElementById('r-total').focus();
+    } catch (x) { box.innerHTML = `<p class="err">${esc(x.message)}</p>`; }
+  }
+  app.addEventListener('input', e => { if (e.target.id === 'r-code') { const m = CODE_RE.exec(e.target.value); if (m && m[1].length === e.target.value.trim().length) previewCode(m[1]); else document.getElementById('r-preview').innerHTML = ''; } });
+  /* ------------ analytics: QR scan to order, per store and per TV screen ------------ */
+  let an = { days: 30 };
+  const SCREEN = k => /^\d+$/.test(k) ? `TV page ${k}` : k === 'direct' ? 'Direct link' : k;
+  const rate = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+  async function vAnalytics() {
+    const d = await call('/v1/staff/analytics', { client, days: an.days }); const supa = me.role === 'super_admin';
+    const sum = k => d.rows.reduce((t, r) => t + Number(r[k] || 0), 0);
+    const T = { views: sum('views'), spins: sum('spins'), joins: sum('joins'), claims: sum('claims'), redeemed: sum('redeemed'), orders: sum('orders'), food: sum('food') };
+    const steps = [['views', 'Opened the QR page'], ['spins', 'Spun the wheel'], ['joins', 'Opened the join form'], ['claims', 'Got a code'], ['redeemed', 'Used it in store'], ['orders', 'Ordered through Platterly']];
+    const top = Math.max(1, ...steps.map(([k]) => T[k]));
+    const rows = d.rows.slice().sort((a, b) => b.claims - a.claims || b.views - a.views);
+    const best = rows.filter(r => /^\d+$/.test(r.screen) && r.views >= 10).sort((a, b) => b.claims / b.views - a.claims / a.views)[0];
+    const dmax = Math.max(1, ...d.days.map(x => x.claims));
+    return `<div class="row between"><div style="display:grid;gap:2px"><h1>Analytics</h1><span class="small muted">From QR scan to order, per store and per TV screen. Page opens are counted from 22 Oct 2026.</span></div>
+        <div class="row"><label class="small" for="an-days">Period</label><select id="an-days">${[7, 30, 90].map(n => `<option value="${n}" ${n === an.days ? 'selected' : ''}>Last ${n} days</option>`).join('')}</select><button class="btn" type="button" data-act="refresh">Refresh</button></div></div>
+      <section class="card" style="display:grid;gap:10px"><h2>Funnel</h2><div class="bars">${steps.map(([k, l], i) => `<div class="b"><span>${l}</span><span class="t"><i style="width:${T[k] / top * 100}%"></i></span><b class="num">${T[k]}${i ? ` <span class="muted small">${rate(T[k], T[steps[i - 1][0]])}</span>` : ''}</b></div>`).join('')}</div>
+        <p class="small muted">Platterly orders: ${T.orders} · food ${money(T.food)}. Scan to code: ${rate(T.claims, T.views)}. Code to store visit: ${rate(T.redeemed, T.claims)}.</p></section>
+      ${best ? `<div class="card" style="border-left:4px solid var(--accent)"><b>Best screen: ${esc(SCREEN(best.screen))}${best.store ? ' at ' + esc(storeName(best.store)) : ''}</b><span class="small"> turns ${rate(best.claims, best.views)} of scans into codes. Screens with fewer than 10 scans are not ranked yet.</span></div>` : ''}
+      <section class="card" style="display:grid;gap:10px"><div class="row between"><h2>Codes per day</h2><span class="small muted">Last ${an.days} days</span></div>
+        <div class="spark" role="img" aria-label="Codes per day">${d.days.map(x => `<i style="height:${x.claims / dmax * 100}%" title="${esc(x.day)}: ${x.claims} codes, ${x.views} page opens, ${x.redeemed} used"></i>`).join('')}</div></section>
+      <section style="display:grid;gap:8px"><h2>By store and screen</h2>${rows.length ? `<div class="table-wrap"><table><thead><tr>${!client && supa ? '<th>Client</th>' : ''}<th>Store</th><th>Screen</th><th>Opened</th><th>Spun</th><th>Join form</th><th>Codes</th><th>Used</th><th>Orders</th><th>Food</th><th>Scan to code</th></tr></thead><tbody>
+        ${rows.map(r => `<tr>${!client && supa ? `<td class="small">${esc(r.client_id)}</td>` : ''}<td>${r.store ? esc(storeName(r.store)) : '<span class="muted">Not tagged</span>'}</td><td>${esc(SCREEN(r.screen))}</td><td class="num">${r.views}</td><td class="num">${r.spins}</td><td class="num">${r.joins}</td><td class="num"><b>${r.claims}</b></td><td class="num">${r.redeemed}</td><td class="num">${r.orders}</td><td class="num">${money(r.food)}</td><td class="num">${rate(r.claims, r.views)}</td></tr>`).join('')}</tbody></table></div>`
+        : '<div class="empty"><b>No scans yet in this period.</b><span>Each TV page has its own QR code, so every scan is counted per store and per screen.</span></div>'}</section>`;
+  }
+  /* ------------ commissions: super admin sets each client's rate ------------ */
+  async function vCommissions() {
+    const list = await call('/v1/staff/commissions', {});
+    return `<div style="display:grid;gap:2px"><h1>Commissions</h1><span class="small muted">Platterly's commission on food (subtotal minus prize discount) of each client's Platterly orders. Invoiced every Wednesday for the week to Sunday. Changing a rate re-rates draft invoices from its start date; sent invoices never change.</span></div>
+      ${list.map(c => { const proj = c.pct == null ? null : c.food_28d * c.pct / 100; return `<section class="card" style="display:grid;gap:12px">
+        <div class="row between"><h2>${esc(c.name)}</h2><span class="badge ${c.pct == null ? 'warn' : 'good'}">${c.pct == null ? 'Not set: invoices stay drafts' : esc(c.pct) + '%'}</span></div>
+        <form class="f-comm" data-client="${esc(c.id)}" novalidate style="display:grid;gap:10px">
+          <div class="row" style="align-items:end;flex-wrap:wrap">
+            <div class="field" style="width:130px"><label for="cm-pct-${esc(c.id)}">Rate (%)</label><input id="cm-pct-${esc(c.id)}" name="pct" inputmode="decimal" value="${c.pct == null ? '' : esc(c.pct)}" placeholder="not set"></div>
+            <div class="field" style="width:170px"><label for="cm-from-${esc(c.id)}">Applies from</label><input id="cm-from-${esc(c.id)}" name="from" type="date" value="${esc(c.from || '')}"></div>
+            <div class="field" style="flex:1;min-width:220px"><label for="cm-mail-${esc(c.id)}">Invoice email (besides their portal admins)</label><input id="cm-mail-${esc(c.id)}" name="billing_email" type="email" value="${esc(c.billing_email || '')}" placeholder="accounts@client.com"></div></div>
+          <div class="field"><label for="cm-note-${esc(c.id)}">Agreement note</label><input id="cm-note-${esc(c.id)}" name="note" maxlength="500" value="${esc(c.note || '')}" placeholder="e.g. Signed 20 Oct 2026, 8% for 6 months then review"></div>
+          <div class="row between"><span class="small muted">Food on completed Platterly orders, last 28 days: ${money(c.food_28d)}${proj == null ? '' : ` · at this rate about ${money(proj)} per 4 weeks`}${c.drafts ? ` · ${c.drafts} draft invoice${c.drafts === 1 ? '' : 's'} waiting` : ''}</span><button class="btn primary" type="submit">Save</button></div></form>
+        ${c.history.length ? `<details><summary class="small" style="cursor:pointer">Change history (${c.history.length})</summary><div class="table-wrap" style="margin-top:6px"><table style="min-width:420px"><thead><tr><th>When</th><th>Rate</th><th>From</th><th>By</th><th>Note</th></tr></thead><tbody>${c.history.map(h => `<tr><td class="small">${when(h.at)}</td><td class="num">${h.pct == null ? 'not set' : esc(h.pct) + '%'}</td><td class="small">${h.from ? day(h.from + 'T12:00') : 'all weeks'}</td><td class="small">${esc(h.by)}</td><td class="small">${esc(h.note || '')}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
+      </section>`; }).join('')}`;
+  }
+  const VIEWS = { analytics: vAnalytics, commissions: vCommissions, billing: vBilling, orders: vOrders, onboarding: vOnboarding, overview: vOverview, leads: vLeads, redeem: vRedeem, catering: vCatering, account: vAccount };
   async function render() {
-    if (!me) return signin();
+    stopScan(); if (!me) return signin();
     shell('<p class="muted">Loading…</p>');
     try { document.getElementById('main').innerHTML = await VIEWS[tab](); }
     catch (e) { const m = document.getElementById('main'); if (m) m.innerHTML = `<div class="empty"><b>Could not load this page.</b><span>${esc(e.message)}</span><button class="btn" type="button" data-act="refresh">Try again</button></div>`; }
@@ -378,7 +467,9 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
   app.addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.door) { door = b.dataset.door; return signin(); }
-    if (b.dataset.tab) { tab = b.dataset.tab; return render(); }
+    if (b.dataset.tab) { stopScan(); tab = b.dataset.tab; return render(); }
+    if (b.dataset.act === 'scan') return startScan();
+    if (b.dataset.act === 'scan-stop') return stopScan();
     if (b.dataset.act === 'refresh') return render();
     if (b.dataset.onbClient) { onb.sel = b.dataset.onbClient; onb.edit = null; return render(); }
     if (b.dataset.onbNote) { onb.edit = b.dataset.onbNote; return render(); }
@@ -404,6 +495,8 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
   });
   app.addEventListener('change', async e => {
     if (e.target.id === 'client') { client = e.target.value || null; return render(); }
+    if (e.target.id === 'an-days') { an.days = Number(e.target.value) || 30; return render(); }
+    if (e.target.id === 'r-store') { try { localStorage.setItem('platterly-store', e.target.value); } catch {} return; }
     if (e.target.id === 'o-all') { ofilter = e.target.checked ? 'all' : 'open'; return render(); }
     if (e.target.dataset.onbStep) {
       const box = e.target; box.disabled = true;
@@ -431,10 +524,10 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
           <h3 style="margin-top:10px">Your prizes</h3><div style="display:grid;gap:8px;margin-top:8px">${r.spins.map(s => `<div class="card" style="padding:10px 12px"><div class="row between"><b>${esc(s.prize)}</b>${s.redeemed ? '<span class="badge">Used</span>' : new Date(s.expires_at) < new Date() ? '<span class="badge">Expired</span>' : '<span class="badge good">Valid today</span>'}</div><div class="small muted">${esc(s.client || '')} · ${esc(s.rule)} · ${day(s.day + 'T12:00')} · <code>${esc(s.code)}</code></div></div>`).join('')}</div>`;
       } catch (x) { err.textContent = x.message; }
     }
-    if (f.classList.contains('f-rate')) {
-      const v = f.querySelector('input').value.trim();
-      if (v !== '' && !(Number(v) >= 0 && Number(v) <= 50)) { toast('Use a rate from 0 to 50%, or leave it empty.'); return; }
-      try { const r = await call('/v1/staff/billing-rate', { client: f.dataset.client, pct: v }); toast(r.ok ? 'Commission saved. Draft invoices updated.' : r.msg); } catch (x) { toast(x.message); }
+    if (f.classList.contains('f-comm')) {
+      const g = n => f.elements[n].value.trim(), pct = g('pct');
+      if (pct !== '' && !(Number(pct) >= 0 && Number(pct) <= 50)) { toast('Use a rate from 0 to 50%, or leave it empty.'); return; }
+      try { const r = await call('/v1/staff/commission-set', { client: f.dataset.client, pct, from: g('from'), billing_email: g('billing_email'), note: g('note') }); toast(r.ok ? 'Commission saved. Draft invoices updated.' : r.msg); if (!r.ok) return; } catch (x) { toast(x.message); return; }
       return render();
     }
     if (f.classList.contains('f-note')) {
@@ -445,7 +538,7 @@ td code { font-family: var(--mono); font-weight: 700; font-size: 13px; }
     if (f.id === 'f-redeem') {
       const err = document.getElementById('r-err'), ok = document.getElementById('r-ok'); err.textContent = ''; ok.textContent = '';
       const code = v('r-code').trim(); if (!/^[A-Z]{2}-[A-Z2-9]{6}$/i.test(code)) { err.textContent = 'Codes look like PL-7KQ2MD.'; return; }
-      try { const r = await call('/v1/staff/redeem', { code, store: v('r-store'), total: v('r-total') }); if (r.ok) { ok.textContent = `Valid. ${r.name}: ${r.prize}, ${r.rule}. Marked used.${r.points_awarded ? ` ${r.name} earned ${r.points_awarded} Platterly points.` : ''}`; document.getElementById('r-code').value = ''; } else err.textContent = r.msg; }
+      try { const r = await call('/v1/staff/redeem', { code, store: v('r-store'), total: v('r-total') }); if (r.ok) { ok.textContent = `Valid. ${r.name}: ${r.prize}, ${r.rule}. Marked used.${r.points_awarded ? ` ${r.name} earned ${r.points_awarded} Platterly points.` : ''}`; document.getElementById('r-code').value = ''; document.getElementById('r-total').value = ''; document.getElementById('r-preview').innerHTML = ''; } else err.textContent = r.msg; }
       catch (x) { err.textContent = x.message; }
     }
     if (f.id === 'f-pass') {
